@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+  <rect width="100" height="100" rx="4" fill="#000000"/>
+  <!-- Razor Stencil Letter L & I -->
+  <rect x="22" y="24" width="8" height="52" fill="#FFFFFF"/>
+  <rect x="22" y="68" width="28" height="8" fill="#FFFFFF"/>
+  <!-- Dot / Caret -->
+  <rect x="42" y="24" width="8" height="8" fill="#FFFFFF"/>
+  <rect x="42" y="38" width="8" height="22" fill="#FFFFFF"/>
+  <!-- Status Matrix corner ticks -->
+  <path d="M12 18V12H18M82 12H88V18M88 82V88H82M18 88H12V82" stroke="#FFFFFF" stroke-width="2"/>
+</svg>

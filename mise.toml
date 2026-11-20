@@ -1,0 +1,45 @@
+min_version = "2026.9.13"
+
+[settings]
+lockfile_platforms = ["linux-x64", "macos-arm64"]
+idiomatic_version_file_enable_tools = ["rust"]
+
+[tools]
+cargo-binstall = "1.25.3"
+"cargo:cargo-deny" = "0.20.2"
+"cargo:cargo-llvm-cov" = "0.9.1"
+"cargo:cargo-machete" = "0.9.2"
+"cargo:cargo-nextest" = "0.9.148"
+dprint = "0.63.0"
+hk = { version = "2.6.0", workflow = "release.yml" }
+typos = "1.51.1"
+
+[tasks.setup]
+description = "Install tools, fetch crates and the git hooks"
+run = '''
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  mise install
+  cargo fetch --locked
+  {% if env.CI is defined %}
+    echo "CI detected — skipping git hooks"
+  {% else %}
+    hk install --mise
+  {% endif %}
+'''
+
+[tasks.gate]
+description = "Run every quality gate, stopping at the first failure. --fast runs tests and clippy only."
+usage = 'flag "--fast" help="nextest and clippy only, for inner loops"'
+run = '''
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  cargo nextest run --workspace --locked
+  cargo test --doc --workspace --locked
+  cargo clippy --workspace --all-targets --locked -- -D warnings
+  if [ "${usage_fast:-false}" = "true" ]; then exit 0; fi
+  cargo build --workspace --release --locked
+  cargo deny check
+'''

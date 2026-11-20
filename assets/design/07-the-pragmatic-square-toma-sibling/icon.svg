@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+  <rect width="100" height="100" rx="22" fill="#18181B"/>
+  <!-- Top Left Square (MD) -->
+  <rect x="26" y="26" width="20" height="20" rx="6" fill="#F43F5E"/>
+  <!-- Bottom Right Square (YAML) -->
+  <rect x="54" y="54" width="20" height="20" rx="6" fill="#FAFAFA"/>
+  <!-- Synchronizing connecting diagonal -->
+  <line x1="36" y1="36" x2="64" y2="64" stroke="#F43F5E" stroke-width="4" stroke-dasharray="2 3"/>
+</svg>

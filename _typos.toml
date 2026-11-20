@@ -1,0 +1,16 @@
+[files]
+extend-exclude = [".mise/", "crates/toma/tests/fixtures/", "crates/toma/src/ui/snapshots/", "target/", "*.lock"]
+
+[default.extend-words]
+# A status of the todo CLI (TODO.md): French for "in progress".
+cours = "cours"
+# Role name in omp's default cycleOrder.
+smol = "smol"
+# Tool name (Portuguese/Spanish for "take it").
+toma = "toma"
+# Terminal UI library name.
+ratatui = "ratatui"
+
+[default.extend-identifiers]
+ratatui = "ratatui"
+Ratatui = "Ratatui"

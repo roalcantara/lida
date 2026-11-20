@@ -1,0 +1,9 @@
+base_neutral_dark: "#0A0C10"
+base_neutral_light: "#F1F5F9"
+surface_border: "#1E293B"
+signature_accent: "#2563EB"
+status_hues:
+  todo: "#64748B"
+  inprogress: "#2563EB"
+  done: "#059669"
+  blocked: "#DC2626"

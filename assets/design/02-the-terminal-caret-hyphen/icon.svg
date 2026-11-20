@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+  <rect width="100" height="100" rx="16" fill="#09090B"/>
+  <!-- Terminal Prompt Caret -->
+  <path d="M26 32L46 50L26 68" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Sequence Hyphen / List Bar -->
+  <line x1="56" y1="50" x2="76" y2="50" stroke="#FAFAFA" stroke-width="8" stroke-linecap="round"/>
+  <!-- Dot Matrix anchor -->
+  <circle cx="76" cy="32" r="4" fill="#06B6D4"/>
+</svg>
