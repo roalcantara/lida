@@ -3,7 +3,11 @@
 use usage_rs::{Cli, Subcommands};
 
 #[derive(Cli, Debug)]
-#[usage(bin = "lida", version = "0.1.0", about = "Dual-format project task engine (YAML · MD)")]
+#[usage(
+    bin = "lida",
+    version = "0.1.0",
+    about = "Dual-format project task engine (YAML · MD)"
+)]
 pub struct LidaCli {
     #[usage(subcommand)]
     pub command: Option<Subcommand>,
@@ -28,6 +32,10 @@ pub enum Subcommand {
         /// Project name to embed in header
         #[usage(long)]
         project: Option<String>,
+
+        /// Overwrite existing TODO files
+        #[usage(short = 'f', long)]
+        force: bool,
     },
 
     /// Add a new task (optionally with initial comment or metadata)
@@ -38,6 +46,10 @@ pub enum Subcommand {
         /// Legacy flag task description
         #[usage(long)]
         task: Option<String>,
+
+        /// Attach comment to existing task ID
+        #[usage(long = "task-id")]
+        task_id: Option<String>,
 
         /// Priority level: low, medium, high
         #[usage(short = 'p', long)]
@@ -58,6 +70,36 @@ pub enum Subcommand {
         /// Initial comment to attach to the task
         #[usage(short = 'c', long)]
         comment: Option<String>,
+    },
+
+    /// Update an existing task's attributes
+    Update {
+        /// 4-character task ID
+        id: String,
+
+        /// Task description
+        #[usage(short = 'd', long)]
+        description: Option<String>,
+
+        /// Priority level: low, medium, high
+        #[usage(short = 'p', long)]
+        priority: Option<String>,
+
+        /// Comma-separated tags
+        #[usage(short = 't', long)]
+        tags: Option<String>,
+
+        /// Single tag or comma-separated tag alias
+        #[usage(long)]
+        tag: Option<String>,
+
+        /// Due date (YYYY-MM-DD or YYYY-MM-DD HH:MM)
+        #[usage(long)]
+        due: Option<String>,
+
+        /// Code position URL or file path
+        #[usage(long)]
+        position: Option<String>,
     },
 
     /// List tasks, actors, or comments
