@@ -1,31 +1,35 @@
 # BRAND DESIGN IDENTITY & DESIGN SYSTEM SPECIFICATION: `lida`
 
-**Companion to `toma` developer CLI**  
-*Core Philosophy: "Zero ceremony. Dual-format. Git-native task management for developers and AI coding agents."*
+**Companion to `toma` developer CLI**\
+_Core Philosophy: "Zero ceremony. Dual-format. Git-native task management for developers and AI coding agents."_
 
 ---
 
 # SECTION A: MASTER BRAND ARCHITECTURE & COPYWRITING DEFINITION
 
 ### 1. Elevator Pitch
+
 > **`lida` is a blazingly fast Rust CLI that bridges the human-agent gap in project task tracking by maintaining bidirectional zero-loss sync between Markdown (`TODO.md`) and structured YAML (`TODO.yaml`). It turns Git repositories into self-documenting task engines with zero external servers, conflict-resilient short IDs, and instant CLI ergonomics.**
 
 ### 2. Tagline Alternatives
-1. *"Zero ceremony. Dual-format. Tasks in Git."*
-2. *"The deterministic bridge between `TODO.md` and `TODO.yaml`."*
-3. *"Engineered for developers. Typed for AI coding agents."*
+
+1. _"Zero ceremony. Dual-format. Tasks in Git."_
+2. _"The deterministic bridge between `TODO.md` and `TODO.yaml`."_
+3. _"Engineered for developers. Typed for AI coding agents."_
 
 ### 3. Key Value Pillars
+
 1. **Dual Native (Human & Agent Synchrony):** Developers review clean, readable Markdown check-lists in PRs; LLMs and background automation query and mutate structured, schema-validated YAML with typed keys (`--meta key=val`) and instant `--json` output.
 2. **Git-First & Local-Only:** Single-file or dual-file repo tracking. Conflict-resilient 4-character base36 hash IDs (`#a8f2`) minimize Git rebase collisions and enable painless multi-branch work without centralized database locks.
 3. **Rust-Engineered Performance:** Sub-millisecond cold start execution (<4ms), zero runtime dependencies, instant AST parsing of GFM task lists, and rock-solid deterministic formatting.
 
 ### 4. Voice, Tone & Persona Guidelines
+
 - **Persona:** Precision toolmaker, tactical UNIX utility, silent collaborator.
 - **Attributes:** Concise, humble, zero-bullshit, deterministic, dev-first.
 - **CLI Message UX Design:**
-  - *Success:* Subtle dim green status glyph with terse summary: `✓ added #8f1b "Implement tree shaking" [TODO.md, TODO.yaml]`
-  - *Error:* Clear error code, line/col diagnosis, exact suggested resolution:
+  - _Success:_ Subtle dim green status glyph with terse summary: `✓ added #8f1b "Implement tree shaking" [TODO.md, TODO.yaml]`
+  - _Error:_ Clear error code, line/col diagnosis, exact suggested resolution:
     ```text
     error[E042]: Malformed YAML block in TODO.yaml:14:6
       --> TODO.yaml:14:6
@@ -40,6 +44,7 @@
 # 10 CONCEPTUALLY DIVERSE DESIGN PROPOSALS
 
 Each proposal includes:
+
 - Concept & Metaphor
 - Inline Vector SVG Primary Logo
 - Dark & Light Color Values & functional roles
@@ -53,10 +58,12 @@ Each proposal includes:
 ## PROPOSAL 01: "THE DUAL FLUX" (Nordic Functionalism)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** Two interlocking chevron brackets forming a continuous square loop (`{ }` meets `[x]`). Represents the frictionless conversion of unstructured Markdown list syntax into structured YAML key-value dictionaries.
 - **Aesthetic:** High-precision Swiss modernist geometry with 45° chamfers and optical balance.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="20" fill="#0D1117"/>
@@ -70,6 +77,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#0D1117` (Obsidian Charcoal)
 - `Base Neutral Light`: `#FAFAFA` (Pristine Snow)
 - `Surface / Border`: `#21262D` (Subtle boundary gray)
@@ -81,19 +89,22 @@ Each proposal includes:
   - `Blocked`: `#F43F5E` (Signal Crimson)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Cabinet Grotesk* (Bold, lowercase tracking `-0.04em`)
-- **Body & Docs:** *Instrument Sans* (Regular 400 & Medium 500)
-- **Monospace CLI:** *Geist Mono* (Tabular numbers, clean code punctuation)
+
+- **Display / Wordmark:** _Cabinet Grotesk_ (Bold, lowercase tracking `-0.04em`)
+- **Body & Docs:** _Instrument Sans_ (Regular 400 & Medium 500)
+- **Monospace CLI:** _Geist Mono_ (Tabular numbers, clean code punctuation)
 
 ### 5. Terminal ASCII Art (`lida --help`)
+
 ```text
-  _ _     _       
- | (_) __| | __ _ 
- | | |/ _` |/ _` |
- |_|_|\__,_|\__,_| [YAML · MD]
+ _ _     _       
+| (_) __| | __ _ 
+| | |/ _` |/ _` |
+|_|_|\__,_|\__,_| [YAML · MD]
 ```
 
 ### 6. GitHub README Banner Mockup (1200x380)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380">
   <rect width="1200" height="380" fill="#0D1117"/>
@@ -135,10 +146,12 @@ Each proposal includes:
 ## PROPOSAL 02: "THE TERMINAL CARET & HYPHEN" (Pure CLI Minimal)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** The terminal input prompt `>` transforming into a Markdown list bullet `- [ ]` and YAML sequence hyphen `- `. It captures `lida`'s command-line roots and instant keyboard speed.
 - **Aesthetic:** Utilitarian, typewriter-inspired monospace geometry.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="16" fill="#09090B"/>
@@ -152,6 +165,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#09090B` (Zinc-950)
 - `Base Neutral Light`: `#FAFAFA` (Zinc-50)
 - `Surface / Border`: `#27272A` (Zinc-800)
@@ -163,20 +177,23 @@ Each proposal includes:
   - `Blocked`: `#EF4444` (Laser Red)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Geist* (Bold, uppercase `LIDA` tracking `+0.05em`)
-- **Body & Docs:** *Geist* (Regular 400)
-- **Monospace CLI:** *Geist Mono* (Regular & SemiBold)
+
+- **Display / Wordmark:** _Geist_ (Bold, uppercase `LIDA` tracking `+0.05em`)
+- **Body & Docs:** _Geist_ (Regular 400)
+- **Monospace CLI:** _Geist Mono_ (Regular & SemiBold)
 
 ### 5. Terminal ASCII Art (`lida --help`)
+
 ```text
-  _     ___ ____    _    
- | |   |_ _|  _ \  / \   
- | |    | || | | |/ _ \  
- | |___ | || |_| / ___ \ 
- |_____|___|____/_/   \_\ [GIT-NATIVE ENGINE]
+ _     ___ ____    _    
+| |   |_ _|  _ \  / \   
+| |    | || | | |/ _ \  
+| |___ | || |_| / ___ \ 
+|_____|___|____/_/   \_\ [GIT-NATIVE ENGINE]
 ```
 
 ### 6. GitHub README Banner Mockup Spec
+
 - **Dimensions:** 1200x380px.
 - **Palette:** Zinc-950 `#09090B` background with subtle 1px Zinc-800 grid pattern (`size 24px`).
 - **Composition:** Centered bold cyan prompt icon `> -`, crisp `lida` wordmark with subline `"Dual-format project task engine (YAML · MD)"`, flanked by minimal benchmark metric pill `"Cold start: 1.2ms in Rust"`.
@@ -186,10 +203,12 @@ Each proposal includes:
 ## PROPOSAL 03: "THE BINARY ANCHOR / COMPILER" (Industrial Rust Engine)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** A stylized lower-case letter `l` forged with a check-box node `[✓]`, evoking native machine compilation and deterministic file state.
 - **Aesthetic:** German Bauhaus industrial engineering, precision line weight, mechanical sharpness.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="24" fill="#111318"/>
@@ -202,6 +221,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#111318` (Carbon Slate)
 - `Base Neutral Light`: `#F8FAFC` (Slate-50)
 - `Surface / Border`: `#242A35` (Alloy Boundary)
@@ -213,11 +233,13 @@ Each proposal includes:
   - `Blocked`: `#E11D48` (Rose-600)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Outfit* (SemiBold 600, tight kerning)
-- **Body & Docs:** *Outfit* (Regular 400)
-- **Monospace CLI:** *JetBrains Mono* (Engineered code readability)
+
+- **Display / Wordmark:** _Outfit_ (SemiBold 600, tight kerning)
+- **Body & Docs:** _Outfit_ (Regular 400)
+- **Monospace CLI:** _JetBrains Mono_ (Engineered code readability)
 
 ### 5. Terminal ASCII Art (`lida --help`)
+
 ```text
   ___   __  ___   ____
  / / / / / / _ \ / __ \
@@ -230,10 +252,12 @@ Each proposal includes:
 ## PROPOSAL 04: "THE GIT DAG CONVERGENCE" (Version Control Native)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** Two Git commit branches (representing `TODO.md` and `TODO.yaml`) diverging from a common origin and merging cleanly without merge conflicts.
 - **Aesthetic:** Graph theory visualization, nodal connections, sleek data topology.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="20" fill="#0A0C10"/>
@@ -248,6 +272,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#0A0C10` (Abyssal Navy-Black)
 - `Base Neutral Light`: `#F1F5F9` (Slate-100)
 - `Surface / Border`: `#1E293B` (Slate-800)
@@ -259,15 +284,17 @@ Each proposal includes:
   - `Blocked`: `#DC2626` (Merge Conflict Crimson)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Satoshi* (Bold 700)
-- **Body & Docs:** *Instrument Sans*
-- **Monospace CLI:** *Cascadia Code*
+
+- **Display / Wordmark:** _Satoshi_ (Bold 700)
+- **Body & Docs:** _Instrument Sans_
+- **Monospace CLI:** _Cascadia Code_
 
 ### 5. Terminal ASCII Art (`lida --help`)
+
 ```text
- *-- lida [v0.4]
- |   |-- TODO.md   (human)
- |   \-- TODO.yaml (agent)
+*-- lida [v0.4]
+|   |-- TODO.md   (human)
+|   \-- TODO.yaml (agent)
 ```
 
 ---
@@ -275,10 +302,12 @@ Each proposal includes:
 ## PROPOSAL 05: "THE TACTICAL STENCIL" (Monochrome Brutalism)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** High-density military stencil lettering meets military avionics HUD displays. Uncompromising, stark contrast, zero ornamental fluff.
 - **Aesthetic:** Swiss graphic neo-brutalism, monospaced grid alignment, pure black & stark white.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="4" fill="#000000"/>
@@ -294,6 +323,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#000000` (Void Pitch)
 - `Base Neutral Light`: `#FFFFFF` (Pure Specular)
 - `Surface / Border`: `#262626` (Neutral-800)
@@ -305,11 +335,13 @@ Each proposal includes:
   - `Blocked`: `#E11D48` (Alert Red)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Geist Mono* (Heavy, uppercase `LIDA`, stencil track `0.2em`)
-- **Body & Docs:** *Geist*
-- **Monospace CLI:** *Geist Mono*
+
+- **Display / Wordmark:** _Geist Mono_ (Heavy, uppercase `LIDA`, stencil track `0.2em`)
+- **Body & Docs:** _Geist_
+- **Monospace CLI:** _Geist Mono_
 
 ### 5. Terminal ASCII Art (`lida --help`)
+
 ```text
 [L] [I] [D] [A] :: DUAL_FORMAT_ENGINE
 ```
@@ -319,10 +351,12 @@ Each proposal includes:
 ## PROPOSAL 06: "THE AGENT PROTOCOL" (Cybernetic Cyber-Teal)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** A cybernetic socket connecting an autonomous AI Coding Agent (Cursor, Claude, Copilot) to raw local repo storage.
 - **Aesthetic:** Sci-fi telemetry, micro-circuitry, luminescent teal on deep obsidian.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="18" fill="#06090E"/>
@@ -337,6 +371,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#06090E` (Deep Space Obsidian)
 - `Base Neutral Light`: `#F0FDFA` (Teal-50)
 - `Surface / Border`: `#132B32` (Sub-aquatic Boundary)
@@ -348,19 +383,22 @@ Each proposal includes:
   - `Blocked`: `#F43F5E` (Laser Crimson)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Cabinet Grotesk* (Medium 500)
-- **Body & Docs:** *Instrument Sans*
-- **Monospace CLI:** *Geist Mono*
+
+- **Display / Wordmark:** _Cabinet Grotesk_ (Medium 500)
+- **Body & Docs:** _Instrument Sans_
+- **Monospace CLI:** _Geist Mono_
 
 ---
 
 ## PROPOSAL 07: "THE PRAGMATIC SQUARE / TOMA SIBLING" (CLI Sister Suite)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** Designed to look immediately continuous alongside the `toma` CLI family. A pair of balanced modular task squares sharing identical edge radii, symbolizing paired terminal tools.
 - **Aesthetic:** Clean Japanese visual ergonomics, modular grids, friendly precision.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="22" fill="#18181B"/>
@@ -374,6 +412,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#18181B` (Zinc-900)
 - `Base Neutral Light`: `#FAFAFA` (Zinc-50)
 - `Surface / Border`: `#27272A` (Zinc-800)
@@ -385,19 +424,22 @@ Each proposal includes:
   - `Blocked`: `#E11D48` (Crimson)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Satoshi* (Medium 500, lowercase `lida`)
-- **Body & Docs:** *Satoshi* (Regular 400)
-- **Monospace CLI:** *JetBrains Mono*
+
+- **Display / Wordmark:** _Satoshi_ (Medium 500, lowercase `lida`)
+- **Body & Docs:** _Satoshi_ (Regular 400)
+- **Monospace CLI:** _JetBrains Mono_
 
 ---
 
 ## PROPOSAL 08: "THE ISO-CUBE / COMPONENT CHIP" (Hardware Logic)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** An isometric micro-chip whose 3 visible facets correspond to: 1. `TODO.md` (Human face), 2. `TODO.yaml` (Machine face), and 3. `Git HEAD` (Foundation).
 - **Aesthetic:** Clean isometric projection without gradients, sharp razor edges.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="20" fill="#0C0E12"/>
@@ -413,6 +455,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#0C0E12` (Onyx Slate)
 - `Base Neutral Light`: `#F5F3FF` (Indigo-50)
 - `Surface / Border`: `#1E222B` (Boundary Slate)
@@ -424,19 +467,22 @@ Each proposal includes:
   - `Blocked`: `#F43F5E` (Rose)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Instrument Sans* (SemiBold 600)
-- **Body & Docs:** *Instrument Sans*
-- **Monospace CLI:** *Geist Mono*
+
+- **Display / Wordmark:** _Instrument Sans_ (SemiBold 600)
+- **Body & Docs:** _Instrument Sans_
+- **Monospace CLI:** _Geist Mono_
 
 ---
 
 ## PROPOSAL 09: "THE RAW TOKEN / LEXER" (Compiler AST)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** The tokenization stream of a parser engine: raw punctuation symbols `[ ]`, `:`, and `#` colliding to form the lowercase word `lida`.
 - **Aesthetic:** Deep developer inside joke, compiler theory elegance, ASCII purism.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="16" fill="#0A0A0C"/>
@@ -449,6 +495,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#0A0A0C` (Carbon Black)
 - `Base Neutral Light`: `#FEFCE8` (Warm Ivory)
 - `Surface / Border`: `#1E1E24` (Subtle boundary)
@@ -460,19 +507,22 @@ Each proposal includes:
   - `Blocked`: `#EF4444` (Amber Red)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Cabinet Grotesk* (Bold 700)
-- **Body & Docs:** *Instrument Sans*
-- **Monospace CLI:** *JetBrains Mono*
+
+- **Display / Wordmark:** _Cabinet Grotesk_ (Bold 700)
+- **Body & Docs:** _Instrument Sans_
+- **Monospace CLI:** _JetBrains Mono_
 
 ---
 
 ## PROPOSAL 10: "THE SPEED RUNNER / HYPER-THREAD" (Zero-Latency Rust)
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** Sub-millisecond execution threads cutting through file I/O latency. A dynamic speed-line slash cutting across an origami task card.
 - **Aesthetic:** Kinetic minimalism, aerodynamic angles (18° italic slant), ultra-fast CLI feel.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="20" fill="#0F1115"/>
@@ -485,6 +535,7 @@ Each proposal includes:
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#0F1115` (Velocity Charcoal)
 - `Base Neutral Light`: `#F0FDF4` (Mint Cream)
 - `Surface / Border`: `#222731` (Track Line)
@@ -496,26 +547,28 @@ Each proposal includes:
   - `Blocked`: `#F43F5E` (Velocity Red)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Outfit* (Black 900, Italic slant `-8deg`)
-- **Body & Docs:** *Outfit* (Regular 400)
-- **Monospace CLI:** *Geist Mono*
+
+- **Display / Wordmark:** _Outfit_ (Black 900, Italic slant `-8deg`)
+- **Body & Docs:** _Outfit_ (Regular 400)
+- **Monospace CLI:** _Geist Mono_
 
 ---
 
 # COMPARATIVE SUMMARY MATRIX
 
-| Proposal | Metaphor & Archetype | Signature Accent | Key Font Stack | Ideal Resonance |
-| :--- | :--- | :--- | :--- | :--- |
-| **01. Dual Flux** | Chevrons & colon transition | Safety Amber `#F59E0B` | Cabinet Grotesk / Geist Mono | Most balanced, canonical dev-tool |
-| **02. Terminal Caret**| Command prompt `>` meets `-` | Hyper Cyan `#06B6D4` | Geist / Geist Mono | Pure terminal purists & minimalists |
-| **03. Binary Anchor** | Rust compiler industrial stamp | Forge Orange `#FF5722` | Outfit / JetBrains Mono | Systems programming, blazing speed |
-| **04. Git DAG** | Dual commit convergence | Cobalt Blue `#2563EB` | Satoshi / Cascadia Code | Git-first workflows & PR automations |
-| **05. Tactical Stencil**| Monochrome brutalist HUD | Stark White `#FFFFFF` | Geist Mono (all) | Hardcore hacker aesthetic |
-| **06. Agent Protocol** | Cybernetic socket & aperture | Hyper Teal `#14B8A6` | Cabinet Grotesk / Geist Mono | AI coding agent integration |
-| **07. Pragmatic Square**| Sister tool to `toma` CLI | Rose Coral `#F43F5E` | Satoshi / JetBrains Mono | Immediate family tool continuity |
-| **08. Iso-Cube** | 3-facet data container chip | Electric Indigo `#6366F1`| Instrument Sans / Geist Mono | Schema-first, high structure |
-| **09. Raw Token** | AST Lexer punctuation (`#`, `:`) | Ochre Gold `#EAB308` | Cabinet Grotesk / JetBrains | Compiler engineers, syntax junkies |
-| **10. Speed Runner** | Sub-millisecond execution lines| Speed Emerald `#10B981` | Outfit / Geist Mono | Performance zealots, Rust SIMD |
+| Proposal                 | Metaphor & Archetype             | Signature Accent          | Key Font Stack               | Ideal Resonance                      |
+| :----------------------- | :------------------------------- | :------------------------ | :--------------------------- | :----------------------------------- |
+| **01. Dual Flux**        | Chevrons & colon transition      | Safety Amber `#F59E0B`    | Cabinet Grotesk / Geist Mono | Most balanced, canonical dev-tool    |
+| **02. Terminal Caret**   | Command prompt `>` meets `-`     | Hyper Cyan `#06B6D4`      | Geist / Geist Mono           | Pure terminal purists & minimalists  |
+| **03. Binary Anchor**    | Rust compiler industrial stamp   | Forge Orange `#FF5722`    | Outfit / JetBrains Mono      | Systems programming, blazing speed   |
+| **04. Git DAG**          | Dual commit convergence          | Cobalt Blue `#2563EB`     | Satoshi / Cascadia Code      | Git-first workflows & PR automations |
+| **05. Tactical Stencil** | Monochrome brutalist HUD         | Stark White `#FFFFFF`     | Geist Mono (all)             | Hardcore hacker aesthetic            |
+| **06. Agent Protocol**   | Cybernetic socket & aperture     | Hyper Teal `#14B8A6`      | Cabinet Grotesk / Geist Mono | AI coding agent integration          |
+| **07. Pragmatic Square** | Sister tool to `toma` CLI        | Rose Coral `#F43F5E`      | Satoshi / JetBrains Mono     | Immediate family tool continuity     |
+| **08. Iso-Cube**         | 3-facet data container chip      | Electric Indigo `#6366F1` | Instrument Sans / Geist Mono | Schema-first, high structure         |
+| **09. Raw Token**        | AST Lexer punctuation (`#`, `:`) | Ochre Gold `#EAB308`      | Cabinet Grotesk / JetBrains  | Compiler engineers, syntax junkies   |
+| **10. Speed Runner**     | Sub-millisecond execution lines  | Speed Emerald `#10B981`   | Outfit / Geist Mono          | Performance zealots, Rust SIMD       |
 
 ---
-*Generated for `lida` CLI project suite — companion to `toma`.*
+
+_Generated for `lida` CLI project suite — companion to `toma`._

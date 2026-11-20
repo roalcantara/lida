@@ -1,10 +1,12 @@
 # PROPOSAL 2: "THE TERMINAL CARET & HYPHEN"
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** The terminal input prompt `>` transforming into a Markdown list bullet `- [ ]` and YAML sequence hyphen `- `. It captures `lida`'s command-line roots and instant keyboard speed.
 - **Aesthetic:** Utilitarian, typewriter-inspired monospace geometry.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="16" fill="#09090B"/>
@@ -18,6 +20,7 @@
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#09090B` (Zinc-950)
 - `Base Neutral Light`: `#FAFAFA` (Zinc-50)
 - `Surface / Border`: `#27272A` (Zinc-800)
@@ -29,20 +32,23 @@
   - `Blocked`: `#EF4444` (Laser Red)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Geist* (Bold, uppercase `LIDA` tracking `+0.05em`)
-- **Body & Docs:** *Geist* (Regular 400)
-- **Monospace CLI:** *Geist Mono* (Regular & SemiBold)
+
+- **Display / Wordmark:** _Geist_ (Bold, uppercase `LIDA` tracking `+0.05em`)
+- **Body & Docs:** _Geist_ (Regular 400)
+- **Monospace CLI:** _Geist Mono_ (Regular & SemiBold)
 
 ### 5. Terminal ASCII Art (`lida --help`)
+
 ```text
-  _     ___ ____    _    
- | |   |_ _|  _ \  / \   
- | |    | || | | |/ _ \  
- | |___ | || |_| / ___ \ 
- |_____|___|____/_/   \_\ [GIT-NATIVE ENGINE]
+ _     ___ ____    _    
+| |   |_ _|  _ \  / \   
+| |    | || | | |/ _ \  
+| |___ | || |_| / ___ \ 
+|_____|___|____/_/   \_\ [GIT-NATIVE ENGINE]
 ```
 
 ### 6. GitHub README Banner Mockup Spec
+
 - **Dimensions:** 1200x380px.
 - **Palette:** Zinc-950 `#09090B` background with subtle 1px Zinc-800 grid pattern (`size 24px`).
 - **Composition:** Centered bold cyan prompt icon `> -`, crisp `lida` wordmark with subline `"Dual-format project task engine (YAML · MD)"`, flanked by minimal benchmark metric pill `"Cold start: 1.2ms in Rust"`.

@@ -1,10 +1,12 @@
 # PROPOSAL 6: "THE AGENT PROTOCOL"
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** A cybernetic socket connecting an autonomous AI Coding Agent (Cursor, Claude, Copilot) to raw local repo storage.
 - **Aesthetic:** Sci-fi telemetry, micro-circuitry, luminescent teal on deep obsidian.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="18" fill="#06090E"/>
@@ -19,6 +21,7 @@
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#06090E` (Deep Space Obsidian)
 - `Base Neutral Light`: `#F0FDFA` (Teal-50)
 - `Surface / Border`: `#132B32` (Sub-aquatic Boundary)
@@ -30,8 +33,9 @@
   - `Blocked`: `#F43F5E` (Laser Crimson)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Cabinet Grotesk* (Medium 500)
-- **Body & Docs:** *Instrument Sans*
-- **Monospace CLI:** *Geist Mono*
+
+- **Display / Wordmark:** _Cabinet Grotesk_ (Medium 500)
+- **Body & Docs:** _Instrument Sans_
+- **Monospace CLI:** _Geist Mono_
 
 ---

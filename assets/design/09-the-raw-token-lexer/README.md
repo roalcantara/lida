@@ -1,10 +1,12 @@
 # PROPOSAL 9: "THE RAW TOKEN / LEXER"
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** The tokenization stream of a parser engine: raw punctuation symbols `[ ]`, `:`, and `#` colliding to form the lowercase word `lida`.
 - **Aesthetic:** Deep developer inside joke, compiler theory elegance, ASCII purism.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="16" fill="#0A0A0C"/>
@@ -17,6 +19,7 @@
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#0A0A0C` (Carbon Black)
 - `Base Neutral Light`: `#FEFCE8` (Warm Ivory)
 - `Surface / Border`: `#1E1E24` (Subtle boundary)
@@ -28,8 +31,9 @@
   - `Blocked`: `#EF4444` (Amber Red)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Cabinet Grotesk* (Bold 700)
-- **Body & Docs:** *Instrument Sans*
-- **Monospace CLI:** *JetBrains Mono*
+
+- **Display / Wordmark:** _Cabinet Grotesk_ (Bold 700)
+- **Body & Docs:** _Instrument Sans_
+- **Monospace CLI:** _JetBrains Mono_
 
 ---

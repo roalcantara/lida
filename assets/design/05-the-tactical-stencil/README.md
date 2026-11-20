@@ -1,10 +1,12 @@
 # PROPOSAL 5: "THE TACTICAL STENCIL"
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** High-density military stencil lettering meets military avionics HUD displays. Uncompromising, stark contrast, zero ornamental fluff.
 - **Aesthetic:** Swiss graphic neo-brutalism, monospaced grid alignment, pure black & stark white.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="4" fill="#000000"/>
@@ -20,6 +22,7 @@
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#000000` (Void Pitch)
 - `Base Neutral Light`: `#FFFFFF` (Pure Specular)
 - `Surface / Border`: `#262626` (Neutral-800)
@@ -31,11 +34,13 @@
   - `Blocked`: `#E11D48` (Alert Red)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Geist Mono* (Heavy, uppercase `LIDA`, stencil track `0.2em`)
-- **Body & Docs:** *Geist*
-- **Monospace CLI:** *Geist Mono*
+
+- **Display / Wordmark:** _Geist Mono_ (Heavy, uppercase `LIDA`, stencil track `0.2em`)
+- **Body & Docs:** _Geist_
+- **Monospace CLI:** _Geist Mono_
 
 ### 5. Terminal ASCII Art (`lida --help`)
+
 ```text
 [L] [I] [D] [A] :: DUAL_FORMAT_ENGINE
 ```

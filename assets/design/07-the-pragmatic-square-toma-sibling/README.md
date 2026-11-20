@@ -1,10 +1,12 @@
 # PROPOSAL 7: "THE PRAGMATIC SQUARE / TOMA SIBLING"
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** Designed to look immediately continuous alongside the `toma` CLI family. A pair of balanced modular task squares sharing identical edge radii, symbolizing paired terminal tools.
 - **Aesthetic:** Clean Japanese visual ergonomics, modular grids, friendly precision.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="22" fill="#18181B"/>
@@ -18,6 +20,7 @@
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#18181B` (Zinc-900)
 - `Base Neutral Light`: `#FAFAFA` (Zinc-50)
 - `Surface / Border`: `#27272A` (Zinc-800)
@@ -29,8 +32,9 @@
   - `Blocked`: `#E11D48` (Crimson)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Satoshi* (Medium 500, lowercase `lida`)
-- **Body & Docs:** *Satoshi* (Regular 400)
-- **Monospace CLI:** *JetBrains Mono*
+
+- **Display / Wordmark:** _Satoshi_ (Medium 500, lowercase `lida`)
+- **Body & Docs:** _Satoshi_ (Regular 400)
+- **Monospace CLI:** _JetBrains Mono_
 
 ---

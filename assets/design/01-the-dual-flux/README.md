@@ -1,10 +1,12 @@
 # PROPOSAL 1: "THE DUAL FLUX"
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** Two interlocking chevron brackets forming a continuous square loop (`{ }` meets `[x]`). Represents the frictionless conversion of unstructured Markdown list syntax into structured YAML key-value dictionaries.
 - **Aesthetic:** High-precision Swiss modernist geometry with 45° chamfers and optical balance.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="20" fill="#0D1117"/>
@@ -18,6 +20,7 @@
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#0D1117` (Obsidian Charcoal)
 - `Base Neutral Light`: `#FAFAFA` (Pristine Snow)
 - `Surface / Border`: `#21262D` (Subtle boundary gray)
@@ -29,19 +32,22 @@
   - `Blocked`: `#F43F5E` (Signal Crimson)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Cabinet Grotesk* (Bold, lowercase tracking `-0.04em`)
-- **Body & Docs:** *Instrument Sans* (Regular 400 & Medium 500)
-- **Monospace CLI:** *Geist Mono* (Tabular numbers, clean code punctuation)
+
+- **Display / Wordmark:** _Cabinet Grotesk_ (Bold, lowercase tracking `-0.04em`)
+- **Body & Docs:** _Instrument Sans_ (Regular 400 & Medium 500)
+- **Monospace CLI:** _Geist Mono_ (Tabular numbers, clean code punctuation)
 
 ### 5. Terminal ASCII Art (`lida --help`)
+
 ```text
-  _ _     _       
- | (_) __| | __ _ 
- | | |/ _` |/ _` |
- |_|_|\__,_|\__,_| [YAML · MD]
+ _ _     _       
+| (_) __| | __ _ 
+| | |/ _` |/ _` |
+|_|_|\__,_|\__,_| [YAML · MD]
 ```
 
 ### 6. GitHub README Banner Mockup (1200x380)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380">
   <rect width="1200" height="380" fill="#0D1117"/>

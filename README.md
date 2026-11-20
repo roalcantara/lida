@@ -5,6 +5,7 @@
 Dual-format project task engine maintaining bidirectional, lossless synchronicity between human-readable Markdown (`TODO.md`) and structured YAML (`TODO.yaml`).
 
 ## Features
+
 - **Dual Native:** Read and write both `TODO.md` and `TODO.yaml` with atomic synchronization.
 - **Git-Centric Reliability:** Collision-resilient random 4-character base62 IDs (`zOaU`).
 - **First-Class Metadata:** Native typed key-value maps on tasks (`--meta key=val`).
@@ -12,4 +13,5 @@ Dual-format project task engine maintaining bidirectional, lossless synchronicit
 - **Sub-millisecond Speed:** Built in Rust using `usage-rs`.
 
 ## License
+
 MIT

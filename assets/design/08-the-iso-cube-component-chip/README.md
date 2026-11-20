@@ -1,10 +1,12 @@
 # PROPOSAL 8: "THE ISO-CUBE / COMPONENT CHIP"
 
 ### 1. Concept & Geometry
+
 - **Metaphor:** An isometric micro-chip whose 3 visible facets correspond to: 1. `TODO.md` (Human face), 2. `TODO.yaml` (Machine face), and 3. `Git HEAD` (Foundation).
 - **Aesthetic:** Clean isometric projection without gradients, sharp razor edges.
 
 ### 2. Primary Mark (SVG Specification)
+
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <rect width="100" height="100" rx="20" fill="#0C0E12"/>
@@ -20,6 +22,7 @@
 ```
 
 ### 3. Calibrated Color Palette
+
 - `Base Neutral Dark`: `#0C0E12` (Onyx Slate)
 - `Base Neutral Light`: `#F5F3FF` (Indigo-50)
 - `Surface / Border`: `#1E222B` (Boundary Slate)
@@ -31,8 +34,9 @@
   - `Blocked`: `#F43F5E` (Rose)
 
 ### 4. Typography Hierarchy
-- **Display / Wordmark:** *Instrument Sans* (SemiBold 600)
-- **Body & Docs:** *Instrument Sans*
-- **Monospace CLI:** *Geist Mono*
+
+- **Display / Wordmark:** _Instrument Sans_ (SemiBold 600)
+- **Body & Docs:** _Instrument Sans_
+- **Monospace CLI:** _Geist Mono_
 
 ---
