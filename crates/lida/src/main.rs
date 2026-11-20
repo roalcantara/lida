@@ -317,6 +317,14 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
+        Subcommand::Completion { shell } => {
+            if shell.eq_ignore_ascii_case("zsh") {
+                print!("{}", include_str!("../assets/raw_todo_completion.zsh"));
+            } else {
+                println!("# Completion for {shell} not implemented yet");
+            }
+        }
+
         Subcommand::Usage => {
             println!("# lida.usage.kdl");
             println!("name \"lida\"");

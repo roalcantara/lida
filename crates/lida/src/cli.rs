@@ -149,6 +149,12 @@ pub enum Subcommand {
         format: Option<String>,
     },
 
+    /// Generate shell completion scripts
+    Completion {
+        /// Shell type (bash, zsh, fish, powershell, elvish)
+        shell: String,
+    },
+
     /// Export the portable .usage.kdl specification
     Usage,
 }
