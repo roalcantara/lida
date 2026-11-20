@@ -1,0 +1,5 @@
+# lida.usage.kdl
+name "lida"
+bin "lida"
+version "0.1.0"
+about "Dual-format project task engine (YAML · MD)"
