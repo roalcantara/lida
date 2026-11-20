@@ -1,7 +1,8 @@
 //! Core domain models for tasks, actors, comments, and project documents.
 
+use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Status lifecycle of a task.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -42,10 +43,14 @@ impl<'de> Deserialize<'de> for Status {
         let s = String::deserialize(deserializer)?;
         match s.to_lowercase().replace('_', "-").as_str() {
             "todo" => Ok(Self::Todo),
-            "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => Ok(Self::InProgress),
+            "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => {
+                Ok(Self::InProgress)
+            }
             "done" | "completed" => Ok(Self::Done),
             "blocked" | "bloqued" => Ok(Self::Blocked),
-            _ => Ok(Self::Todo),
+            other => Err(D::Error::custom(format!(
+                "invalid status '{other}'. Valid values: todo, in-progress, done, blocked"
+            ))),
         }
     }
 }
@@ -82,6 +87,8 @@ pub struct Actor {
     pub pic: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub actor_type: Option<String>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 /// A comment associated with a parent task.
@@ -93,6 +100,8 @@ pub struct Comment {
     pub task_id: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub actors: Vec<String>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 /// The core task model.
@@ -117,10 +126,10 @@ pub struct Task {
     pub created: Option<String>,
     #[serde(default)]
     pub position: Option<String>,
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub meta: HashMap<String, serde_json::Value>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub meta: BTreeMap<String, serde_json::Value>,
     #[serde(flatten)]
-    pub extra: HashMap<String, serde_yaml_ng::Value>,
+    pub extra: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 impl Task {
@@ -138,8 +147,8 @@ impl Task {
             priority: None,
             created: None,
             position: None,
-            meta: HashMap::new(),
-            extra: HashMap::new(),
+            meta: BTreeMap::new(),
+            extra: BTreeMap::new(),
         }
     }
 }
@@ -155,4 +164,6 @@ pub struct ProjectDoc {
     pub comments: Vec<Comment>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub project: Option<String>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_yaml_ng::Value>,
 }

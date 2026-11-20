@@ -1,7 +1,7 @@
 use lida_core::format::yaml::{parse_yaml, serialize_yaml};
 use lida_core::model::{Priority, Status};
 
-const SAMPLE_YAML: &str = r#"tasks:
+const SAMPLE_YAML: &str = r"tasks:
 - id: zOaU
   status: Todo
   description: 'Shell UX: switchable theme'
@@ -17,7 +17,7 @@ const SAMPLE_YAML: &str = r#"tasks:
 actors: []
 comments: []
 project: dots
-"#;
+";
 
 #[test]
 fn test_parse_and_serialize_yaml_roundtrip() {
@@ -35,7 +35,7 @@ fn test_parse_and_serialize_yaml_roundtrip() {
 
 #[test]
 fn test_yaml_preserves_custom_meta_and_unknown_fields() {
-    let raw = r#"tasks:
+    let raw = r"tasks:
 - id: 6ThC
   status: Done
   description: 'Preflight post'
@@ -43,9 +43,9 @@ fn test_yaml_preserves_custom_meta_and_unknown_fields() {
     devto.id: 5048726
     linkedin.url: https://example.com
   custom_future_flag: true
-"#;
+";
     let doc = parse_yaml(raw).unwrap();
-    assert_eq!(doc.tasks[0].meta.get("devto.id").unwrap(), 5048726);
+    assert_eq!(doc.tasks[0].meta.get("devto.id").unwrap(), 5_048_726);
     assert!(doc.tasks[0].extra.contains_key("custom_future_flag"));
 
     let out = serialize_yaml(&doc).unwrap();

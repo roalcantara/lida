@@ -2,6 +2,15 @@
 
 use super::FormatError;
 use crate::model::{Actor, Comment, Priority, ProjectDoc, Status, Task};
+use std::collections::BTreeMap;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Section {
+    None,
+    Tasks,
+    Actors,
+    Comments,
+}
 
 /// Parses a Markdown task file (GFM format) into a `ProjectDoc`.
 ///
@@ -23,13 +32,6 @@ pub fn parse_markdown(content: &str) -> Result<ProjectDoc, FormatError> {
             }
             break;
         }
-    }
-
-    enum Section {
-        None,
-        Tasks,
-        Actors,
-        Comments,
     }
 
     let mut section = Section::None;
@@ -61,7 +63,10 @@ pub fn parse_markdown(content: &str) -> Result<ProjectDoc, FormatError> {
 
         match section {
             Section::Tasks => {
-                if trimmed.starts_with("- [ ] ") || trimmed.starts_with("- [x] ") || trimmed.starts_with("- [X] ") {
+                if trimmed.starts_with("- [ ] ")
+                    || trimmed.starts_with("- [x] ")
+                    || trimmed.starts_with("- [X] ")
+                {
                     if let Some(t) = current_task.take() {
                         doc.tasks.push(t);
                     }
@@ -86,74 +91,83 @@ pub fn parse_markdown(content: &str) -> Result<ProjectDoc, FormatError> {
                         continue;
                     }
 
-                    if trimmed.starts_with("- **Priority**:") {
+                    if let Some(stripped) = trimmed.strip_prefix("- **Priority**:") {
                         in_meta_block = false;
-                        let val = trimmed["- **Priority**:".len()..].trim();
+                        let val = stripped.trim();
                         task.priority = match val.to_lowercase().as_str() {
                             "low" => Some(Priority::Low),
                             "medium" => Some(Priority::Medium),
                             "high" => Some(Priority::High),
                             _ => None,
                         };
-                    } else if trimmed.starts_with("- **Created**:") {
+                    } else if let Some(stripped) = trimmed.strip_prefix("- **Created**:") {
                         in_meta_block = false;
-                        task.created = Some(trimmed["- **Created**:".len()..].trim().to_string());
-                    } else if trimmed.starts_with("- **Due**:") {
+                        task.created = Some(stripped.trim().to_string());
+                    } else if let Some(stripped) = trimmed.strip_prefix("- **Due**:") {
                         in_meta_block = false;
-                        task.due = Some(trimmed["- **Due**:".len()..].trim().to_string());
-                    } else if trimmed.starts_with("- **Position**:") {
+                        task.due = Some(stripped.trim().to_string());
+                    } else if let Some(stripped) = trimmed.strip_prefix("- **Position**:") {
                         in_meta_block = false;
-                        let pos = trimmed["- **Position**:".len()..].trim();
+                        let pos = stripped.trim();
                         let clean = pos.trim_matches('"').trim();
                         task.position = Some(clean.to_string());
-                    } else if trimmed.starts_with("- **Status**:") {
+                    } else if let Some(stripped) = trimmed.strip_prefix("- **Status**:") {
                         in_meta_block = false;
-                        let st = trimmed["- **Status**:".len()..].trim();
-                        if let Ok(status) = serde_json::from_value::<Status>(serde_json::Value::String(st.to_string())) {
+                        let st = stripped.trim();
+                        if let Ok(status) = serde_json::from_value::<Status>(
+                            serde_json::Value::String(st.to_string()),
+                        ) {
                             task.status = status;
                         }
-                    } else if trimmed.starts_with("- **Blocked Reason**:") {
+                    } else if let Some(stripped) = trimmed.strip_prefix("- **Blocked Reason**:") {
                         in_meta_block = false;
-                        task.blocked_reason = Some(trimmed["- **Blocked Reason**:".len()..].trim().to_string());
-                    } else if trimmed.starts_with("- **Tags**:") {
+                        task.blocked_reason = Some(stripped.trim().to_string());
+                    } else if let Some(stripped) = trimmed.strip_prefix("- **Tags**:") {
                         in_meta_block = false;
-                        let tags_str = trimmed["- **Tags**:".len()..].trim();
-                        task.tags = tags_str.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
+                        let tags_str = stripped.trim();
+                        task.tags = tags_str
+                            .split(',')
+                            .map(|s| s.trim().to_string())
+                            .filter(|s| !s.is_empty())
+                            .collect();
                     } else if trimmed == "- **Meta**:" {
                         in_meta_block = true;
-                    } else if in_meta_block && trimmed.starts_with("- ") {
-                        let item = &trimmed[2..];
-                        if let Some((k, v)) = item.split_once(':') {
-                            let k = k.trim().to_string();
-                            let v_str = v.trim();
-                            let val = serde_json::from_str(v_str).unwrap_or_else(|_| serde_json::Value::String(v_str.to_string()));
-                            task.meta.insert(k, val);
+                    } else if in_meta_block {
+                        if let Some(item) = trimmed.strip_prefix("- ") {
+                            if let Some((k, v)) = item.split_once(':') {
+                                let k = k.trim().to_string();
+                                let v_str = v.trim();
+                                let val = serde_json::from_str(v_str).unwrap_or_else(|_| {
+                                    serde_json::Value::String(v_str.to_string())
+                                });
+                                task.meta.insert(k, val);
+                            }
                         }
                     }
                 }
             }
             Section::Actors => {
-                if trimmed.starts_with("- ") {
-                    let rest = &trimmed[2..];
+                if let Some(rest) = trimmed.strip_prefix("- ") {
                     if let Some((id_part, name_part)) = rest.split_once("**-**") {
                         doc.actors.push(Actor {
                             id: id_part.trim().to_string(),
                             pseudo: name_part.trim().to_string(),
                             pic: None,
                             actor_type: None,
+                            extra: BTreeMap::new(),
                         });
                     }
                 }
             }
             Section::Comments => {
-                if trimmed.starts_with("- ") {
-                    let rest = &trimmed[2..];
+                if let Some(rest) = trimmed.strip_prefix("- ") {
                     if let Some((id_part, text_part)) = rest.split_once("**-**") {
                         doc.comments.push(Comment {
                             id: id_part.trim().to_string(),
                             text: text_part.trim().to_string(),
                             task_id: String::new(),
                             actors: Vec::new(),
+                            extra: BTreeMap::new(),
                         });
                     }
                 }
@@ -174,50 +188,57 @@ pub fn parse_markdown(content: &str) -> Result<ProjectDoc, FormatError> {
 /// # Errors
 /// Always returns Ok.
 pub fn serialize_markdown(doc: &ProjectDoc) -> Result<String, FormatError> {
+    use std::fmt::Write;
     let mut out = String::new();
 
     if let Some(project) = &doc.project {
-        out.push_str(&format!("<!-- todo-project: {project} -->\n\n"));
+        let _ = writeln!(out, "<!-- todo-project: {project} -->\n");
     }
 
     out.push_str("# Tasks\n\n");
 
     for task in &doc.tasks {
-        let box_mark = if task.status == Status::Done { "[x]" } else { "[ ]" };
-        out.push_str(&format!("- {box_mark} {} **-** {}\n", task.id, task.description));
+        let box_mark = if task.status == Status::Done {
+            "[x]"
+        } else {
+            "[ ]"
+        };
+        let _ = writeln!(out, "- {box_mark} {} **-** {}", task.id, task.description);
 
         if task.status == Status::InProgress || task.status == Status::Blocked {
-            out.push_str(&format!("  - **Status**: {}\n", task.status.as_str().to_lowercase()));
+            let _ = writeln!(
+                out,
+                "  - **Status**: {}",
+                task.status.as_str().to_lowercase()
+            );
         }
         if let Some(reason) = &task.blocked_reason {
-            out.push_str(&format!("  - **Blocked Reason**: {reason}\n"));
+            let _ = writeln!(out, "  - **Blocked Reason**: {reason}");
         }
         if let Some(priority) = task.priority {
-            out.push_str(&format!("  - **Priority**: {}\n", priority.as_str().to_lowercase()));
+            let _ = writeln!(
+                out,
+                "  - **Priority**: {}",
+                priority.as_str().to_lowercase()
+            );
         }
         if let Some(created) = &task.created {
-            out.push_str(&format!("  - **Created**: {created}\n"));
+            let _ = writeln!(out, "  - **Created**: {created}");
         }
         if let Some(due) = &task.due {
-            out.push_str(&format!("  - **Due**: {due}\n"));
+            let _ = writeln!(out, "  - **Due**: {due}");
         }
         if !task.tags.is_empty() {
-            out.push_str(&format!("  - **Tags**: {}\n", task.tags.join(", ")));
+            let _ = writeln!(out, "  - **Tags**: {}", task.tags.join(", "));
         }
         if let Some(position) = &task.position {
-            out.push_str(&format!("  - **Position**: \"{position}\"\n"));
+            let _ = writeln!(out, "  - **Position**: \"{position}\"");
         }
         if !task.meta.is_empty() {
             out.push_str("  - **Meta**:\n");
-            let mut keys: Vec<_> = task.meta.keys().collect();
-            keys.sort();
-            for k in keys {
-                let v = &task.meta[k];
-                if let serde_json::Value::String(s) = v {
-                    out.push_str(&format!("    - {k}: {s}\n"));
-                } else {
-                    out.push_str(&format!("    - {k}: {v}\n"));
-                }
+            for (k, v) in &task.meta {
+                let val_str = serde_json::to_string(v).unwrap_or_else(|_| v.to_string());
+                let _ = writeln!(out, "    - {k}: {val_str}");
             }
         }
         out.push('\n');
@@ -225,7 +246,7 @@ pub fn serialize_markdown(doc: &ProjectDoc) -> Result<String, FormatError> {
 
     out.push_str("# Actors\n\n");
     for actor in &doc.actors {
-        out.push_str(&format!("- {} **-** {}\n", actor.id, actor.pseudo));
+        let _ = writeln!(out, "- {} **-** {}", actor.id, actor.pseudo);
     }
     if !doc.actors.is_empty() {
         out.push('\n');
@@ -233,7 +254,7 @@ pub fn serialize_markdown(doc: &ProjectDoc) -> Result<String, FormatError> {
 
     out.push_str("# Comments\n\n");
     for comment in &doc.comments {
-        out.push_str(&format!("- {} **-** {}\n", comment.id, comment.text));
+        let _ = writeln!(out, "- {} **-** {}", comment.id, comment.text);
     }
 
     Ok(out)

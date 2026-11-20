@@ -7,7 +7,11 @@ use tempfile::tempdir;
 fn test_store_single_yaml() {
     let dir = tempdir().unwrap();
     let yaml_path = dir.path().join("TODO.yaml");
-    fs::write(&yaml_path, "tasks:\n- id: a1b2\n  status: Todo\n  description: Task 1\n").unwrap();
+    fs::write(
+        &yaml_path,
+        "tasks:\n- id: a1b2\n  status: Todo\n  description: Task 1\n",
+    )
+    .unwrap();
 
     let mut store = Store::load(dir.path()).unwrap();
     assert_eq!(store.format(), StorageFormat::YamlOnly);
@@ -45,7 +49,11 @@ fn test_store_dual_write_synchronization() {
     let yaml_path = dir.path().join("TODO.yaml");
     let md_path = dir.path().join("TODO.md");
 
-    fs::write(&yaml_path, "tasks:\n- id: a1b2\n  status: Todo\n  description: Task 1\n").unwrap();
+    fs::write(
+        &yaml_path,
+        "tasks:\n- id: a1b2\n  status: Todo\n  description: Task 1\n",
+    )
+    .unwrap();
     fs::write(&md_path, "# Tasks\n\n- [ ] a1b2 **-** Task 1\n").unwrap();
 
     let mut store = Store::load(dir.path()).unwrap();

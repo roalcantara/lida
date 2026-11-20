@@ -6,7 +6,7 @@ const ALPHABET: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQR
 
 /// Generates a random 4-character alphanumeric ID not present in `existing`.
 #[must_use]
-pub fn generate_id(existing: &HashSet<String>) -> String {
+pub fn generate_id<S: std::hash::BuildHasher>(existing: &HashSet<String, S>) -> String {
     loop {
         let mut bytes = [0u8; 4];
         for b in &mut bytes {

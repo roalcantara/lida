@@ -1,11 +1,12 @@
 //! Repository persistence and atomic dual-write synchronization engine.
 
+use crate::format::FormatError;
 use crate::format::md::{parse_markdown, serialize_markdown};
 use crate::format::yaml::{parse_yaml, serialize_yaml};
-use crate::format::FormatError;
 use crate::model::{ProjectDoc, Task};
+use std::collections::BTreeMap;
 use std::fs;
-use std::io;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
@@ -28,6 +29,17 @@ pub enum StorageFormat {
     Both,
 }
 
+impl StorageFormat {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::YamlOnly => "yaml",
+            Self::MdOnly => "md",
+            Self::Both => "both",
+        }
+    }
+}
+
 /// Project store managing disk persistence and synchronization.
 #[derive(Debug, Clone)]
 pub struct Store {
@@ -37,6 +49,47 @@ pub struct Store {
 }
 
 impl Store {
+    /// Reads the configured format from `.lida/config` or `.todo/config` if present.
+    fn read_config_format(dir: &Path) -> Option<StorageFormat> {
+        let lida_cfg = dir.join(".lida").join("config");
+        let todo_cfg = dir.join(".todo").join("config");
+
+        let cfg_path = if lida_cfg.exists() {
+            Some(lida_cfg)
+        } else if todo_cfg.exists() {
+            Some(todo_cfg)
+        } else {
+            None
+        };
+
+        if let Some(path) = cfg_path {
+            if let Ok(content) = fs::read_to_string(path) {
+                return match content.trim().to_lowercase().as_str() {
+                    "yaml" => Some(StorageFormat::YamlOnly),
+                    "md" | "markdown" => Some(StorageFormat::MdOnly),
+                    "both" => Some(StorageFormat::Both),
+                    _ => None,
+                };
+            }
+        }
+        None
+    }
+
+    /// Writes the active format to `.lida/config` (or `.todo/config` if that exists).
+    fn write_config_format(&self, format: StorageFormat) -> Result<(), io::Error> {
+        let lida_dir = self.dir.join(".lida");
+        let todo_dir = self.dir.join(".todo");
+
+        let target_file = if todo_dir.exists() {
+            todo_dir.join("config")
+        } else {
+            fs::create_dir_all(&lida_dir)?;
+            lida_dir.join("config")
+        };
+
+        fs::write(target_file, format!("{format}\n", format = format.as_str()))
+    }
+
     /// Loads the project document from the given directory.
     ///
     /// # Errors
@@ -52,31 +105,22 @@ impl Store {
             return Err(StoreError::NotFound);
         }
 
+        let config_format = Self::read_config_format(dir);
+
         let (format, doc) = match (yaml_exists, md_exists) {
             (true, true) => {
-                // Both exist: dual-write mode. Read the one with the freshest mtime.
-                let yaml_mtime = fs::metadata(&yaml_path)?.modified().ok();
-                let md_mtime = fs::metadata(&md_path)?.modified().ok();
-
-                let read_yaml = match (yaml_mtime, md_mtime) {
-                    (Some(y), Some(m)) => y >= m,
-                    _ => true,
-                };
-
-                let doc = if read_yaml {
-                    parse_yaml(&fs::read_to_string(&yaml_path)?)?
-                } else {
-                    parse_markdown(&fs::read_to_string(&md_path)?)?
-                };
-                (StorageFormat::Both, doc)
+                // In dual-write mode, TODO.yaml is authoritative for the data model
+                // because YAML preserves full rich structures (actors, comments, and extra fields).
+                let doc = parse_yaml(&fs::read_to_string(&yaml_path)?)?;
+                (config_format.unwrap_or(StorageFormat::Both), doc)
             }
             (true, false) => {
                 let doc = parse_yaml(&fs::read_to_string(&yaml_path)?)?;
-                (StorageFormat::YamlOnly, doc)
+                (config_format.unwrap_or(StorageFormat::YamlOnly), doc)
             }
             (false, true) => {
                 let doc = parse_markdown(&fs::read_to_string(&md_path)?)?;
-                (StorageFormat::MdOnly, doc)
+                (config_format.unwrap_or(StorageFormat::MdOnly), doc)
             }
             (false, false) => unreachable!(),
         };
@@ -92,18 +136,24 @@ impl Store {
     ///
     /// # Errors
     /// Returns `StoreError` if files cannot be written.
-    pub fn init(dir: &Path, format: StorageFormat, project: Option<String>) -> Result<Self, StoreError> {
+    pub fn init(
+        dir: &Path,
+        format: StorageFormat,
+        project: Option<String>,
+    ) -> Result<Self, StoreError> {
         let doc = ProjectDoc {
             tasks: Vec::new(),
             actors: Vec::new(),
             comments: Vec::new(),
             project,
+            extra: BTreeMap::new(),
         };
         let store = Self {
             dir: dir.to_path_buf(),
             format,
             doc,
         };
+        store.write_config_format(format)?;
         store.save()?;
         Ok(store)
     }
@@ -113,8 +163,14 @@ impl Store {
         self.format
     }
 
-    pub fn set_format(&mut self, format: StorageFormat) {
+    /// Sets the format mode and persists it to config.
+    ///
+    /// # Errors
+    /// Returns `StoreError` if saving the config fails.
+    pub fn set_format(&mut self, format: StorageFormat) -> Result<(), StoreError> {
         self.format = format;
+        self.write_config_format(format)?;
+        Ok(())
     }
 
     #[must_use]
@@ -157,8 +213,12 @@ impl Store {
             StorageFormat::Both => {
                 let yaml_content = serialize_yaml(&self.doc)?;
                 let md_content = serialize_markdown(&self.doc)?;
-                Self::atomic_write(&self.dir.join("TODO.yaml"), &yaml_content)?;
-                Self::atomic_write(&self.dir.join("TODO.md"), &md_content)?;
+                Self::atomic_write_both(
+                    &self.dir.join("TODO.yaml"),
+                    &yaml_content,
+                    &self.dir.join("TODO.md"),
+                    &md_content,
+                )?;
             }
         }
         Ok(())
@@ -169,8 +229,52 @@ impl Store {
         let filename = target.file_name().unwrap_or_default().to_string_lossy();
         let tmp_path = parent.join(format!(".{filename}.tmp.{}", fastrand::u32(..)));
 
-        fs::write(&tmp_path, content)?;
-        fs::rename(&tmp_path, target)?;
-        Ok(())
+        let write_res = (|| -> Result<(), io::Error> {
+            let mut file = fs::File::create(&tmp_path)?;
+            file.write_all(content.as_bytes())?;
+            file.sync_all()?;
+            fs::rename(&tmp_path, target)?;
+            Ok(())
+        })();
+
+        if write_res.is_err() {
+            let _ = fs::remove_file(&tmp_path);
+        }
+        write_res
+    }
+
+    fn atomic_write_both(
+        yaml_target: &Path,
+        yaml_content: &str,
+        md_target: &Path,
+        md_content: &str,
+    ) -> Result<(), io::Error> {
+        let parent = yaml_target.parent().unwrap_or_else(|| Path::new("."));
+        let rand_suffix = fastrand::u32(..);
+        let tmp_yaml = parent.join(format!(".TODO.yaml.tmp.{rand_suffix}"));
+        let tmp_md = parent.join(format!(".TODO.md.tmp.{rand_suffix}"));
+
+        let write_res = (|| -> Result<(), io::Error> {
+            {
+                let mut f_yaml = fs::File::create(&tmp_yaml)?;
+                f_yaml.write_all(yaml_content.as_bytes())?;
+                f_yaml.sync_all()?;
+            }
+            {
+                let mut f_md = fs::File::create(&tmp_md)?;
+                f_md.write_all(md_content.as_bytes())?;
+                f_md.sync_all()?;
+            }
+
+            fs::rename(&tmp_yaml, yaml_target)?;
+            fs::rename(&tmp_md, md_target)?;
+            Ok(())
+        })();
+
+        if write_res.is_err() {
+            let _ = fs::remove_file(&tmp_yaml);
+            let _ = fs::remove_file(&tmp_md);
+        }
+        write_res
     }
 }

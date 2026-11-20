@@ -1,6 +1,6 @@
-use std::collections::HashSet;
 use lida_core::id::generate_id;
 use lida_core::model::{Priority, Status, Task};
+use std::collections::HashSet;
 
 #[test]
 fn test_generate_id_is_four_chars_alphanumeric() {

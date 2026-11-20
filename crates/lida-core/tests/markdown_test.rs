@@ -1,7 +1,7 @@
 use lida_core::format::md::{parse_markdown, serialize_markdown};
 use lida_core::model::{Priority, Status};
 
-const SAMPLE_MD: &str = r#"<!-- todo-project: toma -->
+const SAMPLE_MD: &str = r"<!-- todo-project: toma -->
 
 # Tasks
 
@@ -19,7 +19,7 @@ const SAMPLE_MD: &str = r#"<!-- todo-project: toma -->
 # Actors
 
 # Comments
-"#;
+";
 
 #[test]
 fn test_parse_markdown_basic() {
@@ -39,7 +39,7 @@ fn test_parse_markdown_basic() {
     assert_eq!(t2.description, "Bring docs in line");
     assert_eq!(t2.status, Status::Done);
     assert_eq!(t2.priority, Some(Priority::High));
-    assert_eq!(t2.meta.get("devto.id").unwrap(), 5048726);
+    assert_eq!(t2.meta.get("devto.id").unwrap(), 5_048_726);
 }
 
 #[test]
