@@ -17,22 +17,10 @@ enum Section {
 /// # Errors
 /// Returns `FormatError::Markdown` if the markdown cannot be parsed.
 pub fn parse_markdown(content: &str) -> Result<ProjectDoc, FormatError> {
-    let mut doc = ProjectDoc::default();
-
-    // Check project header comment: <!-- todo-project: <name> ... -->
-    for line in content.lines() {
-        let trimmed = line.trim();
-        if trimmed.starts_with("<!--") && trimmed.contains("todo-project:") {
-            if let Some(after) = trimmed.split("todo-project:").nth(1) {
-                let name = after.split_whitespace().next().unwrap_or("").trim();
-                let clean_name = name.trim_end_matches("-->").trim();
-                if !clean_name.is_empty() {
-                    doc.project = Some(clean_name.to_string());
-                }
-            }
-            break;
-        }
-    }
+    let mut doc = ProjectDoc {
+        project: parse_project_name(content),
+        ..ProjectDoc::default()
+    };
 
     let mut section = Section::None;
     let mut current_task: Option<Task> = None;
@@ -41,141 +29,160 @@ pub fn parse_markdown(content: &str) -> Result<ProjectDoc, FormatError> {
     for line in content.lines() {
         let trimmed = line.trim();
 
-        if trimmed == "# Tasks" {
-            if let Some(t) = current_task.take() {
-                doc.tasks.push(t);
-            }
-            section = Section::Tasks;
-            continue;
-        } else if trimmed == "# Actors" {
-            if let Some(t) = current_task.take() {
-                doc.tasks.push(t);
-            }
-            section = Section::Actors;
-            continue;
-        } else if trimmed == "# Comments" {
-            if let Some(t) = current_task.take() {
-                doc.tasks.push(t);
-            }
-            section = Section::Comments;
+        if let Some(heading) = section_heading(trimmed) {
+            doc.tasks.extend(current_task.take());
+            section = heading;
             continue;
         }
 
         match section {
             Section::Tasks => {
-                if trimmed.starts_with("- [ ] ") || trimmed.starts_with("- [x] ") || trimmed.starts_with("- [X] ") {
-                    if let Some(t) = current_task.take() {
-                        doc.tasks.push(t);
-                    }
+                if let Some(header) = trimmed.get(..6).filter(|h| TASK_MARKERS.contains(h)) {
+                    doc.tasks.extend(current_task.take());
                     in_meta_block = false;
-
-                    let is_done = trimmed.starts_with("- [x] ") || trimmed.starts_with("- [X] ");
-                    let rest = &trimmed[6..];
-
-                    // Format: <id> **-** <description>
-                    if let Some((id_part, desc_part)) = rest.split_once("**-**") {
-                        let id = id_part.trim();
-                        let desc = desc_part.trim();
-                        let mut t = Task::new(id, desc);
-                        if is_done {
-                            t.status = Status::Done;
-                        }
-                        current_task = Some(t);
-                    }
+                    current_task = parse_task_header(header, &trimmed[6..]);
                 } else if let Some(task) = current_task.as_mut() {
-                    if trimmed.is_empty() {
-                        in_meta_block = false;
-                        continue;
-                    }
-
-                    if let Some(stripped) = trimmed.strip_prefix("- **Priority**:") {
-                        in_meta_block = false;
-                        let val = stripped.trim();
-                        task.priority = match val.to_lowercase().as_str() {
-                            "low" => Some(Priority::Low),
-                            "medium" => Some(Priority::Medium),
-                            "high" => Some(Priority::High),
-                            _ => None,
-                        };
-                    } else if let Some(stripped) = trimmed.strip_prefix("- **Created**:") {
-                        in_meta_block = false;
-                        task.created = Some(stripped.trim().to_string());
-                    } else if let Some(stripped) = trimmed.strip_prefix("- **Due**:") {
-                        in_meta_block = false;
-                        task.due = Some(stripped.trim().to_string());
-                    } else if let Some(stripped) = trimmed.strip_prefix("- **Position**:") {
-                        in_meta_block = false;
-                        let pos = stripped.trim();
-                        let clean = pos.trim_matches('"').trim();
-                        task.position = Some(clean.to_string());
-                    } else if let Some(stripped) = trimmed.strip_prefix("- **Status**:") {
-                        in_meta_block = false;
-                        let st = stripped.trim();
-                        if let Ok(status) = serde_json::from_value::<Status>(serde_json::Value::String(st.to_string()))
-                        {
-                            task.status = status;
-                        }
-                    } else if let Some(stripped) = trimmed.strip_prefix("- **Blocked Reason**:") {
-                        in_meta_block = false;
-                        task.blocked_reason = Some(stripped.trim().to_string());
-                    } else if let Some(stripped) = trimmed.strip_prefix("- **Tags**:") {
-                        in_meta_block = false;
-                        let tags_str = stripped.trim();
-                        task.tags = tags_str
-                            .split(',')
-                            .map(|s| s.trim().to_string())
-                            .filter(|s| !s.is_empty())
-                            .collect();
-                    } else if trimmed == "- **Meta**:" {
-                        in_meta_block = true;
-                    } else if in_meta_block {
-                        if let Some(item) = trimmed.strip_prefix("- ") {
-                            if let Some((k, v)) = item.split_once(':') {
-                                let k = k.trim().to_string();
-                                let v_str = v.trim();
-                                let val = serde_json::from_str(v_str)
-                                    .unwrap_or_else(|_| serde_json::Value::String(v_str.to_string()));
-                                task.meta.insert(k, val);
-                            }
-                        }
-                    }
+                    apply_task_line(task, trimmed, &mut in_meta_block);
                 }
             }
             Section::Actors => {
-                if let Some(rest) = trimmed.strip_prefix("- ") {
-                    if let Some((id_part, name_part)) = rest.split_once("**-**") {
-                        doc.actors.push(Actor {
-                            id: id_part.trim().to_string(),
-                            pseudo: name_part.trim().to_string(),
-                            pic: None,
-                            actor_type: None,
-                            extra: BTreeMap::new(),
-                        });
-                    }
+                if let Some((id, pseudo)) = parse_entry(trimmed) {
+                    doc.actors.push(Actor {
+                        id,
+                        pseudo,
+                        pic: None,
+                        actor_type: None,
+                        extra: BTreeMap::new(),
+                    });
                 }
             }
             Section::Comments => {
-                if let Some(rest) = trimmed.strip_prefix("- ") {
-                    if let Some((id_part, text_part)) = rest.split_once("**-**") {
-                        doc.comments.push(Comment {
-                            id: id_part.trim().to_string(),
-                            text: text_part.trim().to_string(),
-                            task_id: String::new(),
-                            actors: Vec::new(),
-                            extra: BTreeMap::new(),
-                        });
-                    }
+                if let Some((id, text)) = parse_entry(trimmed) {
+                    doc.comments.push(Comment {
+                        id,
+                        text,
+                        task_id: String::new(),
+                        actors: Vec::new(),
+                        extra: BTreeMap::new(),
+                    });
                 }
             }
             Section::None => {}
         }
     }
 
-    if let Some(t) = current_task {
-        doc.tasks.push(t);
-    }
-
+    doc.tasks.extend(current_task);
     Ok(doc)
+}
+
+/// Checkbox prefixes that open a task line.
+const TASK_MARKERS: [&str; 3] = ["- [ ] ", "- [x] ", "- [X] "];
+
+/// Reads the project name from the first `<!-- todo-project: <name> ... -->` comment.
+fn parse_project_name(content: &str) -> Option<String> {
+    let line = content
+        .lines()
+        .map(str::trim)
+        .find(|l| l.starts_with("<!--") && l.contains("todo-project:"))?;
+    let after = line.split("todo-project:").nth(1)?;
+    let name = after.split_whitespace().next().unwrap_or("").trim();
+    let clean_name = name.trim_end_matches("-->").trim();
+    (!clean_name.is_empty()).then(|| clean_name.to_string())
+}
+
+fn section_heading(trimmed: &str) -> Option<Section> {
+    match trimmed {
+        "# Tasks" => Some(Section::Tasks),
+        "# Actors" => Some(Section::Actors),
+        "# Comments" => Some(Section::Comments),
+        _ => None,
+    }
+}
+
+/// Builds a task from `<id> **-** <description>`; `header` is its checkbox prefix.
+fn parse_task_header(header: &str, rest: &str) -> Option<Task> {
+    let (id_part, desc_part) = rest.split_once("**-**")?;
+    let mut task = Task::new(id_part.trim(), desc_part.trim());
+    if header != "- [ ] " {
+        task.status = Status::Done;
+    }
+    Some(task)
+}
+
+/// Splits a `- <id> **-** <text>` list entry.
+fn parse_entry(trimmed: &str) -> Option<(String, String)> {
+    let (id_part, text_part) = trimmed.strip_prefix("- ")?.split_once("**-**")?;
+    Some((id_part.trim().to_string(), text_part.trim().to_string()))
+}
+
+/// Applies one detail line under a task header; `in_meta_block` tracks a `- **Meta**:` list.
+fn apply_task_line(task: &mut Task, trimmed: &str, in_meta_block: &mut bool) {
+    if trimmed == "- **Meta**:" {
+        *in_meta_block = true;
+        return;
+    }
+    if trimmed.is_empty() {
+        *in_meta_block = false;
+        return;
+    }
+    let Some((field, value)) = trimmed
+        .strip_prefix("- **")
+        .and_then(|rest| rest.split_once("**:"))
+        .filter(|(field, _)| TASK_FIELDS.contains(field))
+    else {
+        if *in_meta_block {
+            apply_meta_item(task, trimmed);
+        }
+        return;
+    };
+    *in_meta_block = false;
+    let value = value.trim();
+    match field {
+        "Priority" => {
+            task.priority = match value.to_lowercase().as_str() {
+                "low" => Some(Priority::Low),
+                "medium" => Some(Priority::Medium),
+                "high" => Some(Priority::High),
+                _ => None,
+            };
+        }
+        "Created" => task.created = Some(value.to_string()),
+        "Due" => task.due = Some(value.to_string()),
+        "Position" => task.position = Some(value.trim_matches('"').trim().to_string()),
+        "Status" => {
+            if let Ok(status) = serde_json::from_value::<Status>(serde_json::Value::String(value.to_string())) {
+                task.status = status;
+            }
+        }
+        "Blocked Reason" => task.blocked_reason = Some(value.to_string()),
+        _ => {
+            task.tags = value
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect();
+        }
+    }
+}
+
+/// Task detail fields recognised under a task header (`Tags` is the last match arm).
+const TASK_FIELDS: [&str; 7] = [
+    "Priority",
+    "Created",
+    "Due",
+    "Position",
+    "Status",
+    "Blocked Reason",
+    "Tags",
+];
+
+/// Parses a `- key: value` meta item; values are JSON when they parse, strings otherwise.
+fn apply_meta_item(task: &mut Task, trimmed: &str) {
+    if let Some((k, v)) = trimmed.strip_prefix("- ").and_then(|item| item.split_once(':')) {
+        let v_str = v.trim();
+        let val = serde_json::from_str(v_str).unwrap_or_else(|_| serde_json::Value::String(v_str.to_string()));
+        task.meta.insert(k.trim().to_string(), val);
+    }
 }
 
 /// Serializes a `ProjectDoc` into GitHub Flavored Markdown matching TODO.md.

@@ -14,7 +14,7 @@
   - **Priority**: medium
   - **Tags**: setup
 
-- [ ] NmVi **-** Adopt toma lint table and refactor CLI output
+- [x] NmVi **-** Adopt toma lint table and refactor CLI output
   - **Priority**: medium
   - **Tags**: setup
 
