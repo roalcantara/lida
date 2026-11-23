@@ -18,7 +18,7 @@
   - **Priority**: medium
   - **Tags**: setup
 
-- [ ] V0PI **-** Write AGENTS, CLAUDE, CONTEXT and PRODUCT docs
+- [x] V0PI **-** Write AGENTS, CLAUDE, CONTEXT and PRODUCT docs
   - **Priority**: medium
   - **Tags**: setup
 
