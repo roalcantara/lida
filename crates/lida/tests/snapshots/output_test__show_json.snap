@@ -1,0 +1,24 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida show bbbb --json
+code: 0
+--- stdout
+{
+  "id": "bbbb",
+  "status": "Todo",
+  "description": "Second task",
+  "due": null,
+  "actors": [],
+  "comments": [],
+  "blocked_reason": null,
+  "tags": [
+    "setup",
+    "docs"
+  ],
+  "priority": "High",
+  "created": null,
+  "position": null
+}
+--- stderr

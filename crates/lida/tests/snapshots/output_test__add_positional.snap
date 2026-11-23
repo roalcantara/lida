@@ -1,0 +1,9 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida add Third task
+code: 0
+--- stdout
+[92m✓[39m Added task #[ID] "Third task"
+--- stderr

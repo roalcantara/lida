@@ -1,0 +1,21 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida meta aaaa get missing
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: metadata key 'missing' not set on task #aaaa
+
+$ lida meta aaaa frob key
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: unknown meta action 'frob'. Use set, get, or unset
+
+$ lida meta aaaa set key
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: value required for `meta set <key> <value>`

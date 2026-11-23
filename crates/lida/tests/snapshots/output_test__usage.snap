@@ -1,0 +1,13 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida usage
+code: 0
+--- stdout
+# lida.usage.kdl
+name "lida"
+bin "lida"
+version "0.1.0"
+about "Dual-format project task engine (YAML · MD)"
+--- stderr

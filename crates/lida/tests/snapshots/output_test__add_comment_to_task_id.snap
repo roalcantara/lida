@@ -1,0 +1,18 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida add --task-id aaaa -c A note
+code: 0
+--- stdout
+[92m✓[39m Added comment to task #aaaa
+--- stderr
+
+$ lida show aaaa
+code: 0
+--- stdout
+Task #[1maaaa[0m: First task
+  Status: Todo
+  Priority: Medium
+  Tags: setup
+--- stderr

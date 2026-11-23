@@ -6,7 +6,7 @@
   - **Priority**: medium
   - **Tags**: setup
 
-- [ ] zuT2 **-** Pin CLI output with snapshot tests
+- [x] zuT2 **-** Pin CLI output with snapshot tests
   - **Priority**: medium
   - **Tags**: setup
 
