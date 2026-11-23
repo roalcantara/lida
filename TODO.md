@@ -22,7 +22,7 @@
   - **Priority**: medium
   - **Tags**: setup
 
-- [ ] F545 **-** Move CI onto mise and hk
+- [x] F545 **-** Move CI onto mise and hk
   - **Priority**: medium
   - **Tags**: setup
 

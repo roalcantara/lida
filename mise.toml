@@ -69,6 +69,10 @@ run = '''
   RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps --locked
 '''
 
+[tasks.audit]
+description = "Run the slow and release hk profiles (rustdoc, coverage, cargo-deny, gitleaks history, zizmor)"
+run = "hk check --all --profile candidate --profile release"
+
 [tasks.outdated]
 description = "Check for outdated dependencies"
 usage = '''
