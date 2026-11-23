@@ -7,8 +7,7 @@
   "excludes": [
     "target/**",
     "tmp/**",
-    "crates/toma/tests/fixtures/**",
-    "crates/toma/src/ui/snapshots/**",
+    "crates/*/tests/snapshots/**",
     "TODO.md",
     ".mise/**",
     ".claude/settings.local.json",

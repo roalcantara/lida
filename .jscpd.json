@@ -1,0 +1,8 @@
+{
+  "path": ["crates"],
+  "ignore": ["**/target/**"],
+  "format": ["rust"],
+  "threshold": 0,
+  "reporters": ["console"],
+  "gitignore": true
+}

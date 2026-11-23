@@ -58,19 +58,19 @@ insta (new dev-dependency, as in toma), GitHub Actions with `jdx/mise-action`.
 
 ## File map
 
-| File | Task | Responsibility |
-| --- | --- | --- |
-| `TODO.md` | 1, every task | lida-managed task list for this plan |
-| `mise.toml`, `mise.lock` | 2, 7 | pinned tools; `setup`, `gate`, `audit`, `outdated`, `bump` tasks |
-| `hk.pkl` | 2 | hooks and steps, `core-purity` with Pkl tests |
-| `.gitleaks.toml`, `.jscpd.json`, `.ls-lint.yml`, `.mdschema.yml`, `.quick-commitlint.json`, `cchk.toml`, `rustfmt.toml`, `taplo.toml`, `tombi.toml` | 2 | tool configs |
-| `_typos.toml`, `dprint.json` | 2 | de-toma'd configs |
-| `README.md` | 2 | restructured to `.mdschema.yml` |
-| `crates/lida/tests/output_test.rs`, `crates/lida/tests/snapshots/` | 3 | golden CLI output |
-| `DESIGN.md` | 4 | CLI output contract |
-| `Cargo.toml`, `crates/lida/src/**`, `crates/lida-core/src/format.rs` | 5 | lint table, CLI refactor |
-| `AGENTS.md`, `CLAUDE.md`, `CONTEXT.md`, `PRODUCT.md` | 6 | agent and product docs |
-| `.github/workflows/{ci,audit,release}.yml` | 7 | CI on mise and hk |
+| File                                                                                                                                                | Task          | Responsibility                                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------- |
+| `TODO.md`                                                                                                                                           | 1, every task | lida-managed task list for this plan                             |
+| `mise.toml`, `mise.lock`                                                                                                                            | 2, 7          | pinned tools; `setup`, `gate`, `audit`, `outdated`, `bump` tasks |
+| `hk.pkl`                                                                                                                                            | 2             | hooks and steps, `core-purity` with Pkl tests                    |
+| `.gitleaks.toml`, `.jscpd.json`, `.ls-lint.yml`, `.mdschema.yml`, `.quick-commitlint.json`, `cchk.toml`, `rustfmt.toml`, `taplo.toml`, `tombi.toml` | 2             | tool configs                                                     |
+| `_typos.toml`, `dprint.json`                                                                                                                        | 2             | de-toma'd configs                                                |
+| `README.md`                                                                                                                                         | 2             | restructured to `.mdschema.yml`                                  |
+| `crates/lida/tests/output_test.rs`, `crates/lida/tests/snapshots/`                                                                                  | 3             | golden CLI output                                                |
+| `DESIGN.md`                                                                                                                                         | 4             | CLI output contract                                              |
+| `Cargo.toml`, `crates/lida/src/**`, `crates/lida-core/src/format.rs`                                                                                | 5             | lint table, CLI refactor                                         |
+| `AGENTS.md`, `CLAUDE.md`, `CONTEXT.md`, `PRODUCT.md`                                                                                                | 6             | agent and product docs                                           |
+| `.github/workflows/{ci,audit,release}.yml`                                                                                                          | 7             | CI on mise and hk                                                |
 
 ---
 

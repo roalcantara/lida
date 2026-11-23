@@ -44,13 +44,7 @@ fn test_cli_lifecycle() {
 
     // Extract ID (e.g. Added task #abcd)
     let id_line = stdout.lines().find(|l| l.contains("Added task")).unwrap();
-    let id = id_line
-        .split('#')
-        .nth(1)
-        .unwrap()
-        .split_whitespace()
-        .next()
-        .unwrap();
+    let id = id_line.split('#').nth(1).unwrap().split_whitespace().next().unwrap();
 
     // 3. list --json
     let output = Command::new(bin)

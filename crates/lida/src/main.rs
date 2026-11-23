@@ -25,6 +25,44 @@ fn main() -> ExitCode {
     }
 }
 
+fn parse_priority(value: &str) -> Option<Priority> {
+    match value.to_lowercase().as_str() {
+        "high" => Some(Priority::High),
+        "medium" => Some(Priority::Medium),
+        "low" => Some(Priority::Low),
+        _ => None,
+    }
+}
+
+fn parse_tags(value: &str) -> Vec<String> {
+    value
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect()
+}
+
+fn attach_comment(store: &mut Store, task_id: &str, text: String) -> String {
+    let existing_comment_ids: HashSet<String> = store.doc().comments.iter().map(|c| c.id.clone()).collect();
+    let comment_id = generate_id(&existing_comment_ids);
+
+    store.doc_mut().comments.push(Comment {
+        id: comment_id.clone(),
+        text,
+        task_id: task_id.to_string(),
+        actors: Vec::new(),
+        extra: std::collections::BTreeMap::new(),
+    });
+
+    comment_id
+}
+
+fn set_task_status(store: &mut Store, id: &str, status: Status) -> Result<(), Box<dyn std::error::Error>> {
+    let task = store.find_task_mut(id).ok_or_else(|| format!("task #{id} not found"))?;
+    task.status = status;
+    Ok(())
+}
+
 fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
     let cwd = env::current_dir()?;
 
@@ -62,11 +100,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
                 StorageFormat::YamlOnly
             };
             Store::init(&cwd, format, project)?;
-            println!(
-                "{} Initialized project tasks in {}",
-                "✓".bright_green(),
-                cwd.display()
-            );
+            println!("{} Initialized project tasks in {}", "✓".bright_green(), cwd.display());
         }
 
         Subcommand::Add {
@@ -92,17 +126,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
                     return Err(format!("task #{target_id} not found").into());
                 }
 
-                let existing_comment_ids: HashSet<String> =
-                    store.doc().comments.iter().map(|c| c.id.clone()).collect();
-                let comment_id = generate_id(&existing_comment_ids);
-
-                store.doc_mut().comments.push(Comment {
-                    id: comment_id.clone(),
-                    text: comment_text,
-                    task_id: target_id.clone(),
-                    actors: Vec::new(),
-                    extra: std::collections::BTreeMap::new(),
-                });
+                let comment_id = attach_comment(&mut store, &target_id, comment_text);
 
                 if let Some(target_task) = store.find_task_mut(&target_id) {
                     target_task.comments.push(comment_id);
@@ -118,25 +142,15 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
                 .or(task)
                 .ok_or("task description is required (e.g. `lida add \"Task description\"`)")?;
 
-            let existing_ids: HashSet<String> =
-                store.doc().tasks.iter().map(|t| t.id.clone()).collect();
+            let existing_ids: HashSet<String> = store.doc().tasks.iter().map(|t| t.id.clone()).collect();
             let new_id = generate_id(&existing_ids);
 
             let mut new_task = Task::new(&new_id, &desc);
             if let Some(p) = priority {
-                new_task.priority = match p.to_lowercase().as_str() {
-                    "high" => Some(Priority::High),
-                    "medium" => Some(Priority::Medium),
-                    "low" => Some(Priority::Low),
-                    _ => None,
-                };
+                new_task.priority = parse_priority(&p);
             }
             if let Some(t) = tags {
-                new_task.tags = t
-                    .split(',')
-                    .map(|s| s.trim().to_string())
-                    .filter(|s| !s.is_empty())
-                    .collect();
+                new_task.tags = parse_tags(&t);
             }
             if let Some(d) = due {
                 new_task.due = Some(d);
@@ -146,23 +160,14 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
             }
 
             if let Some(c) = comment {
-                let existing_comment_ids: HashSet<String> =
-                    store.doc().comments.iter().map(|c| c.id.clone()).collect();
-                let comment_id = generate_id(&existing_comment_ids);
-                store.doc_mut().comments.push(Comment {
-                    id: comment_id.clone(),
-                    text: c,
-                    task_id: new_id.clone(),
-                    actors: Vec::new(),
-                    extra: std::collections::BTreeMap::new(),
-                });
+                let comment_id = attach_comment(&mut store, &new_id, c);
                 new_task.comments.push(comment_id);
             }
 
             store.add_task(new_task);
             store.save()?;
 
-            println!("{} Added task #{new_id} \"{desc}\"", "✓".bright_green(),);
+            println!("{} Added task #{new_id} \"{desc}\"", "✓".bright_green());
         }
 
         Subcommand::Update {
@@ -183,19 +188,10 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
                 task.description = desc;
             }
             if let Some(p) = priority {
-                task.priority = match p.to_lowercase().as_str() {
-                    "high" => Some(Priority::High),
-                    "medium" => Some(Priority::Medium),
-                    "low" => Some(Priority::Low),
-                    _ => None,
-                };
+                task.priority = parse_priority(&p);
             }
             if let Some(t) = tags.or(tag) {
-                task.tags = t
-                    .split(',')
-                    .map(|s| s.trim().to_string())
-                    .filter(|s| !s.is_empty())
-                    .collect();
+                task.tags = parse_tags(&t);
             }
             if let Some(d) = due {
                 task.due = Some(d);
@@ -221,9 +217,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
             if let Some(s) = status {
                 let s_lower = s.to_lowercase();
                 let normalized = match s_lower.as_str() {
-                    "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => {
-                        "in-progress"
-                    }
+                    "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => "in-progress",
                     "done" | "completed" => "done",
                     "blocked" | "bloqued" => "blocked",
                     "todo" => "todo",
@@ -235,10 +229,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
                 items.retain(|t| t.tags.iter().any(|t_tag| t_tag.eq_ignore_ascii_case(&tg)));
             }
             if let Some(p) = priority {
-                items.retain(|t| {
-                    t.priority
-                        .is_some_and(|p_val| p_val.as_str().eq_ignore_ascii_case(&p))
-                });
+                items.retain(|t| t.priority.is_some_and(|p_val| p_val.as_str().eq_ignore_ascii_case(&p)));
             }
 
             if json {
@@ -250,9 +241,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
                 // Plain format for completion compatibility: [Status] [Priority] <id> — <description>
                 for t in items {
                     let st = t.status.as_str();
-                    let prio = t
-                        .priority
-                        .map_or_else(String::new, |p| format!("[{}] ", p.as_str()));
+                    let prio = t.priority.map_or_else(String::new, |p| format!("[{}] ", p.as_str()));
                     println!("[{st}] {prio}{} — {}", t.id, t.description);
                 }
                 return Ok(());
@@ -307,43 +296,31 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
 
         Subcommand::Done { id } => {
             let mut store = Store::load(&cwd)?;
-            let task = store
-                .find_task_mut(&id)
-                .ok_or_else(|| format!("task #{id} not found"))?;
-            task.status = Status::Done;
+            set_task_status(&mut store, &id, Status::Done)?;
             store.save()?;
             println!("{} Task #{} marked as done", "✓".bright_green(), id.bold());
         }
 
         Subcommand::Start { id } => {
             let mut store = Store::load(&cwd)?;
-            let task = store
-                .find_task_mut(&id)
-                .ok_or_else(|| format!("task #{id} not found"))?;
-            task.status = Status::InProgress;
+            set_task_status(&mut store, &id, Status::InProgress)?;
             store.save()?;
-            println!(
-                "{} Task #{} marked as in-progress",
-                "✓".bright_green(),
-                id.bold()
-            );
+            println!("{} Task #{} marked as in-progress", "✓".bright_green(), id.bold());
         }
 
         Subcommand::Status { id, set, reason } => {
             let mut store = Store::load(&cwd)?;
-            let status =
-                match set.to_lowercase().as_str() {
-                    "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => {
-                        Status::InProgress
-                    }
-                    "done" | "completed" => Status::Done,
-                    "blocked" | "bloqued" => Status::Blocked,
-                    "todo" => Status::Todo,
-                    other => return Err(format!(
-                        "invalid status '{other}'. Valid values: todo, in-progress, done, blocked"
-                    )
-                    .into()),
-                };
+            let status = match set.to_lowercase().as_str() {
+                "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => Status::InProgress,
+                "done" | "completed" => Status::Done,
+                "blocked" | "bloqued" => Status::Blocked,
+                "todo" => Status::Todo,
+                other => {
+                    return Err(
+                        format!("invalid status '{other}'. Valid values: todo, in-progress, done, blocked").into(),
+                    );
+                }
+            };
             let task = store
                 .find_task_mut(&id)
                 .ok_or_else(|| format!("task #{id} not found"))?;
@@ -395,12 +372,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        Subcommand::Meta {
-            id,
-            action,
-            key,
-            value,
-        } => {
+        Subcommand::Meta { id, action, key, value } => {
             let mut store = Store::load(&cwd)?;
             let task = store
                 .find_task_mut(&id)
@@ -409,8 +381,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
             match action.to_lowercase().as_str() {
                 "set" => {
                     let val_str = value.ok_or("value required for `meta set <key> <value>`")?;
-                    let val = serde_json::from_str(&val_str)
-                        .unwrap_or(serde_json::Value::String(val_str));
+                    let val = serde_json::from_str(&val_str).unwrap_or(serde_json::Value::String(val_str));
                     task.meta.insert(key.clone(), val);
                     store.save()?;
                     println!(
@@ -442,9 +413,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
                     );
                 }
                 _ => {
-                    return Err(
-                        format!("unknown meta action '{action}'. Use set, get, or unset").into(),
-                    );
+                    return Err(format!("unknown meta action '{action}'. Use set, get, or unset").into());
                 }
             }
         }
@@ -487,11 +456,7 @@ fn run(cli: LidaCli) -> Result<(), Box<dyn std::error::Error>> {
                 };
                 store.set_format(fmt)?;
                 store.save()?;
-                println!(
-                    "{} Switched working format to {:?}",
-                    "✓".bright_green(),
-                    fmt
-                );
+                println!("{} Switched working format to {:?}", "✓".bright_green(), fmt);
             } else {
                 println!("Current working format: {:?}", store.format());
             }

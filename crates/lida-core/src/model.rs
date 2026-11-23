@@ -43,9 +43,7 @@ impl<'de> Deserialize<'de> for Status {
         let s = String::deserialize(deserializer)?;
         match s.to_lowercase().replace('_', "-").as_str() {
             "todo" => Ok(Self::Todo),
-            "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => {
-                Ok(Self::InProgress)
-            }
+            "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => Ok(Self::InProgress),
             "done" | "completed" => Ok(Self::Done),
             "blocked" | "bloqued" => Ok(Self::Blocked),
             other => Err(D::Error::custom(format!(

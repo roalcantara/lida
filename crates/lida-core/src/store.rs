@@ -136,11 +136,7 @@ impl Store {
     ///
     /// # Errors
     /// Returns `StoreError` if files cannot be written.
-    pub fn init(
-        dir: &Path,
-        format: StorageFormat,
-        project: Option<String>,
-    ) -> Result<Self, StoreError> {
+    pub fn init(dir: &Path, format: StorageFormat, project: Option<String>) -> Result<Self, StoreError> {
         let doc = ProjectDoc {
             tasks: Vec::new(),
             actors: Vec::new(),

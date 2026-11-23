@@ -2,7 +2,7 @@
 
 # Tasks
 
-- [ ] 4eof **-** Port hk hooks and tool configs
+- [x] 4eof **-** Port hk hooks and tool configs
   - **Priority**: medium
   - **Tags**: setup
 

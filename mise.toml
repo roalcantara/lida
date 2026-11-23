@@ -1,10 +1,16 @@
 min_version = "2026.9.13"
 
 [settings]
+# mise.lock records every tool's download and checksum for the machines that run this repo: Apple silicon
+# Macs and CI's Linux runners. Run `mise lock` after changing a tool: CI installs with --locked, and fails otherwise.
 lockfile_platforms = ["linux-x64", "macos-arm64"]
+# Rust comes from rust-toolchain.toml, the file rustup reads: one pin, its channel and components, for both.
 idiomatic_version_file_enable_tools = ["rust"]
 
 [tools]
+jactionlint = "2.1.0"
+"aqua:gitleaks/gitleaks" = "8.30.1"
+"aqua:jackchuka/mdschema" = "0.15.5"
 cargo-binstall = "1.25.3"
 "cargo:cargo-deny" = "0.20.2"
 "cargo:cargo-llvm-cov" = "0.9.1"
@@ -12,7 +18,24 @@ cargo-binstall = "1.25.3"
 "cargo:cargo-nextest" = "0.9.148"
 dprint = "0.63.0"
 hk = { version = "2.6.0", workflow = "release.yml" }
+ls-lint = "2.3.1"
+"npm:jscpd" = "5.4.1"
+pinact = "5.0.0"
+"pipx:commit-check" = "2.18.3"
+# Installs pipx tools from their locks in .mise/locks (mise needs uv >= 0.12.10 for that).
+uv = "0.13.0"
+# The interpreter the pipx tools run on: mise probes `python` on PATH before installing one (2026.10.7).
+python = "3.13.16"
+pkl = "0.32.1"
+shellcheck = "0.11.0"
+shfmt = "3.14.1"
+taplo = "0.10.0"
+# TOML linting against schemas (tombi.toml); taplo formats.
+tombi = "1.10.0"
 typos = "1.51.1"
+zizmor = "1.30.1"
+"npm:quick-commitlint" = { version = "0.1.2", allow_low_downloads = true }
+node = "26.11.1"
 
 [tasks.setup]
 description = "Install tools, fetch crates and the git hooks"
@@ -37,9 +60,39 @@ run = '''
   set -euo pipefail
 
   cargo nextest run --workspace --locked
-  cargo test --doc --workspace --locked
+  cargo test --doc --workspace --locked # nextest does not run doctests
   cargo clippy --workspace --all-targets --locked -- -D warnings
   if [ "${usage_fast:-false}" = "true" ]; then exit 0; fi
   cargo build --workspace --release --locked
+  hk check --all
   cargo deny check
+  RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps --locked
+'''
+
+[tasks.outdated]
+description = "Check for outdated dependencies"
+usage = '''
+  flag "--mise" help="ONLY Mise outdated check"
+'''
+run = '''
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  if [ "${usage_mise:-true}" = "true" ]; then
+    mise outdated --local --bump
+  fi
+'''
+
+[tasks.bump]
+description = "Bump outdated dependencies"
+usage = '''
+  flag "--mise" help="ONLY Mise outdated dependencies bump"
+'''
+run = '''
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  if [ "${usage_mise:-true}" = "true" ]; then
+    mise upgrade --local --bump
+  fi
 '''
