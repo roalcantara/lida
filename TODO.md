@@ -10,7 +10,7 @@
   - **Priority**: medium
   - **Tags**: setup
 
-- [ ] 4mRA **-** Write DESIGN.md output contract
+- [x] 4mRA **-** Write DESIGN.md output contract
   - **Priority**: medium
   - **Tags**: setup
 
