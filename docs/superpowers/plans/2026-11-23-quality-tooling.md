@@ -15,6 +15,20 @@ insta (new dev-dependency, as in toma), GitHub Actions with `jdx/mise-action`.
 
 **Spec:** [docs/superpowers/specs/2026-11-23-quality-tooling-design.md](../specs/2026-11-23-quality-tooling-design.md)
 
+## How to run this plan
+
+- Run it with `/wip:run plan=docs/superpowers/plans/2026-11-23-quality-tooling.md`; finish with `/wip:handoff`. The
+  plan's author reviews with `/wip:review`.
+- Do the tasks in order. Each task ends in exactly one commit (Task 2 may add one `style:` commit before its own).
+- Every command below was checked against the installed tools (hk 2.6.0, lida at `0dd6165`). If one still behaves
+  differently, make the smallest change that keeps the step's intent and write `Deviation: …, because …` in the commit
+  body. Never skip a verification step.
+- **Stop and ask the operator** instead of guessing when: a gate can only pass by loosening a lint, threshold or
+  exclude list beyond what a step names; a snapshot changes in Task 5; or a step would push, open a PR, or touch
+  anything outside this repository (except reading `~/Work/toma`). Never `git push`.
+- `lida` below means `cargo run -q -p lida --`. It prints the new ID on `add` (`✓ Added task #GWY9 "…"`); look IDs up
+  later with `cargo run -q -p lida -- list --json` (field `id`, match on `description`).
+
 ## Global Constraints
 
 - Work on branch `chore/quality-tooling`. Conventional Commits, sentence-case subject, at most 72 characters, types
@@ -123,11 +137,43 @@ Copy from `~/Work/toma` byte for byte: `.gitleaks.toml`, `.quick-commitlint.json
 
 - [ ] **Step 3: Extend mise.toml and lock it**
 
-Add to `[tools]`, at toma's exact versions and with toma's comments: `jactionlint`, `aqua:gitleaks/gitleaks`,
-`aqua:jackchuka/mdschema`, `ls-lint`, `npm:jscpd`, `pinact`, `pipx:commit-check`, `uv`, `python`, `pkl`, `shellcheck`,
-`shfmt`, `taplo`, `tombi`, `zizmor`, `npm:quick-commitlint` (with `allow_low_downloads = true`), `node`. Do not add the
-`todo` CLI. Replace `gate` with toma's (adds `hk check --all` and `RUSTDOCFLAGS='-D warnings' cargo doc`); add toma's
-`outdated` and `bump` tasks.
+Replace `[tools]` with exactly this (toma's list without the `todo` CLI), and copy toma's `[settings]` comments:
+
+```toml
+[tools]
+jactionlint = "2.1.0"
+"aqua:gitleaks/gitleaks" = "8.30.1"
+"aqua:jackchuka/mdschema" = "0.15.5"
+cargo-binstall = "1.25.3"
+"cargo:cargo-deny" = "0.20.2"
+"cargo:cargo-llvm-cov" = "0.9.1"
+"cargo:cargo-machete" = "0.9.2"
+"cargo:cargo-nextest" = "0.9.148"
+dprint = "0.63.0"
+hk = { version = "2.6.0", workflow = "release.yml" }
+ls-lint = "2.3.1"
+"npm:jscpd" = "5.4.1"
+pinact = "5.0.0"
+"pipx:commit-check" = "2.18.3"
+# Installs pipx tools from their locks in .mise/locks (mise needs uv >= 0.12.10 for that).
+uv = "0.13.0"
+# The interpreter the pipx tools run on: mise probes `python` on PATH before installing one (2026.10.7).
+python = "3.13.16"
+pkl = "0.32.1"
+shellcheck = "0.11.0"
+shfmt = "3.14.1"
+taplo = "0.10.0"
+# TOML linting against schemas (tombi.toml); taplo formats.
+tombi = "1.10.0"
+typos = "1.51.1"
+zizmor = "1.30.1"
+"npm:quick-commitlint" = { version = "0.1.2", allow_low_downloads = true }
+node = "26.11.1"
+```
+
+Replace `[tasks.gate]` with toma's (it adds `hk check --all` after the release build and
+`RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps --locked` at the end); copy toma's `[tasks.outdated]` and
+`[tasks.bump]` verbatim. Keep lida's `[tasks.setup]`.
 
 Run: `mise install && mise lock`
 Expected: `mise.lock` created with `linux-x64` and `macos-arm64` entries.
@@ -170,8 +216,8 @@ Expected: only lida's own change. Then remove the probe task with `cargo run -q 
 
 Run: `mise run setup`
 Then, for each message `Merge branch 'x'`, `Revert "feat: X"`, `fixup! feat: X`, `feat: Sentence case subject`:
-`printf '%s\n' "<msg>" > tmp/msg && hk run commit-msg tmp/msg` (check `hk run commit-msg --help` for the
-argument form). Expected: all pass; `feat: lower case` fails.
+`mkdir -p tmp && printf '%s\n' "<msg>" > tmp/msg && hk run commit-msg tmp/msg`. Expected: all four pass (exit 0);
+`feat: lower case` fails (exit non-zero).
 Run: `mise exec -- cchk --branch` on this branch. Expected: pass.
 
 - [ ] **Step 8: Close the task and commit**
@@ -191,7 +237,8 @@ If `hk fix --all` reformatted Rust or TOML files, commit those separately first 
 
 **Files:**
 
-- Modify: `Cargo.toml` (workspace dev-dependency `insta` at toma's version), `crates/lida/Cargo.toml`
+- Modify: `Cargo.toml` (`[workspace.dependencies]` gets `insta = "1"`, as in toma), `crates/lida/Cargo.toml`
+  (`[dev-dependencies]` gets `insta.workspace = true` and `serde_json.workspace = true`)
 - Create: `crates/lida/tests/output_test.rs`, `crates/lida/tests/snapshots/*.snap`
 
 **Interfaces:**
@@ -200,8 +247,31 @@ If `hk fix --all` reformatted Rust or TOML files, commit those separately first 
   String }`, run with `NO_COLOR` unset and stdout piped (the real pipe case), plus one snapshot per case below. Tasks 4
   and 5 depend on these snapshots being unchanged.
 
-IDs are random: seed fixtures by writing a fixed `TODO.md` into the temp dir (IDs `aaaa`, `bbbb`) rather than by
-`add`, and redact timestamps with insta filters.
+IDs are random, so every test except the `init_*` and `add_*` ones starts from this fixed `TODO.md`, written into a
+`tempfile::tempdir()` (this is lida's own Markdown format, checked at `0dd6165`):
+
+```markdown
+<!-- todo-project: fixture -->
+
+# Tasks
+
+- [ ] aaaa **-** First task
+  - **Priority**: medium
+  - **Tags**: setup
+
+- [ ] bbbb **-** Second task
+  - **Priority**: high
+  - **Tags**: setup, docs
+
+# Actors
+
+# Comments
+```
+
+`add_*` tests print a random ID: redact it with `insta::with_settings!({ filters => vec![(r"#[0-9A-Za-z]{4}\b",
+"#[ID]"), (r#""id": "[0-9A-Za-z]{4}""#, r#""id": "[ID]""#)] }, { … })`. Add a filter for timestamps only if one
+appears in a recorded snapshot. Paths: redact the temp dir with a filter on its string. lida prints ANSI colour codes
+even when piped (`\x1b[92m✓\x1b[39m`): keep them in the snapshots; they pin the colours.
 
 - [ ] **Step 1: Write the snapshot tests**
 
@@ -220,9 +290,10 @@ body.
 
 - [ ] **Step 2: Record and review**
 
-Run: `cargo insta test -p lida --accept` (or `INSTA_UPDATE=always cargo nextest run -p lida`)
-Expected: snapshots written; read each one and confirm it shows today's behaviour (nothing to fix here: these pin
-what is).
+Run: `INSTA_UPDATE=always cargo nextest run -p lida` (`cargo-insta` is not installed; do not add it)
+Expected: one `.snap` per case in `crates/lida/tests/snapshots/`. Open each one and confirm it shows today's behaviour,
+with a non-empty stdout or stderr. Nothing is fixed here: these pin what is, bugs included. Note any output that looks
+like a bug in the commit body under `Observed:`.
 
 - [ ] **Step 3: Verify they are stable**
 
@@ -252,8 +323,8 @@ git commit -m "test: Pin CLI output with insta snapshots"
 - [ ] **Step 1: Write DESIGN.md**
 
 Sections: a two-line intro (what this file pins, and that `crates/lida/tests/snapshots/` wins if they differ); **Voice**
-(from BRANDING.md A.4, two to four lines); **Colour** (which owo-colors styles each element uses, and that output is
-uncoloured when not a TTY, if that is what the code does); **Commands** (per subcommand: one example invocation, its
+(from BRANDING.md A.4, two to four lines); **Colour** (which owo-colors style each element uses, and, as a known gap,
+that colour is emitted even when output is piped or `NO_COLOR` is set); **Commands** (per subcommand: one example invocation, its
 exact human output in a `text` block, its `--json` shape where it has one, and exit code); **Errors** (exact copy and
 exit code per error); **Files** (the three modes and which file is authoritative). Link `assets/design/BRANDING.md` for
 visual identity.
@@ -286,8 +357,8 @@ git commit -m "docs: Add DESIGN.md with the CLI output contract"
 **Interfaces:**
 
 - Produces:
-  - `pub struct Output<O: Write, E: Write> { pub out: O, pub err: E }` in `output.rs`, with the colour decision made
-    once there.
+  - `pub struct Output<O: Write, E: Write> { pub out: O, pub err: E }` in `output.rs`. Colour stays as it is today
+    (always on, via `OwoColorize`); do not add TTY or `NO_COLOR` detection in this plan.
   - `pub fn run(cli: LidaCli, io: &mut Output<impl Write, impl Write>) -> Result<(), Box<dyn std::error::Error>>` in
     `commands.rs`, dispatching to `commands::<name>::run(…, io)`.
   - `main` builds `Output` over locked stdout/stderr, calls `commands::run`, and reports a top-level error with at most
@@ -319,8 +390,10 @@ command's `run`; keep the CLI flags as they are.
 
 - [ ] **Step 5: Verify behaviour is unchanged**
 
-Run: `cargo nextest run --workspace --locked`
-Expected: PASS with zero snapshot changes (`git status` shows no `.snap` diffs and no `.snap.new`).
+Run: `INSTA_UPDATE=no cargo nextest run --workspace --locked`
+Expected: PASS with zero snapshot changes (`git status` shows no `.snap` diffs and no `.snap.new`). Never run with
+`INSTA_UPDATE=always` in this task and never edit a `.snap`: a snapshot failure means the refactor changed output. Fix
+the code; if you cannot, stop and ask the operator.
 Run: `cargo clippy --workspace --all-targets --locked -- -D warnings`
 Expected: PASS, and `rg -n 'allow\(' crates` shows no new allows.
 
@@ -388,8 +461,7 @@ git commit -m "docs: Add agent, vocabulary and product docs"
 - [ ] **Step 1: Add the audit task**
 
 `[tasks.audit]`, description `Run the slow and release hk profiles (rustdoc, coverage, cargo-deny, gitleaks history,
-zizmor)`, running `hk check --all` with profiles `candidate` and `release` (use the flag or `HK_PROFILE` form that
-`hk check --help` documents for 2.6.0).
+zizmor)`, `run = "hk check --all --profile candidate --profile release"`.
 
 Run: `mise run audit`. Expected: only workflow findings fail (fixed in Steps 2–4).
 
@@ -431,4 +503,5 @@ git add .github/workflows mise.toml TODO.md
 git commit -m "ci: Run the mise gate in CI and audit on main and tags"
 ```
 
-After pushing, confirm the first CI and audit runs are green; a failing run is reported, not hidden.
+Do not push. In the handoff, say that the workflows are verified locally only (actionlint, pinact, zizmor) and that
+their first real run happens when the operator pushes.
