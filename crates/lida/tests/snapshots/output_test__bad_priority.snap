@@ -3,7 +3,7 @@ source: crates/lida/tests/output_test.rs
 expression: "transcript(dir.path(), commands)"
 ---
 $ lida add Third task -p urgent
-code: 0
+code: 1
 --- stdout
-[92m✓[39m Added task #[ID] "Third task"
 --- stderr
+error: invalid priority 'urgent'. Valid values: low, medium, high, none

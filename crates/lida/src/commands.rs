@@ -15,15 +15,16 @@ mod update;
 /// Imports every command module needs.
 mod prelude {
     pub use super::CmdResult;
+    pub(super) use super::{single_line, validate_task_fields};
+    pub use crate::output::OwoColorize;
     pub use lida_core::store::Store;
-    pub use owo_colors::OwoColorize;
     pub use std::io::Write;
     pub use std::path::Path;
 }
 
 use crate::cli::{LidaCli, Subcommand};
 use crate::output::Output;
-use lida_core::model::Priority;
+use lida_core::model::{Priority, Status};
 use lida_core::store::StorageFormat;
 use std::env;
 use std::io::Write;
@@ -40,103 +41,88 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
     let out = &mut io.out;
 
     match cli.command.unwrap_or_else(default_command) {
-        Subcommand::Init {
-            yaml,
-            md,
-            both,
-            project,
-            force,
-        } => {
-            // `--yaml` is the default; the flag only states it.
-            _ = yaml;
-            init::run(&cwd, init_format(md, both), project, force, out)
+        Subcommand::Init(args) => {
+            let format = init_format(args.yaml, args.md, args.both)?;
+            init::run(
+                &cwd,
+                init::Args {
+                    format,
+                    project: args.project,
+                    force: args.force,
+                },
+                out,
+            )
         }
-        Subcommand::Add {
-            description,
-            task,
-            task_id,
-            priority,
-            tags,
-            due,
-            position,
-            comment,
-        } => add::run(
+        Subcommand::Add(args) => add::run(
             &cwd,
             add::Args {
-                description: description.or(task),
-                task_id,
-                priority,
-                tags,
-                due,
-                position,
-                comment,
+                description: args.description.or(args.task),
+                task_id: args.task_id,
+                priority: args.priority,
+                tags: args.tags,
+                due: args.due,
+                position: args.position,
+                comment: args.comment,
             },
             out,
         ),
-        Subcommand::Update {
-            id,
-            description,
-            priority,
-            tags,
-            tag,
-            due,
-            position,
-        } => update::run(
+        Subcommand::Update(args) => update::run(
             &cwd,
-            &id,
+            &args.id,
             update::Args {
-                description,
-                priority,
-                tags: tags.or(tag),
-                due,
-                position,
+                description: args.description,
+                priority: args.priority,
+                tags: args.tags.or(args.tag),
+                due: args.due,
+                position: args.position,
             },
             out,
         ),
-        Subcommand::List {
-            tasks,
-            status,
-            tag,
-            priority,
-            json,
-        } => list::run(
+        Subcommand::List(args) => list::run(
             &cwd,
-            &list::Filter { status, tag, priority },
-            list::Style::from_flags(tasks, json),
+            &list::Filter {
+                status: args.status,
+                tag: args.tag,
+                priority: args.priority,
+            },
+            list::Style::from_flags(args.tasks, args.json),
             out,
         ),
-        Subcommand::Done { id } => status::done(&cwd, &id, out),
-        Subcommand::Start { id } => status::start(&cwd, &id, out),
-        Subcommand::Status { id, set, reason } => status::set(&cwd, &id, &set, reason, out),
-        Subcommand::Show { id, json } => show::run(&cwd, &id, json, out),
-        Subcommand::Meta { id, action, key, value } => meta::run(&cwd, &id, &action, &key, value, out),
+        Subcommand::Done(args) => status::done(&cwd, &args.id, out),
+        Subcommand::Start(args) => status::start(&cwd, &args.id, out),
+        Subcommand::Status(args) => status::set(&cwd, &args.id, &args.set, args.reason, out),
+        Subcommand::Show(args) => show::run(&cwd, &args.id, args.json, out),
+        Subcommand::Meta(args) => meta::run(&cwd, &args.id, &args.action, &args.key, args.value, out),
         Subcommand::Tags => tags::run(&cwd, out),
-        Subcommand::Delete { id } => delete::run(&cwd, &id, out),
-        Subcommand::Cwi { format } => cwi::run(&cwd, format.as_deref(), out),
-        Subcommand::Completion { shell } => generate::completion(&shell, out),
+        Subcommand::Delete(args) => delete::run(&cwd, &args.id, out),
+        Subcommand::Cwi(args) => cwi::run(&cwd, args.format.as_deref(), out),
+        Subcommand::Completion(completion) => generate::completion(&completion, out, &mut io.err),
         Subcommand::Usage => generate::usage(out),
     }
 }
 
 /// Bare `lida` lists tasks.
 fn default_command() -> Subcommand {
-    Subcommand::List {
+    Subcommand::List(crate::cli::ListArgs {
         tasks: false,
         status: None,
         tag: None,
         priority: None,
         json: false,
-    }
+    })
 }
 
-/// `--both` wins over `--md`; `--yaml` is the default and needs no check.
-fn init_format(md: bool, both: bool) -> StorageFormat {
+fn init_format(yaml: bool, md: bool, both: bool) -> Result<StorageFormat, &'static str> {
+    let count = [yaml, md, both].into_iter().filter(|&b| b).count();
+    if count > 1 {
+        return Err("choose one of --yaml, --md or --both");
+    }
     if both {
-        StorageFormat::Both
+        Ok(StorageFormat::Both)
     } else if md {
-        StorageFormat::MdOnly
+        Ok(StorageFormat::MdOnly)
     } else {
-        StorageFormat::YamlOnly
+        Ok(StorageFormat::YamlOnly)
     }
 }
 
@@ -145,13 +131,43 @@ fn not_found(id: &str) -> String {
     format!("task #{id} not found")
 }
 
-/// `high`, `medium` or `low`, any case; anything else is no priority.
-fn parse_priority(value: &str) -> Option<Priority> {
-    match value.to_lowercase().as_str() {
-        "high" => Some(Priority::High),
-        "medium" => Some(Priority::Medium),
-        "low" => Some(Priority::Low),
-        _ => None,
+pub(super) fn single_line(field: &str, value: &str) -> Result<(), String> {
+    if value.contains('\n') || value.contains('\r') {
+        Err(format!("{field} must be a single line"))
+    } else {
+        Ok(())
+    }
+}
+
+pub(super) fn validate_task_fields(
+    position: Option<&str>,
+    due: Option<&str>,
+    tags: Option<&str>,
+) -> Result<(), String> {
+    if let Some(p) = position {
+        single_line("position", p)?;
+    }
+    if let Some(d) = due {
+        single_line("due", d)?;
+    }
+    if let Some(t) = tags {
+        single_line("tags", t)?;
+    }
+    Ok(())
+}
+
+pub(super) fn parse_status(value: &str) -> Result<Status, String> {
+    Status::parse(value)
+        .ok_or_else(|| format!("invalid status '{value}'. Valid values: todo, in-progress, done, blocked"))
+}
+
+pub(super) fn parse_priority_arg(value: &str) -> Result<Option<Priority>, String> {
+    if value.eq_ignore_ascii_case("none") {
+        Ok(None)
+    } else {
+        Priority::parse(value)
+            .map(Some)
+            .ok_or_else(|| format!("invalid priority '{value}'. Valid values: low, medium, high, none"))
     }
 }
 

@@ -19,6 +19,7 @@ ignore:
   - target
   - tmp
   - crates/lida/tests/snapshots
+  - crates/lida-core/tests/fixtures
   # lida's own project state, written by the CLI (`.lida/config`).
   - .lida
   - .ls-lint.yml

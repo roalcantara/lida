@@ -1,6 +1,7 @@
 //! Golden output of every `lida` subcommand: stdout, stderr and exit code, byte for byte.
 //!
-//! These snapshots pin today's behaviour (ANSI colour codes included) so refactors can prove they changed nothing.
+//! These snapshots pin today's behaviour so refactors can prove they changed nothing. Output is piped, so it carries no
+//! colour; `colour_forced` pins the ANSI codes.
 
 use std::fmt::Write as _;
 use std::fs;
@@ -34,18 +35,25 @@ struct Run {
 }
 
 #[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
-fn lida(dir: &Path, args: &[&str]) -> Run {
-    let output = Command::new(env!("CARGO_BIN_EXE_lida"))
-        .args(args)
+fn lida_with_env(dir: &Path, args: &[&str], envs: &[(&str, &str)]) -> Run {
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_lida"));
+    cmd.args(args)
         .current_dir(dir)
         .env_remove("NO_COLOR")
-        .output()
-        .expect("lida binary runs");
+        .env_remove("CLICOLOR_FORCE");
+    for (k, v) in envs {
+        cmd.env(k, v);
+    }
+    let output = cmd.output().expect("lida binary runs");
     Run {
         code: output.status.code().unwrap_or(-1),
         stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
         stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
     }
+}
+
+fn lida(dir: &Path, args: &[&str]) -> Run {
+    lida_with_env(dir, args, &[])
 }
 
 #[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
@@ -67,8 +75,21 @@ fn redact(text: &str, dir: &Path) -> String {
         text = text.replace(&canonical.display().to_string(), "[DIR]");
     }
     text = text.replace(&dir.display().to_string(), "[DIR]");
-    // A release bump must not fail the snapshots.
-    text = text.replace(env!("CARGO_PKG_VERSION"), "[VERSION]");
+    // A release bump must not fail the snapshots: redact exact "lida <version>" lines and
+    // 'version "<version>"' tokens without altering other numeric occurrences.
+    let version = env!("CARGO_PKG_VERSION");
+    let version_token = format!("version \"{version}\"");
+    text = text.replace(&version_token, "version \"[VERSION]\"");
+    let lida_line = format!("lida {version}");
+    let mut lines = Vec::new();
+    for line in text.split('\n') {
+        if line == lida_line {
+            lines.push("lida [VERSION]".to_string());
+        } else {
+            lines.push(line.to_string());
+        }
+    }
+    text = lines.join("\n");
     let ids: Vec<String> = text
         .match_indices("Added task #")
         .filter_map(|(at, marker)| text.get(at + marker.len()..at + marker.len() + 4))
@@ -77,24 +98,43 @@ fn redact(text: &str, dir: &Path) -> String {
     for id in ids {
         text = text.replace(&id, "[ID]");
     }
+    let comment_ids: Vec<String> = text
+        .lines()
+        .filter_map(|line| {
+            let rest = line.strip_prefix("    #")?;
+            let id = rest.split_whitespace().next()?;
+            if id.len() == 4 { Some(id.to_string()) } else { None }
+        })
+        .collect();
+    for id in comment_ids {
+        text = text.replace(&format!("    #{id} "), "    #[ID] ");
+    }
     text
+}
+
+fn append_run(out: &mut String, args: &[&str], run: &Run) {
+    let _ = write!(
+        out,
+        "$ lida {}\ncode: {}\n--- stdout\n{}--- stderr\n{}\n",
+        args.join(" "),
+        run.code,
+        run.stdout,
+        run.stderr
+    );
+}
+
+fn transcript_with_env(dir: &Path, commands: &[&[&str]], envs: &[(&str, &str)]) -> String {
+    let mut out = String::new();
+    for args in commands {
+        let run = lida_with_env(dir, args, envs);
+        append_run(&mut out, args, &run);
+    }
+    redact(&out, dir)
 }
 
 /// Runs each command in order in `dir` and renders them as one transcript.
 fn transcript(dir: &Path, commands: &[&[&str]]) -> String {
-    let mut out = String::new();
-    for args in commands {
-        let run = lida(dir, args);
-        let _ = write!(
-            out,
-            "$ lida {}\ncode: {}\n--- stdout\n{}--- stderr\n{}\n",
-            args.join(" "),
-            run.code,
-            run.stdout,
-            run.stderr
-        );
-    }
-    redact(&out, dir)
+    transcript_with_env(dir, commands, &[])
 }
 
 fn snap_empty(name: &str, commands: &[&[&str]]) {
@@ -212,6 +252,20 @@ fn show_variants() {
 }
 
 #[test]
+fn show_everything() {
+    snap_fixture(
+        "show_everything",
+        &[
+            &["update", "aaaa", "--due", "2026-12-01", "--position", "top"],
+            &["status", "aaaa", "--set", "blocked", "--reason", "Waiting on review"],
+            &["meta", "aaaa", "set", "owner", "alice"],
+            &["add", "--task-id", "aaaa", "-c", "First comment"],
+            &["show", "aaaa"],
+        ],
+    );
+}
+
+#[test]
 fn meta_tags_delete() {
     snap_fixture(
         "meta_set_get_unset",
@@ -231,9 +285,186 @@ fn cwi_formats() {
 }
 
 #[test]
-fn generated_specs() {
-    snap_empty("completion_zsh", &[&["completion", "zsh"]]);
-    snap_empty("usage", &[&["usage"]]);
+fn list_filter_in_progress() {
+    snap_fixture(
+        "list_filter_in_progress",
+        &[
+            &["start", "aaaa"],
+            &["list", "-s", "in-progress"],
+            &["list", "-s", "in_progress"],
+            &["list", "-s", "en-cours"],
+        ],
+    );
+}
+
+#[test]
+fn strict_values() {
+    snap_fixture(
+        "strict_values",
+        &[
+            &["add", "X", "-p", "urgent"],
+            &["update", "aaaa", "-p", "none"],
+            &["show", "aaaa"],
+            &["list", "-s", "nope"],
+            &["list", "-p", "none"],
+            &["list", "-p", "urgent"],
+            &["status", "aaaa", "--set", "in_progress"],
+        ],
+    );
+}
+
+#[test]
+fn colour_forced() {
+    let dir = fixture_dir();
+    insta::assert_snapshot!(
+        "colour_forced",
+        transcript_with_env(dir.path(), &[&["list"]], &[("CLICOLOR_FORCE", "1")])
+    );
+}
+
+#[test]
+fn list_aligned() {
+    let dir = fixture_dir();
+    insta::assert_snapshot!("list_aligned", transcript(dir.path(), &[&["list"]]));
+}
+
+#[test]
+fn redaction_leaves_other_numbers() {
+    let dir = empty_dir();
+    let v = env!("CARGO_PKG_VERSION");
+    let input = format!("lida {v}\nversion \"{v}\"\nfoo 1{v}");
+    let expected = format!("lida [VERSION]\nversion \"[VERSION]\"\nfoo 1{v}");
+    assert_eq!(redact(&input, dir.path()), expected);
+}
+
+#[test]
+fn completion_is_lidas() {
+    let dir = empty_dir();
+    let run = lida(dir.path(), &["completion", "zsh"]);
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.starts_with("#compdef lida"));
+    assert!(!run.stdout.contains("todo"));
+}
+
+#[test]
+fn completion_rejects_unknown_shell() {
+    let dir = empty_dir();
+    let run = lida(dir.path(), &["completion", "tcsh"]);
+    assert_eq!(run.code, 2);
+}
+
+#[test]
+fn completion_offers_values() {
+    let dir = fixture_dir();
+    // usage-rs completion callback argv: lida __complete_word__ --shell bash --line <line>
+    // add -- offers --priority and --tags
+    let run = lida(
+        dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida add --"],
+    );
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.contains("--priority"));
+    assert!(run.stdout.contains("--tags"));
+
+    // done offers aaaa and bbbb
+    let run = lida(
+        dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida done "],
+    );
+    assert_eq!(run.code, 0);
+    let items: Vec<&str> = run.stdout.lines().collect();
+    assert!(items.contains(&"aaaa"));
+    assert!(items.contains(&"bbbb"));
+
+    // list -t offers docs and setup
+    let run = lida(
+        dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida list -t "],
+    );
+    assert_eq!(run.code, 0);
+    let items: Vec<&str> = run.stdout.lines().collect();
+    assert_eq!(items, ["docs", "setup"]);
+
+    // add X -p offers exactly low medium high none
+    let run = lida(
+        dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida add X -p "],
+    );
+    assert_eq!(run.code, 0);
+    let mut items: Vec<&str> = run.stdout.lines().collect();
+    items.sort_unstable();
+    assert_eq!(items, ["high", "low", "medium", "none"]);
+
+    // status aaaa --set offers exactly todo in-progress done blocked
+    let run = lida(
+        dir.path(),
+        &[
+            "__complete_word__",
+            "--shell",
+            "bash",
+            "--line",
+            "lida status aaaa --set ",
+        ],
+    );
+    assert_eq!(run.code, 0);
+    let mut items: Vec<&str> = run.stdout.lines().collect();
+    items.sort_unstable();
+    assert_eq!(items, ["blocked", "done", "in-progress", "todo"]);
+}
+
+#[test]
+fn usage_spec_is_complete_and_committed() {
+    let dir = empty_dir();
+    let run = lida(dir.path(), &["usage"]);
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.contains("cmd add"));
+    assert!(run.stdout.contains("flag \"-p --priority\""));
+    let spec_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../lida.usage.kdl");
+    let committed = fs::read_to_string(&spec_path).expect("read lida.usage.kdl");
+    assert_eq!(run.stdout, committed);
+}
+
+#[test]
+fn cwi_md_then_add_keeps_every_task() {
+    let dir = empty_dir();
+    assert_eq!(lida(dir.path(), &["init", "--both", "--project", "test"]).code, 0);
+    assert_eq!(lida(dir.path(), &["add", "First"]).code, 0);
+    assert_eq!(lida(dir.path(), &["cwi", "md"]).code, 0);
+    assert!(!dir.path().join("TODO.yaml").exists());
+    assert_eq!(lida(dir.path(), &["add", "Second"]).code, 0);
+    assert_eq!(lida(dir.path(), &["add", "Third"]).code, 0);
+    let run = lida(dir.path(), &["list", "--tasks"]);
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.contains("First"));
+    assert!(run.stdout.contains("Second"));
+    assert!(run.stdout.contains("Third"));
+}
+
+#[test]
+fn init_force_replaces_the_other_format() {
+    let dir = empty_dir();
+    assert_eq!(lida(dir.path(), &["init", "--yaml", "--project", "test"]).code, 0);
+    assert_eq!(lida(dir.path(), &["add", "OldTask"]).code, 0);
+    assert!(dir.path().join("TODO.yaml").exists());
+    assert_eq!(
+        lida(dir.path(), &["init", "--md", "--force", "--project", "test"]).code,
+        0
+    );
+    assert!(!dir.path().join("TODO.yaml").exists());
+    let run = lida(dir.path(), &["list"]);
+    assert_eq!(run.code, 0);
+    assert!(!run.stdout.contains("OldTask"));
+}
+
+#[test]
+fn duplicate_ids_refuse_to_load_cli() {
+    let dir = empty_dir();
+    let content = "# Tasks\n\n- [ ] aaaa **-** One\n- [ ] aaaa **-** Two\n";
+    fs::write(dir.path().join("TODO.md"), content).expect("write");
+    let run = lida(dir.path(), &["list"]);
+    assert_eq!(run.code, 1);
+    assert!(run.stderr.contains("duplicate task ID #aaaa in TODO.md"));
+    assert_eq!(fs::read_to_string(dir.path().join("TODO.md")).unwrap(), content);
 }
 
 #[test]
@@ -265,7 +496,6 @@ fn optional_branches() {
             &["meta", "aaaa", "rm", "flag"],
         ],
     );
-    snap_empty("completion_other_shell", &[&["completion", "bash"]]);
     snap_empty("tags_empty", &[&["init", "--md"], &["tags"]]);
     snap_fixture(
         "unknown_id_other_commands",
@@ -330,4 +560,69 @@ fn json_outputs_are_pure() {
         );
         assert!(run.stderr.is_empty(), "{args:?} stderr is empty");
     }
+}
+
+#[test]
+fn json_still_has_nulls() {
+    let dir = fixture_dir();
+    let run = lida(dir.path(), &["show", "aaaa", "--json"]);
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.contains("\"due\": null"));
+}
+
+#[test]
+fn input_validation() {
+    let dir = fixture_dir();
+    let initial_bytes = fs::read(dir.path().join("TODO.md")).expect("read fixture");
+    let commands: &[&[&str]] = &[
+        &["add", "Line one\n- [ ] evil **-** Injected"],
+        &["add", "--task-id", "aaaa", "-c", "a\nb"],
+        &["status", "aaaa", "--set", "blocked", "--reason", "a\nb"],
+        &["update", "aaaa", "--position", "a\nb"],
+        &["update", "aaaa", "--due", "a\nb"],
+        &["update", "aaaa", "-t", "a\nb"],
+        &["meta", "aaaa", "set", "k\nx", "v"],
+        &["meta", "aaaa", "set", "k", "a\nb"],
+        &["meta", "aaaa", "set", "a:b", "v"],
+    ];
+    let mut out = String::new();
+    for cmd in commands {
+        let run = lida(dir.path(), cmd);
+        assert_eq!(run.code, 1, "{cmd:?} must exit 1");
+        assert_eq!(
+            fs::read(dir.path().join("TODO.md")).expect("read"),
+            initial_bytes,
+            "{cmd:?} must leave TODO.md unchanged"
+        );
+        append_run(&mut out, cmd, &run);
+    }
+
+    let empty = empty_dir();
+    let empty_commands: &[&[&str]] = &[
+        &["init", "--md", "--project", "a\nb"],
+        &["init", "--md", "--project", "a --> b"],
+        &["init", "--yaml", "--md"],
+    ];
+    for cmd in empty_commands {
+        let run = lida(empty.path(), cmd);
+        assert_eq!(run.code, 1, "{cmd:?} must exit 1");
+        assert!(!empty.path().join("TODO.md").exists());
+        assert!(!empty.path().join("TODO.yaml").exists());
+        append_run(&mut out, cmd, &run);
+    }
+    insta::assert_snapshot!("input_validation", redact(&out, dir.path()));
+}
+
+/// Keys with ':' are refused only when set; existing ones (TODO.yaml allows them) stay readable and removable.
+#[test]
+fn meta_colon_keys_stay_readable() {
+    let dir = empty_dir();
+    let yaml = "tasks:\n- id: aaaa\n  status: todo\n  description: T\n  meta:\n    ci:run: 42\n";
+    fs::write(dir.path().join("TODO.yaml"), yaml).expect("write fixture");
+    let get = lida(dir.path(), &["meta", "aaaa", "get", "ci:run"]);
+    assert_eq!((get.code, get.stdout.as_str()), (0, "42\n"), "{}", get.stderr);
+    let unset = lida(dir.path(), &["meta", "aaaa", "unset", "ci:run"]);
+    assert_eq!(unset.code, 0, "{}", unset.stderr);
+    let set = lida(dir.path(), &["meta", "aaaa", "set", "a:b", "1"]);
+    assert_eq!(set.stderr, "error: meta keys cannot contain ':'\n");
 }

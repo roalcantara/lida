@@ -5,5 +5,5 @@ expression: "transcript(dir.path(), commands)"
 $ lida init --md --project demo
 code: 0
 --- stdout
-[92m✓[39m Initialized project tasks in [DIR]
+✓ Initialized project tasks in [DIR]
 --- stderr

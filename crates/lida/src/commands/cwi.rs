@@ -15,8 +15,7 @@ pub fn run(cwd: &Path, format: Option<&str>, out: &mut impl Write) -> CmdResult 
         "yaml" => StorageFormat::YamlOnly,
         _ => return Err("format must be 'yaml', 'md', or 'both'".into()),
     };
-    store.set_format(fmt)?;
-    store.save()?;
+    store.switch_format(fmt)?;
     writeln!(out, "{} Switched working format to {fmt:?}", "✓".bright_green())?;
     Ok(())
 }

@@ -6,4 +6,4 @@ $ lida list
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: No TODO file found in directory
+error: no TODO file found in directory

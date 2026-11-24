@@ -16,6 +16,18 @@ pub enum Status {
 
 impl Status {
     #[must_use]
+    pub fn parse(value: &str) -> Option<Self> {
+        let normalized = value.to_lowercase().replace('_', "-");
+        match normalized.as_str() {
+            "todo" => Some(Self::Todo),
+            "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => Some(Self::InProgress),
+            "done" | "completed" => Some(Self::Done),
+            "blocked" | "bloqued" => Some(Self::Blocked),
+            _ => None,
+        }
+    }
+
+    #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Todo => "Todo",
@@ -41,15 +53,11 @@ impl<'de> Deserialize<'de> for Status {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        match s.to_lowercase().replace('_', "-").as_str() {
-            "todo" => Ok(Self::Todo),
-            "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => Ok(Self::InProgress),
-            "done" | "completed" => Ok(Self::Done),
-            "blocked" | "bloqued" => Ok(Self::Blocked),
-            other => Err(D::Error::custom(format!(
-                "invalid status '{other}'. Valid values: todo, in-progress, done, blocked"
-            ))),
-        }
+        Self::parse(&s).ok_or_else(|| {
+            D::Error::custom(format!(
+                "invalid status '{s}'. Valid values: todo, in-progress, done, blocked"
+            ))
+        })
     }
 }
 
@@ -66,6 +74,16 @@ pub enum Priority {
 }
 
 impl Priority {
+    #[must_use]
+    pub fn parse(value: &str) -> Option<Self> {
+        match value.to_lowercase().as_str() {
+            "low" => Some(Self::Low),
+            "medium" => Some(Self::Medium),
+            "high" => Some(Self::High),
+            _ => None,
+        }
+    }
+
     #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
@@ -162,6 +180,39 @@ pub struct ProjectDoc {
     pub comments: Vec<Comment>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub project: Option<String>,
+    #[serde(skip)]
+    pub unrecognised: Vec<(usize, String)>,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_yaml_ng::Value>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn status_parse_accepts_every_alias() {
+        for alias in &[
+            "todo",
+            "TODO",
+            "in-progress",
+            "inprogress",
+            "progress",
+            "en-cours",
+            "encours",
+            "IN_PROGRESS",
+            "in_progress",
+            "done",
+            "completed",
+            "DONE",
+            "blocked",
+            "bloqued",
+            "BLOCKED",
+        ] {
+            assert!(Status::parse(alias).is_some(), "failed for {alias}");
+        }
+        assert_eq!(Status::parse("IN_PROGRESS"), Some(Status::InProgress));
+        assert_eq!(Status::parse("in_progress"), Some(Status::InProgress));
+        assert_eq!(Status::parse("nope"), None);
+    }
 }

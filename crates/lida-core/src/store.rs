@@ -13,12 +13,18 @@ use thiserror::Error;
 /// Storage errors.
 #[derive(Debug, Error)]
 pub enum StoreError {
-    #[error("I/O error: {0}")]
+    #[error("io error: {0}")]
     Io(#[from] io::Error),
-    #[error("Format error: {0}")]
+    #[error("format error: {0}")]
     Format(#[from] FormatError),
-    #[error("No TODO file found in directory")]
+    #[error("no TODO file found in directory")]
     NotFound,
+    #[error("duplicate task ID #{id} in {file}")]
+    DuplicateId { id: String, file: &'static str },
+    #[error("{what}")]
+    Unrepresentable { what: String },
+    #[error("TODO.md line {line} is not something lida writes: {text}")]
+    UnrecognisedMarkdown { line: usize, text: String },
 }
 
 /// The active storage format mode for a workspace.
@@ -48,46 +54,54 @@ pub struct Store {
     doc: ProjectDoc,
 }
 
+fn config_path(dir: &Path) -> PathBuf {
+    let lida_cfg = dir.join(".lida").join("config");
+    let todo_cfg = dir.join(".todo").join("config");
+    if lida_cfg.exists() {
+        lida_cfg
+    } else if todo_cfg.exists() {
+        todo_cfg
+    } else {
+        lida_cfg
+    }
+}
+
+fn check_duplicate_ids(doc: &ProjectDoc, file: &'static str) -> Result<(), StoreError> {
+    let mut seen = std::collections::HashSet::new();
+    for task in &doc.tasks {
+        if !seen.insert(&task.id) {
+            return Err(StoreError::DuplicateId {
+                id: task.id.clone(),
+                file,
+            });
+        }
+    }
+    Ok(())
+}
+
 impl Store {
     /// Reads the configured format from `.lida/config` or `.todo/config` if present.
     fn read_config_format(dir: &Path) -> Option<StorageFormat> {
-        let lida_cfg = dir.join(".lida").join("config");
-        let todo_cfg = dir.join(".todo").join("config");
-
-        let cfg_path = if lida_cfg.exists() {
-            Some(lida_cfg)
-        } else if todo_cfg.exists() {
-            Some(todo_cfg)
-        } else {
-            None
-        };
-
-        if let Some(path) = cfg_path
-            && let Ok(content) = fs::read_to_string(path)
-        {
-            return match content.trim().to_lowercase().as_str() {
+        let path = config_path(dir);
+        if let Ok(content) = fs::read_to_string(path) {
+            match content.trim().to_lowercase().as_str() {
                 "yaml" => Some(StorageFormat::YamlOnly),
                 "md" | "markdown" => Some(StorageFormat::MdOnly),
                 "both" => Some(StorageFormat::Both),
                 _ => None,
-            };
+            }
+        } else {
+            None
         }
-        None
     }
 
     /// Writes the active format to `.lida/config` (or `.todo/config` if that exists).
     fn write_config_format(&self, format: StorageFormat) -> Result<(), io::Error> {
-        let lida_dir = self.dir.join(".lida");
-        let todo_dir = self.dir.join(".todo");
-
-        let target_file = if todo_dir.exists() {
-            todo_dir.join("config")
-        } else {
-            fs::create_dir_all(&lida_dir)?;
-            lida_dir.join("config")
-        };
-
-        fs::write(target_file, format!("{format}\n", format = format.as_str()))
+        let target = config_path(&self.dir);
+        if let Some(parent) = target.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(target, format!("{format}\n", format = format.as_str()))
     }
 
     /// Loads the project document from the given directory.
@@ -109,17 +123,24 @@ impl Store {
 
         let (format, doc) = match (yaml_exists, md_exists) {
             (true, true) => {
-                // In dual-write mode, TODO.yaml is authoritative for the data model
-                // because YAML preserves full rich structures (actors, comments, and extra fields).
-                let doc = parse_yaml(&fs::read_to_string(&yaml_path)?)?;
-                (config_format.unwrap_or(StorageFormat::Both), doc)
+                let fmt = config_format.unwrap_or(StorageFormat::Both);
+                let (source_file, doc) = match fmt {
+                    StorageFormat::MdOnly => ("TODO.md", parse_markdown(&fs::read_to_string(&md_path)?)?),
+                    StorageFormat::YamlOnly | StorageFormat::Both => {
+                        ("TODO.yaml", parse_yaml(&fs::read_to_string(&yaml_path)?)?)
+                    }
+                };
+                check_duplicate_ids(&doc, source_file)?;
+                (fmt, doc)
             }
             (true, false) => {
                 let doc = parse_yaml(&fs::read_to_string(&yaml_path)?)?;
+                check_duplicate_ids(&doc, "TODO.yaml")?;
                 (config_format.unwrap_or(StorageFormat::YamlOnly), doc)
             }
             (false, true) => {
                 let doc = parse_markdown(&fs::read_to_string(&md_path)?)?;
+                check_duplicate_ids(&doc, "TODO.md")?;
                 (config_format.unwrap_or(StorageFormat::MdOnly), doc)
             }
             (false, false) => unreachable!(),
@@ -142,6 +163,7 @@ impl Store {
             actors: Vec::new(),
             comments: Vec::new(),
             project,
+            unrecognised: Vec::new(),
             extra: BTreeMap::new(),
         };
         let store = Self {
@@ -151,6 +173,21 @@ impl Store {
         };
         store.write_config_format(format)?;
         store.save()?;
+        match format {
+            StorageFormat::MdOnly => {
+                let yaml_path = dir.join("TODO.yaml");
+                if yaml_path.exists() {
+                    fs::remove_file(yaml_path)?;
+                }
+            }
+            StorageFormat::YamlOnly => {
+                let md_path = dir.join("TODO.md");
+                if md_path.exists() {
+                    fs::remove_file(md_path)?;
+                }
+            }
+            StorageFormat::Both => {}
+        }
         Ok(store)
     }
 
@@ -159,13 +196,45 @@ impl Store {
         self.format
     }
 
-    /// Sets the format mode and persists it to config.
+    /// Switches the format mode, writes config, saves, and removes the abandoned file.
     ///
     /// # Errors
-    /// Returns `StoreError` if saving the config fails.
-    pub fn set_format(&mut self, format: StorageFormat) -> Result<(), StoreError> {
+    /// Returns `StoreError` if guards fail, config write fails, or save/remove fails.
+    pub fn switch_format(&mut self, format: StorageFormat) -> Result<(), StoreError> {
+        if format == self.format {
+            return Ok(());
+        }
+        // Refuse before touching anything: unrecognised TODO.md lines would be lost by any switch, and only
+        // Markdown-only drops what TODO.md cannot hold (dual-write keeps it in the authoritative TODO.yaml).
+        if let Some((line, text)) = self.doc.unrecognised.first() {
+            return Err(StoreError::UnrecognisedMarkdown {
+                line: *line,
+                text: text.clone(),
+            });
+        }
+        if format == StorageFormat::MdOnly
+            && let Some(reason) = crate::format::md::markdown_cannot_hold(&self.doc)
+        {
+            return Err(StoreError::Unrepresentable { what: reason });
+        }
         self.format = format;
+        self.save()?;
         self.write_config_format(format)?;
+        match format {
+            StorageFormat::MdOnly => {
+                let yaml_path = self.dir.join("TODO.yaml");
+                if yaml_path.exists() {
+                    fs::remove_file(yaml_path)?;
+                }
+            }
+            StorageFormat::YamlOnly => {
+                let md_path = self.dir.join("TODO.md");
+                if md_path.exists() {
+                    fs::remove_file(md_path)?;
+                }
+            }
+            StorageFormat::Both => {}
+        }
         Ok(())
     }
 
@@ -197,6 +266,14 @@ impl Store {
     /// # Errors
     /// Returns `StoreError` if writing or file replacement fails.
     pub fn save(&self) -> Result<(), StoreError> {
+        if (self.format == StorageFormat::MdOnly || self.format == StorageFormat::Both)
+            && let Some((line, text)) = self.doc.unrecognised.first()
+        {
+            return Err(StoreError::UnrecognisedMarkdown {
+                line: *line,
+                text: text.clone(),
+            });
+        }
         match self.format {
             StorageFormat::YamlOnly => {
                 let content = serialize_yaml(&self.doc)?;

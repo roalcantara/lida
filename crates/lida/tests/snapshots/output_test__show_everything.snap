@@ -1,0 +1,43 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida update aaaa --due 2026-12-01 --position top
+code: 0
+--- stdout
+✓ Updated task #aaaa
+--- stderr
+
+$ lida status aaaa --set blocked --reason Waiting on review
+code: 0
+--- stdout
+✓ Task #aaaa status set to Blocked
+--- stderr
+
+$ lida meta aaaa set owner alice
+code: 0
+--- stdout
+✓ Set metadata owner for task #aaaa
+--- stderr
+
+$ lida add --task-id aaaa -c First comment
+code: 0
+--- stdout
+✓ Added comment to task #aaaa
+--- stderr
+
+$ lida show aaaa
+code: 0
+--- stdout
+Task #aaaa: First task
+  Status: Blocked
+  Priority: Medium
+  Tags: setup
+  Due: 2026-12-01
+  Blocked reason: Waiting on review
+  Position: top
+  Metadata:
+    owner: "alice"
+  Comments:
+    #[ID] First comment
+--- stderr

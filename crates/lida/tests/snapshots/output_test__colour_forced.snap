@@ -1,0 +1,12 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript_with_env(dir.path(), &[&[\"list\"]], &[(\"CLICOLOR_FORCE\", \"1\")])"
+---
+$ lida list
+code: 0
+--- stdout
+[1mID    [0m [1mSTATUS      [0m [1mPRIORITY  [0m [1mTITLE                         [0m [1mTAGS[0m
+[2m──────────────────────────────────────────────────────────────────────[0m
+#[1maaaa [0m [2mTodo        [0m [93mMedium    [39m First task                     [2msetup[0m
+#[1mbbbb [0m [2mTodo        [0m [91mHigh      [39m Second task                    [2msetup, docs[0m
+--- stderr

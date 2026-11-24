@@ -1,0 +1,33 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida start aaaa
+code: 0
+--- stdout
+✓ Task #aaaa marked as in-progress
+--- stderr
+
+$ lida list -s in-progress
+code: 0
+--- stdout
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  InProgress   Medium     First task                     setup
+--- stderr
+
+$ lida list -s in_progress
+code: 0
+--- stdout
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  InProgress   Medium     First task                     setup
+--- stderr
+
+$ lida list -s en-cours
+code: 0
+--- stdout
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  InProgress   Medium     First task                     setup
+--- stderr

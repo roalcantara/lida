@@ -1,21 +1,14 @@
 //! `lida completion` and `lida usage`: generated shell and spec files.
 
 use super::prelude::*;
+use usage_rs::completion::Completion;
 
-pub fn completion(shell: &str, out: &mut impl Write) -> CmdResult {
-    if shell.eq_ignore_ascii_case("zsh") {
-        write!(out, "{}", include_str!("../../assets/raw_todo_completion.zsh"))?;
-    } else {
-        writeln!(out, "# Completion for {shell} not implemented yet")?;
-    }
+pub fn completion(completion: &Completion, out: &mut impl Write, err: &mut impl Write) -> CmdResult {
+    completion.run_split("lida", out, err)?;
     Ok(())
 }
 
 pub fn usage(out: &mut impl Write) -> CmdResult {
-    writeln!(out, "# lida.usage.kdl")?;
-    writeln!(out, "name \"lida\"")?;
-    writeln!(out, "bin \"lida\"")?;
-    writeln!(out, "version \"{}\"", env!("CARGO_PKG_VERSION"))?;
-    writeln!(out, "about \"Dual-format project task engine (YAML · MD)\"")?;
+    write!(out, "{}", crate::cli::LidaCli::to_kdl())?;
     Ok(())
 }

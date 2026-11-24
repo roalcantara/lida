@@ -10,6 +10,6 @@ use thiserror::Error;
 pub enum FormatError {
     #[error("YAML error: {0}")]
     Yaml(#[from] serde_yaml_ng::Error),
-    #[error("Markdown parse error: {0}")]
+    #[error("markdown parse error: {0}")]
     Markdown(String),
 }

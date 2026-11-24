@@ -11,17 +11,17 @@ Current working format: MdOnly
 $ lida cwi both
 code: 0
 --- stdout
-[92m✓[39m Switched working format to Both
+✓ Switched working format to Both
 --- stderr
 
 $ lida cwi yaml
 code: 0
 --- stdout
-[92m✓[39m Switched working format to YamlOnly
+✓ Switched working format to YamlOnly
 --- stderr
 
 $ lida cwi md
 code: 0
 --- stdout
-[92m✓[39m Switched working format to MdOnly
+✓ Switched working format to MdOnly
 --- stderr

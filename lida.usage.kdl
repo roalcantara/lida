@@ -1,5 +1,152 @@
-# lida.usage.kdl
-name "lida"
-bin "lida"
+name lida
+bin lida
 version "0.1.0"
 about "Dual-format project task engine (YAML · MD)"
+flag "-h --help" help="Print help" action=help builtin=#true
+flag "-V --version" help="Print version" action=version builtin=#true
+cmd init help="Initialize a new TODO file (TODO.yaml or TODO.md)" {
+    flag --yaml help="Initialize TODO.yaml"
+    flag --md help="Initialize TODO.md"
+    flag --both help="Initialize both TODO.yaml and TODO.md with dual-write sync"
+    flag --project help="Project name to embed in header" {
+        arg <PROJECT>
+    }
+    flag "-f --force" help="Overwrite existing TODO files"
+    flag "-h --help" help="Print help" action=help builtin=#true
+}
+cmd add help="Add a new task (optionally with initial comment)" {
+    flag --task help="Legacy flag task description" {
+        arg <TASK>
+    }
+    flag --task-id help="Attach comment to existing task ID" {
+        arg <TASK_ID>
+    }
+    flag "-p --priority" help="Priority level: low, medium, high" {
+        arg <PRIORITY>
+    }
+    flag "-t --tags" help="Comma-separated tags" {
+        arg <TAGS>
+    }
+    flag "-d --due" help="Due date (YYYY-MM-DD or YYYY-MM-DD HH:MM)" {
+        arg <DUE>
+    }
+    flag --position help="Code position URL or file path" {
+        arg <POSITION>
+    }
+    flag "-c --comment" help="Initial comment to attach to the task" {
+        arg <COMMENT>
+    }
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg "[DESCRIPTION]" help="Positional task description shorthand"
+    complete priority run="lida __complete_word__ --candidates priority --line={{ words | shell_join | shell_quote }}"
+    complete task_id run="lida __complete_word__ --candidates task_id --line={{ words | shell_join | shell_quote }}"
+}
+cmd update help="Update an existing task's attributes" {
+    flag "-d --description" help="Task description" {
+        arg <DESCRIPTION>
+    }
+    flag "-p --priority" help="Priority level: low, medium, high" {
+        arg <PRIORITY>
+    }
+    flag "-t --tags" help="Comma-separated tags" {
+        arg <TAGS>
+    }
+    flag --tag help="Single tag or comma-separated tag alias" {
+        arg <TAG>
+    }
+    flag --due help="Due date (YYYY-MM-DD or YYYY-MM-DD HH:MM)" {
+        arg <DUE>
+    }
+    flag --position help="Code position URL or file path" {
+        arg <POSITION>
+    }
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <ID> help="4-character task ID"
+    complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
+    complete priority run="lida __complete_word__ --candidates priority --line={{ words | shell_join | shell_quote }}"
+    complete tag run="lida __complete_word__ --candidates tag --line={{ words | shell_join | shell_quote }}"
+    complete tags run="lida __complete_word__ --candidates tags --line={{ words | shell_join | shell_quote }}"
+}
+cmd list help="List tasks" {
+    flag --tasks help="Print one plain line per task, for shell completion"
+    flag "-s --status" help="Filter by status: todo, in-progress, done, blocked" {
+        arg <STATUS>
+    }
+    flag "-t --tag" help="Filter by tag" {
+        arg <TAG>
+    }
+    flag "-p --priority" help="Filter by priority: low, medium, high" {
+        arg <PRIORITY>
+    }
+    flag --json help="Output as structured JSON array"
+    flag "-h --help" help="Print help" action=help builtin=#true
+    complete priority run="lida __complete_word__ --candidates priority --line={{ words | shell_join | shell_quote }}"
+    complete status run="lida __complete_word__ --candidates status --line={{ words | shell_join | shell_quote }}"
+    complete tag run="lida __complete_word__ --candidates tag --line={{ words | shell_join | shell_quote }}"
+}
+cmd done help="Mark a task as done" {
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <ID> help="4-character task ID"
+    complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
+}
+cmd start help="Mark a task as in-progress" {
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <ID> help="4-character task ID"
+    complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
+}
+cmd status help="Change a task's status" {
+    flag --set help="Status value: todo, in-progress, done, blocked (or en-cours, bloqued)" required=#true {
+        arg <SET>
+    }
+    flag --reason help="Reason if blocked" {
+        arg <REASON>
+    }
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <ID> help="4-character task ID"
+    complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
+    complete set run="lida __complete_word__ --candidates set --line={{ words | shell_join | shell_quote }}"
+}
+cmd show help="View full task details" {
+    flag --json help="Output as JSON"
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <ID> help="4-character task ID"
+    complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
+}
+cmd meta help="Get, set, or remove task metadata" {
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <ID> help="4-character task ID"
+    arg <ACTION> help="Action: set, get, unset"
+    arg <KEY> help="Metadata key"
+    arg "[VALUE]" help="Value to set (required for 'set')"
+    complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
+}
+cmd tags help="List all tags in use with task counts" {
+    flag "-h --help" help="Print help" action=help builtin=#true
+}
+cmd delete help="Delete a task by ID" {
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <ID> help="4-character task ID"
+    complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
+}
+cmd cwi help="Check or switch active format mode" {
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg "[FORMAT]" help="Target format: yaml, md, both"
+    complete format run="lida __complete_word__ --candidates format --line={{ words | shell_join | shell_quote }}"
+}
+cmd completion help="Generate shell completion scripts" {
+    flag --install help="Write the script where the shell looks for it instead of printing it" effect=write
+    flag --force help="With --install, replace a file that was not generated by usage" effect=destructive requires=--install {
+        long_help #"""
+With --install, replace a file that was not generated by usage
+
+The file is overwritten without a backup, which is why this is labeled destructive.
+"""#
+    }
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <SHELL> help="Shell to generate completions for" {
+        choices bash elvish fish nu nushell powershell pwsh zsh
+    }
+}
+cmd usage help="Export the portable .usage.kdl specification" {
+    flag "-h --help" help="Print help" action=help builtin=#true
+}

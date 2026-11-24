@@ -1,0 +1,84 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "redact(&out, dir.path())"
+---
+$ lida add Line one
+- [ ] evil **-** Injected
+code: 1
+--- stdout
+--- stderr
+error: description must be a single line
+
+$ lida add --task-id aaaa -c a
+b
+code: 1
+--- stdout
+--- stderr
+error: comment must be a single line
+
+$ lida status aaaa --set blocked --reason a
+b
+code: 1
+--- stdout
+--- stderr
+error: reason must be a single line
+
+$ lida update aaaa --position a
+b
+code: 1
+--- stdout
+--- stderr
+error: position must be a single line
+
+$ lida update aaaa --due a
+b
+code: 1
+--- stdout
+--- stderr
+error: due must be a single line
+
+$ lida update aaaa -t a
+b
+code: 1
+--- stdout
+--- stderr
+error: tags must be a single line
+
+$ lida meta aaaa set k
+x v
+code: 1
+--- stdout
+--- stderr
+error: meta key must be a single line
+
+$ lida meta aaaa set k a
+b
+code: 1
+--- stdout
+--- stderr
+error: meta value must be a single line
+
+$ lida meta aaaa set a:b v
+code: 1
+--- stdout
+--- stderr
+error: meta keys cannot contain ':'
+
+$ lida init --md --project a
+b
+code: 1
+--- stdout
+--- stderr
+error: project must be a single line
+
+$ lida init --md --project a --> b
+code: 1
+--- stdout
+--- stderr
+error: project name cannot contain '-->'
+
+$ lida init --yaml --md
+code: 1
+--- stdout
+--- stderr
+error: choose one of --yaml, --md or --both

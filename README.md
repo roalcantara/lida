@@ -9,7 +9,7 @@ Dual-format project task engine maintaining bidirectional, lossless synchronicit
 
 ## Technology Stack
 
-- Rust 1.99+ (edition 2024), Cargo workspace (`lida-core` + `lida`)
+- Rust 1.91+ (edition 2024), Cargo workspace (`lida-core` + `lida`)
 - usage-rs for CLI parsing, owo-colors for terminal output
 - serde, serde_json and serde_yaml_ng for the task model and its two file formats
 - mise for tool versions and tasks; hk for git hooks and quality gates
@@ -65,8 +65,8 @@ tools/graph/   code graphs for agents: CRG, Gortex, Graphify (see its README)
 
 - **Dual Native:** Read and write both `TODO.md` and `TODO.yaml` with atomic synchronization.
 - **Git-Centric Reliability:** Collision-resilient random 4-character base62 IDs (`zOaU`).
-- **First-Class Metadata:** Native typed key-value maps on tasks (`--meta key=val`).
-- **Agent Ready:** Instant `--json` output across all commands.
+- **First-Class Metadata:** Native typed key-value maps on tasks (`lida meta <id> set <key> <value>`).
+- **Agent Ready:** Instant `--json` output on `list` and `show`.
 - **Sub-millisecond Speed:** Built in Rust using `usage-rs`.
 
 ## Development Workflow

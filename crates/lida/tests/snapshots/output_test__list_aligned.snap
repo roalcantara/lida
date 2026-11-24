@@ -1,0 +1,12 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), &[&[\"list\"]])"
+---
+$ lida list
+code: 0
+--- stdout
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  Todo         Medium     First task                     setup
+#bbbb  Todo         High       Second task                    setup, docs
+--- stderr

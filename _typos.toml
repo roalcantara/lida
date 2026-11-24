@@ -1,5 +1,12 @@
 [files]
-extend-exclude = [".mise/", "crates/*/tests/snapshots/", "target/", "*.lock", "CHANGELOG.md"]
+extend-exclude = [
+  ".mise/",
+  "crates/*/tests/snapshots/",
+  "crates/*/tests/fixtures/",
+  "target/",
+  "*.lock",
+  "CHANGELOG.md",
+]
 
 [default.extend-words]
 # Part of lida's `en-cours` status alias (French for "in progress").
@@ -10,3 +17,7 @@ ratatui = "ratatui"
 [default.extend-identifiers]
 ratatui = "ratatui"
 Ratatui = "Ratatui"
+
+[default]
+# lida task IDs are random base62 (TODO.md: "- [ ] foNb **-** …"); never words.
+extend-ignore-re = ["[0-9A-Za-z]{4} \\*\\*-\\*\\*"]

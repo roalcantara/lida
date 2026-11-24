@@ -1,7 +1,7 @@
 //! `lida done`, `lida start` and `lida status`: change a task's status.
 
-use super::not_found;
 use super::prelude::*;
+use super::{not_found, parse_status};
 use lida_core::model::Status;
 
 pub fn done(cwd: &Path, id: &str, out: &mut impl Write) -> CmdResult {
@@ -18,16 +18,11 @@ pub fn start(cwd: &Path, id: &str, out: &mut impl Write) -> CmdResult {
 
 /// `--set` takes a status or one of its aliases; `--reason` is kept only for `blocked`.
 pub fn set(cwd: &Path, id: &str, value: &str, reason: Option<String>, out: &mut impl Write) -> CmdResult {
+    let status = parse_status(value)?;
+    if let Some(ref r) = reason {
+        single_line("reason", r)?;
+    }
     let mut store = Store::load(cwd)?;
-    let status = match value.to_lowercase().as_str() {
-        "inprogress" | "in-progress" | "en-cours" | "encours" | "progress" => Status::InProgress,
-        "done" | "completed" => Status::Done,
-        "blocked" | "bloqued" => Status::Blocked,
-        "todo" => Status::Todo,
-        other => {
-            return Err(format!("invalid status '{other}'. Valid values: todo, in-progress, done, blocked").into());
-        }
-    };
     let task = store.find_task_mut(id).ok_or_else(|| not_found(id))?;
     task.status = status;
     if status == Status::Blocked {

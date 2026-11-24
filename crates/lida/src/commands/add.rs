@@ -1,7 +1,7 @@
 //! `lida add`: create a task, or attach a comment to one with `--task-id`.
 
 use super::prelude::*;
-use super::{not_found, parse_priority, parse_tags};
+use super::{not_found, parse_priority_arg, parse_tags};
 use lida_core::id::generate_id;
 use lida_core::model::{Comment, Task};
 use std::collections::{BTreeMap, HashSet};
@@ -19,24 +19,32 @@ pub struct Args {
 }
 
 pub fn run(cwd: &Path, args: Args, out: &mut impl Write) -> CmdResult {
-    let mut store = Store::load(cwd)?;
     if let Some(target_id) = args.task_id {
         let text = args
             .comment
             .or(args.description)
             .ok_or("comment text is required when specifying --task-id")?;
+        single_line("comment", &text)?;
+        let mut store = Store::load(cwd)?;
         return add_comment(&mut store, &target_id, text, out);
     }
 
     let desc = args
         .description
         .ok_or("task description is required (e.g. `lida add \"Task description\"`)")?;
+    single_line("description", &desc)?;
+    if let Some(ref c) = args.comment {
+        single_line("comment", c)?;
+    }
+    validate_task_fields(args.position.as_deref(), args.due.as_deref(), args.tags.as_deref())?;
+
+    let mut store = Store::load(cwd)?;
     let existing_ids: HashSet<String> = store.doc().tasks.iter().map(|t| t.id.clone()).collect();
     let new_id = generate_id(&existing_ids);
 
     let mut new_task = Task::new(&new_id, &desc);
     if let Some(p) = args.priority {
-        new_task.priority = parse_priority(&p);
+        new_task.priority = parse_priority_arg(&p)?;
     }
     if let Some(t) = args.tags {
         new_task.tags = parse_tags(&t);

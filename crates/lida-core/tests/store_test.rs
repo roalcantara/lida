@@ -72,3 +72,196 @@ fn test_store_dual_write_synchronization() {
 
     assert!(md_content.contains("- [x] e5f6 **-** Task Dual"));
 }
+
+fn assert_files_exist(dir: &Path, yaml: bool, md: bool) {
+    assert_eq!(dir.join("TODO.yaml").exists(), yaml);
+    assert_eq!(dir.join("TODO.md").exists(), md);
+}
+
+#[test]
+fn cwi_to_current_format_deletes_nothing() {
+    let dir = tempdir().unwrap();
+    let mut store = Store::init(dir.path(), StorageFormat::Both, None).unwrap();
+    assert_files_exist(dir.path(), true, true);
+    store.switch_format(StorageFormat::Both).unwrap();
+    assert_files_exist(dir.path(), true, true);
+}
+
+#[test]
+fn cwi_both_keeps_both_files() {
+    let dir = tempdir().unwrap();
+    let mut store = Store::init(dir.path(), StorageFormat::MdOnly, None).unwrap();
+    assert_files_exist(dir.path(), false, true);
+    store.switch_format(StorageFormat::Both).unwrap();
+    assert_files_exist(dir.path(), true, true);
+}
+
+#[test]
+fn duplicate_ids_refuse_to_load() {
+    let dir = tempdir().unwrap();
+    let md_path = dir.path().join("TODO.md");
+    fs::write(&md_path, "# Tasks\n\n- [ ] aaaa **-** One\n- [ ] aaaa **-** Two\n").unwrap();
+    let err = Store::load(dir.path()).unwrap_err();
+    match err {
+        lida_core::store::StoreError::DuplicateId { id, file } => {
+            assert_eq!(id, "aaaa");
+            assert_eq!(file, "TODO.md");
+        }
+        other => panic!("expected DuplicateId, got {other:?}"),
+    }
+}
+
+#[test]
+fn todo_config_is_read_and_written() {
+    let dir = tempdir().unwrap();
+    let todo_dir = dir.path().join(".todo");
+    fs::create_dir_all(&todo_dir).unwrap();
+    fs::write(todo_dir.join("config"), "yaml\n").unwrap();
+    fs::write(
+        dir.path().join("TODO.yaml"),
+        "tasks:\n- id: aaaa\n  status: Todo\n  description: One\n",
+    )
+    .unwrap();
+
+    let mut store = Store::load(dir.path()).unwrap();
+    assert_eq!(store.format(), StorageFormat::YamlOnly);
+    store.switch_format(StorageFormat::MdOnly).unwrap();
+
+    assert_eq!(fs::read_to_string(todo_dir.join("config")).unwrap().trim(), "md");
+    assert!(!dir.path().join(".lida").join("config").exists());
+}
+
+#[test]
+fn unrecognised_lines_are_kept_and_block_saving() {
+    let dir = tempdir().unwrap();
+    let md_path = dir.path().join("TODO.md");
+    let input = "# Tasks\n\n- [ ] aaaa **-** Task 1\n  Some stray note\n\n# Actors\n\n# Comments\n";
+    fs::write(&md_path, input).unwrap();
+
+    let store = Store::load(dir.path()).unwrap();
+    assert_eq!(store.doc().unrecognised.len(), 1);
+    assert_eq!(store.doc().unrecognised[0].0, 4);
+    assert_eq!(store.doc().unrecognised[0].1, "  Some stray note");
+
+    let err = store.save().unwrap_err();
+    match err {
+        lida_core::store::StoreError::UnrecognisedMarkdown { line, text } => {
+            assert_eq!(line, 4);
+            assert_eq!(text, "  Some stray note");
+        }
+        other => panic!("expected UnrecognisedMarkdown, got {other:?}"),
+    }
+    assert_eq!(fs::read_to_string(&md_path).unwrap(), input);
+}
+
+#[test]
+fn cwi_md_refuses_what_markdown_cannot_hold() {
+    let dir = tempdir().unwrap();
+    let blog_yaml = include_str!("fixtures/dots_blog_TODO.yaml");
+    fs::write(dir.path().join("TODO.yaml"), blog_yaml).unwrap();
+
+    let mut store = Store::load(dir.path()).unwrap();
+    let err = store.switch_format(StorageFormat::MdOnly).unwrap_err();
+    match err {
+        lida_core::store::StoreError::Unrepresentable { what } => {
+            assert!(what.contains("actor types"));
+            assert!(what.contains("stay on yaml or both"));
+        }
+        other => panic!("expected Unrepresentable, got {other:?}"),
+    }
+    assert!(dir.path().join("TODO.yaml").exists());
+    assert!(!dir.path().join("TODO.md").exists());
+}
+
+#[test]
+fn cwi_yaml_refuses_unrecognised_markdown() {
+    let dir = tempdir().unwrap();
+    let input = "# Tasks\n\n- [ ] aaaa **-** Task 1\n  Stray text\n\n# Actors\n\n# Comments\n";
+    fs::write(dir.path().join("TODO.md"), input).unwrap();
+
+    let mut store = Store::load(dir.path()).unwrap();
+    let err = store.switch_format(StorageFormat::YamlOnly).unwrap_err();
+    match err {
+        lida_core::store::StoreError::UnrecognisedMarkdown { line, text } => {
+            assert_eq!(line, 4);
+            assert_eq!(text, "  Stray text");
+        }
+        other => panic!("expected UnrecognisedMarkdown, got {other:?}"),
+    }
+    assert!(dir.path().join("TODO.md").exists());
+    assert!(!dir.path().join("TODO.yaml").exists());
+}
+
+#[test]
+fn cwi_both_keeps_what_markdown_cannot_hold() {
+    let dir = tempdir().unwrap();
+    fs::write(
+        dir.path().join("TODO.yaml"),
+        include_str!("fixtures/dots_blog_TODO.yaml"),
+    )
+    .unwrap();
+
+    let mut store = Store::load(dir.path()).unwrap();
+    store.switch_format(StorageFormat::Both).unwrap();
+    assert_files_exist(dir.path(), true, true);
+    assert!(
+        fs::read_to_string(dir.path().join("TODO.yaml"))
+            .unwrap()
+            .contains("actor_type")
+    );
+}
+
+#[test]
+fn refused_switch_leaves_config_unchanged() {
+    let dir = tempdir().unwrap();
+    fs::write(
+        dir.path().join("TODO.md"),
+        "A stray paragraph\n\n# Tasks\n\n- [ ] aaaa **-** Task 1\n",
+    )
+    .unwrap();
+
+    assert!(
+        Store::load(dir.path())
+            .unwrap()
+            .switch_format(StorageFormat::Both)
+            .is_err()
+    );
+    assert!(!dir.path().join(".lida").join("config").exists());
+    assert_files_exist(dir.path(), false, true);
+}
+
+#[expect(clippy::unwrap_used, reason = "test helper: a failed setup is a failed test")]
+fn assert_cwi_md_refused(yaml: &str, expected: &str) {
+    let dir = tempdir().unwrap();
+    fs::write(dir.path().join("TODO.yaml"), yaml).unwrap();
+    let mut store = Store::load(dir.path()).unwrap();
+    match store.switch_format(StorageFormat::MdOnly).unwrap_err() {
+        lida_core::store::StoreError::Unrepresentable { what } => assert!(what.contains(expected), "{what}"),
+        other => panic!("expected Unrepresentable, got {other:?}"),
+    }
+    assert_files_exist(dir.path(), true, false);
+}
+
+#[test]
+fn cwi_md_refuses_multi_line_text() {
+    assert_cwi_md_refused(
+        "tasks:\n- id: aaaa\n  status: todo\n  description: \"line1\\nline2\"\n",
+        "multi-line text (task #aaaa)",
+    );
+}
+
+#[test]
+fn cwi_md_refuses_meta_keys_with_a_colon() {
+    assert_cwi_md_refused(
+        "tasks:\n- id: aaaa\n  status: todo\n  description: T\n  meta:\n    ci:run: 1\n",
+        "meta keys with ':' (task #aaaa)",
+    );
+}
+
+#[test]
+fn cwi_md_refuses_comments_linked_only_by_task() {
+    assert_cwi_md_refused(
+        "tasks:\n- id: aaaa\n  status: todo\n  description: T\ncomments:\n- id: c1\n  text: note\n  task: aaaa\n",
+        "comment links (comment c1)",
+    );
+}

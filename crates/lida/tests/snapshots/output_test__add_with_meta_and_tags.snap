@@ -5,15 +5,15 @@ expression: "transcript(dir.path(), commands)"
 $ lida add Third task -p low -t a,b -d 2026-12-01 --position src/x.rs:1
 code: 0
 --- stdout
-[92m✓[39m Added task #[ID] "Third task"
+✓ Added task #[ID] "Third task"
 --- stderr
 
 $ lida list
 code: 0
 --- stdout
-[1mID    [0m [1mSTATUS      [0m [1mPRIORITY  [0m [1mTITLE                         [0m [1mTAGS[0m
-[2m──────────────────────────────────────────────────────────────────────[0m
-#[1maaaa [0m [2mTodo[0m [93mMedium[39m First task                     [2msetup[0m
-#[1mbbbb [0m [2mTodo[0m [91mHigh[39m Second task                    [2msetup, docs[0m
-#[1m[ID] [0m [2mTodo[0m [2mLow[0m Third task                     [2ma, b[0m
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  Todo         Medium     First task                     setup
+#bbbb  Todo         High       Second task                    setup, docs
+#[ID]  Todo         Low        Third task                     a, b
 --- stderr

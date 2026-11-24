@@ -12,12 +12,15 @@ errors start with `error:` and say what to do when there is a fix (`Use --force 
 
 ## Streams and exit codes
 
-- Results go to stdout. Errors go to stderr as one line, `error: <message>`, and exit `1`.
+- Results go to stdout. Command errors go to stderr as one line, `error: <message>`, and exit `1`.
+- Argument and CLI parse errors print usage to stderr and exit `2`.
 - Success exits `0`. Nothing else is printed on success; `--json` output is pure JSON with an empty stderr.
 
 ## Colour
 
-Colour is applied with `owo-colors` and is always on.
+Colour is applied with `owo-colors`. It is enabled on a terminal stream, unless overridden by standard environment
+variables: `false` when `NO_COLOR` is set and non-empty; else `true` when `CLICOLOR_FORCE` is set, non-empty and not
+`0`; else `is_terminal`.
 
 | Element                                                                        | Style                               |
 | ------------------------------------------------------------------------------ | ----------------------------------- |
@@ -34,8 +37,7 @@ Colour is applied with `owo-colors` and is always on.
 | priority `High` / `Medium` / `Low`                                             | bright red / bright yellow / dimmed |
 | `No tasks found.`                                                              | dimmed                              |
 
-Known gap: colour is emitted even when stdout is piped or `NO_COLOR` is set. IDs in `add` messages, errors and `show`'s
-metadata lines are not bold.
+IDs in `add` messages, errors and `show`'s metadata lines are not bold.
 
 ## Commands
 
@@ -49,7 +51,7 @@ $ lida init --md --project demo
 ```
 
 `--md` writes `TODO.md`, `--yaml` (the default) writes `TODO.yaml`, `--both` writes both. If either file exists:
-`error: TODO file already exists. Use --force to overwrite.` (exit 1).
+`error: TODO file already exists. Use --force to overwrite.` (exit 1). With `--force`, the file of the format no longer written is deleted. Passing more than one format flag errors: `error: choose one of --yaml, --md or --both`. Project names cannot contain `-->` (`error: project name cannot contain '-->'`).
 
 ### `add`
 
@@ -60,9 +62,10 @@ $ lida add --task-id aaaa -c "A note"
 ✓ Added comment to task #aaaa
 ```
 
-The ID is four random base62 characters. An unknown priority is ignored silently (the task gets none). Errors:
+The ID is four random base62 characters. Priority takes `low`, `medium`, `high`, or `none` (clears priority). Unknown values error. Errors:
 
 ```text
+error: invalid priority 'urgent'. Valid values: low, medium, high, none
 error: task description is required (e.g. `lida add "Task description"`)
 error: comment text is required when specifying --task-id
 error: task #zzzz not found
@@ -83,13 +86,12 @@ $ lida update aaaa -d Renamed -p high --tag docs
 $ lida list
 ID     STATUS       PRIORITY   TITLE                          TAGS
 ──────────────────────────────────────────────────────────────────────
-#aaaa  Todo Medium First task                     setup
-#bbbb  Todo High Second task                    setup, docs
+#aaaa  Todo         Medium     First task                     setup
+#bbbb  Todo         High       Second task                    setup, docs
 ```
 
-Status and priority cells are coloured before they are padded, so the escape codes count toward the column width and
-those columns are not aligned. Filters: `-s` status (aliases below),
-`-t` tag, `-p` priority. Empty result: `No tasks found.`.
+Status and priority columns are padded before colouring so they align cleanly. Filters: `-s` status (aliases below; errors on unknown values),
+`-t` tag, `-p` priority (`none` matches tasks without priority; errors on unknown values). Empty result: `No tasks found.`.
 
 `--tasks` prints one plain line per task, for shell completion:
 
@@ -110,7 +112,7 @@ $ lida status aaaa --set blocked --reason Waiting
 ✓ Task #aaaa status set to Blocked
 ```
 
-Status values and aliases: `todo`; `in-progress`, `inprogress`, `progress`, `en-cours`, `encours`; `done`, `completed`;
+Status values and aliases: `todo`; `in-progress`, `inprogress`, `progress`, `en-cours`, `encours` (and `_` forms such as `in_progress`); `done`, `completed`;
 `blocked`, `bloqued`. `--set blocked` stores `--reason` (or clears it when absent). Another status clears the reason
 only when `--reason` is passed; `done` and `start` never clear it. Error:
 `invalid status 'nope'. Valid values: todo, in-progress, done, blocked`.
@@ -125,8 +127,8 @@ Task #bbbb: Second task
   Tags: setup, docs
 ```
 
-Optional lines: `Position: …` and a `Metadata:` block (`    key: value`). Comments, due date and blocked reason are
-not shown. `--json` prints one task:
+Optional lines appear in order when present: `Due: …`, `Blocked reason: …`, `Position: …`, a `Metadata:` block
+(`    key: value`), and a `Comments:` block (`    #<id> <text>`). `--json` prints one task:
 
 ```json
 {
@@ -163,6 +165,7 @@ an alias of `unset`. Errors:
 ```text
 error: metadata key 'missing' not set on task #aaaa
 error: value required for `meta set <key> <value>`
+error: meta keys cannot contain ':'
 error: unknown meta action 'frob'. Use set, get, or unset
 ```
 
@@ -194,17 +197,22 @@ $ lida cwi both
 ✓ Switched working format to Both
 ```
 
-Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Error: `format must be 'yaml', 'md', or 'both'`.
+Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching deletes the file the new format no longer writes (`md` deletes `TODO.yaml`, `yaml` deletes `TODO.md`, `both` deletes nothing). Switching to `md` refuses if the document contains data Markdown cannot hold (actor types, actor pictures, task actors, comment actors, unknown fields, multi-line text, meta keys with `:`, a project name with `-->`, comment links missing from the task): `error: TODO.md cannot hold <what> (<target>): stay on yaml or both`. Any switch refuses while `TODO.md` holds unrecognised lines. A refused switch writes nothing, config included. Error: `format must be 'yaml', 'md', or 'both'`.
 
 ### `completion`, `usage`
 
-`completion zsh` prints the bundled zsh script; any other shell prints `# Completion for <shell> not implemented yet`
-(exit 0). `usage` prints a five-line `lida.usage.kdl` header.
+`completion <shell>` generates the shell completion script for the named shell (`bash`, `elvish`, `fish`, `nu`, `nushell`, `powershell`, `pwsh`, `zsh`). Supports `--install` to write the script where the shell looks for it, and `--force` to replace an existing file. Unsupported shells exit 2.
+
+`usage` prints the full portable `.usage.kdl` CLI specification generated from the CLI declaration.
 
 ## Errors shared by all commands
 
-- `No TODO file found in directory` when neither `TODO.md` nor `TODO.yaml` exists.
+- `no TODO file found in directory` when neither `TODO.md` nor `TODO.yaml` exists.
+- `duplicate task ID #<id> in <file>` when a file contains repeated task IDs.
+- `TODO.md line <line> is not something lida writes: <text>` when `TODO.md` contains unrecognised content.
+- `TODO.md cannot hold <what> (<target>): stay on yaml or both` when format conversion would lose fields.
 - `task #<id> not found` for an unknown ID.
+- `<field> must be a single line` when multi-line text is passed for a single-line field.
 
 ## Files
 
@@ -214,4 +222,4 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Error: `fo
 | Markdown   | `TODO.md`               | `TODO.md`     |
 | Dual-write | `TODO.yaml` + `TODO.md` | `TODO.yaml`   |
 
-Writes are atomic: both files are written to temporary siblings, then renamed into place.
+Switching formats (`cwi` or `init --force`) deletes the file no longer written. When both files exist, loading follows the configured format (`TODO.md` for `MdOnly`, else `TODO.yaml`). In `TODO.md`, tasks with comments record them with a trailing `  - **Comments**: <id>, ...` line. Lines that lida does not recognise prevent saving to protect unrecognised content from being silently overwritten. Writes are atomic: both files are written to temporary siblings, then renamed into place.
