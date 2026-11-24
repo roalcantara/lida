@@ -67,6 +67,10 @@ only the first three. `mise run audit` adds the slow and release checks (coverag
 
 Conventional Commits with a sentence-case subject, at most 72 characters.
 
+The type decides the release ([docs/adr/0001-releases.md](docs/adr/0001-releases.md)): `feat`, `fix` and `perf` ship on
+the next merge to `main`; `ref`, `docs`, `chore`, `test`, `ci`, `build` and `style` do not. Until the v0.1.0 cut, every
+release is a patch (v0.0.x).
+
 Stage named paths with `git add <paths>`, then run `git commit`; never `git commit <paths>` and never `git commit -a`.
 Format with `hk fix --all` before running the gate; `hk check --all` and `mise run gate` only check.
 

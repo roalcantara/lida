@@ -29,11 +29,18 @@ Dual-format project task engine maintaining bidirectional, lossless synchronicit
 
 ## Getting Started
 
-**Install from source.**
+**Install a release.** From a Brewfile (Homebrew Bundle), or with cargo directly:
+
+```ruby
+cargo "lida", source: "https://github.com/roalcantara/lida?tag=vX.Y.Z"
+```
 
 ```bash
-cargo install --locked --path crates/lida
+cargo install --locked --git https://github.com/roalcantara/lida --tag vX.Y.Z lida
 ```
+
+Releases, their binaries and the changelog are on the [releases page](https://github.com/roalcantara/lida/releases)
+([CHANGELOG.md](CHANGELOG.md)). From a checkout: `cargo install --locked --path crates/lida`.
 
 **Create a task list.**
 
@@ -64,13 +71,14 @@ tools/graph/   code graphs for agents: CRG, Gortex, Graphify (see its README)
 
 ## Development Workflow
 
-| Command                | Does                                                          |
-| ---------------------- | ------------------------------------------------------------- |
-| `mise run setup`       | Install tools, fetch crates, and install git hooks            |
-| `mise run gate`        | Run all quality gates in order (`--fast` for inner loop)      |
-| `hk check --all`       | Run all baseline repository checks                            |
-| `mise run graph setup` | Initialize the code graphs for agents (CRG, Gortex, Graphify) |
-| `mise doctor project`  | Verify code graph health, MCP wiring and secrets              |
+| Command                                 | Does                                                           |
+| --------------------------------------- | -------------------------------------------------------------- |
+| `mise run setup`                        | Install tools, fetch crates, and install git hooks             |
+| `mise run gate`                         | Run all quality gates in order (`--fast` for inner loop)       |
+| `hk check --all`                        | Run all baseline repository checks                             |
+| `mise run graph setup`                  | Initialize the code graphs for agents (CRG, Gortex, Graphify)  |
+| `mise doctor project`                   | Verify code graph health, MCP wiring and secrets               |
+| `mise run release -- --dry-run --no-ci` | Preview the next release (CI releases on every push to `main`) |
 
 ## Coding Standards
 

@@ -82,7 +82,7 @@
   - **Priority**: low
   - **Tags**: v0.1.0, build
 
-- [ ] PjLo **-** Write the releases ADR and the README Install section
+- [x] PjLo **-** Write the releases ADR and the README Install section
   - **Priority**: medium
   - **Tags**: v0.1.0, docs
 
