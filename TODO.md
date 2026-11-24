@@ -28,27 +28,123 @@
 
 - [ ] AmZm **-** Respect NO_COLOR and non-TTY output (no ANSI when piped)
   - **Priority**: high
-  - **Tags**: bug, output
+  - **Tags**: bug, output, stable
   - **Position**: "crates/lida/src/output.rs"
 
 - [ ] DcPc **-** Reject unknown priorities instead of silently clearing them (add -p urgent, update -p none)
   - **Priority**: medium
-  - **Tags**: bug, cli
+  - **Tags**: bug, cli, stable
   - **Position**: "crates/lida/src/commands.rs"
 
 - [ ] 1557 **-** Show comments, due date and blocked reason in lida show
   - **Priority**: medium
-  - **Tags**: bug, output
+  - **Tags**: bug, output, stable
   - **Position**: "crates/lida/src/commands/show.rs"
 
 - [ ] 8RVU **-** Make error message capitalisation consistent (No TODO file found vs task not found)
   - **Priority**: low
-  - **Tags**: bug, output
+  - **Tags**: bug, output, stable
 
 - [ ] DjKn **-** Align coloured status and priority columns in lida list
   - **Priority**: low
-  - **Tags**: bug, output
+  - **Tags**: bug, output, stable
   - **Position**: "crates/lida/src/commands/list.rs"
+
+- [ ] 2hI8 **-** Create the public GitHub repo, add origin, push, open the PR
+  - **Priority**: high
+  - **Tags**: v0.1.0, repo
+
+- [ ] 7Wi3 **-** Configure repo security settings, merge methods and the main ruleset
+  - **Priority**: high
+  - **Tags**: v0.1.0, repo, security
+
+- [ ] gMYx **-** Add semantic-release with the v0.0.x rehearsal rules and the v0.0.0 seed tag
+  - **Priority**: high
+  - **Tags**: v0.1.0, release
+
+- [ ] BWYZ **-** Fold release.yml and audit.yml into ci.yml (audit, plan, build, release jobs)
+  - **Priority**: high
+  - **Tags**: v0.1.0, ci, release
+
+- [ ] vIoq **-** Single-source the version and redact it in snapshots
+  - **Priority**: high
+  - **Tags**: v0.1.0, release
+
+- [ ] HUoE **-** Add SECURITY.md and Dependabot
+  - **Priority**: medium
+  - **Tags**: v0.1.0, security
+
+- [ ] a9kP **-** Resolve the RUSTSEC-2024-0449 ignore in deny.toml
+  - **Priority**: medium
+  - **Tags**: v0.1.0, security
+
+- [ ] eJCQ **-** Set rust-version to the tested toolchain (or test the MSRV)
+  - **Priority**: low
+  - **Tags**: v0.1.0, build
+
+- [ ] PjLo **-** Write the releases ADR and the README Install section
+  - **Priority**: medium
+  - **Tags**: v0.1.0, docs
+
+- [ ] dSjs **-** Verify a v0.0.x release: tag, CHANGELOG.md, version bump and the three assets agree
+  - **Priority**: high
+  - **Tags**: v0.1.0, release
+
+- [ ] Mqa7 **-** Rehearse installs from a v0.0.x tag: cargo install --git --tag and brew bundle with a temporary pin
+  - **Priority**: high
+  - **Tags**: v0.1.0, release
+
+- [ ] apDG **-** Cut v0.1.0: switch to the v0.1.0 release rules with a feat commit
+  - **Priority**: high
+  - **Tags**: v0.1.0, release
+
+- [ ] SXJ8 **-** Pin the dots Brewfile to v0.1.0 and run brew bundle (owner)
+  - **Priority**: high
+  - **Tags**: v0.1.0, dots
+
+- [ ] OvZw **-** Audit every command against README and DESIGN.md
+  - **Priority**: high
+  - **Tags**: stable, audit
+
+- [ ] 5BI3 **-** README advertises --meta key=val, which does not exist
+  - **Priority**: medium
+  - **Tags**: stable, docs
+
+- [ ] Yiq8 **-** lida usage prints a stub instead of the real usage spec
+  - **Priority**: medium
+  - **Tags**: stable, cli
+
+- [ ] FuFw **-** completion exits 0 for unsupported shells
+  - **Priority**: low
+  - **Tags**: stable, cli
+
+- [ ] 8NUT **-** Design the CLI evolution
+  - **Priority**: medium
+  - **Tags**: v0.2, design
+
+- [ ] Q8Vq **-** Design the lida-core library API
+  - **Priority**: medium
+  - **Tags**: v0.2, design
+
+- [ ] GDS5 **-** Design a TUI
+  - **Priority**: low
+  - **Tags**: v0.2, design
+
+- [ ] tgxh **-** Freeze and document the --json schema, exit codes and file formats
+  - **Priority**: high
+  - **Tags**: v1.0, contract
+
+- [ ] xctA **-** Remove the pre-1.0 breaking-to-minor release rule
+  - **Priority**: high
+  - **Tags**: v1.0, release
+
+- [ ] AkHy **-** Publish lida-core and lida to crates.io
+  - **Priority**: medium
+  - **Tags**: v1.0, distribution
+
+- [ ] EnjS **-** Ship prebuilt binaries through a Homebrew tap
+  - **Priority**: low
+  - **Tags**: v1.0, distribution
 
 # Actors
 
