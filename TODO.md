@@ -110,7 +110,7 @@
   - **Priority**: medium
   - **Tags**: stable, docs, v0.1.1
 
-- [ ] Yiq8 **-** lida usage prints a stub instead of the real usage spec
+- [x] Yiq8 **-** lida usage prints a stub instead of the real usage spec
   - **Priority**: medium
   - **Tags**: stable, cli, v0.1.1
 
@@ -147,7 +147,7 @@
   - **Tags**: v1.0, security, deps
   - **Position**: "crates/lida-core/src/format/yaml.rs"
 
-- [ ] vBbs **-** Generate shell completion from the CLI declaration (replaces todo-cli's zsh script)
+- [x] vBbs **-** Generate shell completion from the CLI declaration (replaces todo-cli's zsh script)
   - **Priority**: high
   - **Tags**: v0.1.1, stable, cli
 

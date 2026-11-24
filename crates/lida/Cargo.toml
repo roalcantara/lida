@@ -10,7 +10,7 @@ repository.workspace = true
 lida-core.workspace = true
 owo-colors.workspace = true
 serde_json.workspace = true
-usage-rs.workspace = true
+usage-rs = { workspace = true, features = ["completions"] }
 
 [dev-dependencies]
 insta.workspace = true

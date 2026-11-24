@@ -200,8 +200,9 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching 
 
 ### `completion`, `usage`
 
-`completion zsh` prints the bundled zsh script; any other shell prints `# Completion for <shell> not implemented yet`
-(exit 0). `usage` prints a five-line `lida.usage.kdl` header.
+`completion <shell>` generates the shell completion script for the named shell (`bash`, `elvish`, `fish`, `nu`, `nushell`, `powershell`, `pwsh`, `zsh`). Supports `--install` to write the script where the shell looks for it, and `--force` to replace an existing file. Unsupported shells exit 2.
+
+`usage` prints the full portable `.usage.kdl` CLI specification generated from the CLI declaration.
 
 ## Errors shared by all commands
 

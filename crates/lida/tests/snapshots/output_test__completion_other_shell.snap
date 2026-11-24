@@ -1,9 +1,0 @@
----
-source: crates/lida/tests/output_test.rs
-expression: "transcript(dir.path(), commands)"
----
-$ lida completion bash
-code: 0
---- stdout
-# Completion for bash not implemented yet
---- stderr

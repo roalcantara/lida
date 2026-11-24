@@ -41,92 +41,75 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
     let out = &mut io.out;
 
     match cli.command.unwrap_or_else(default_command) {
-        Subcommand::Init {
-            yaml,
-            md,
-            both,
-            project,
-            force,
-        } => {
-            let format = init_format(yaml, md, both)?;
-            init::run(&cwd, init::Args { format, project, force }, out)
+        Subcommand::Init(args) => {
+            let format = init_format(args.yaml, args.md, args.both)?;
+            init::run(
+                &cwd,
+                init::Args {
+                    format,
+                    project: args.project,
+                    force: args.force,
+                },
+                out,
+            )
         }
-        Subcommand::Add {
-            description,
-            task,
-            task_id,
-            priority,
-            tags,
-            due,
-            position,
-            comment,
-        } => add::run(
+        Subcommand::Add(args) => add::run(
             &cwd,
             add::Args {
-                description: description.or(task),
-                task_id,
-                priority,
-                tags,
-                due,
-                position,
-                comment,
+                description: args.description.or(args.task),
+                task_id: args.task_id,
+                priority: args.priority,
+                tags: args.tags,
+                due: args.due,
+                position: args.position,
+                comment: args.comment,
             },
             out,
         ),
-        Subcommand::Update {
-            id,
-            description,
-            priority,
-            tags,
-            tag,
-            due,
-            position,
-        } => update::run(
+        Subcommand::Update(args) => update::run(
             &cwd,
-            &id,
+            &args.id,
             update::Args {
-                description,
-                priority,
-                tags: tags.or(tag),
-                due,
-                position,
+                description: args.description,
+                priority: args.priority,
+                tags: args.tags.or(args.tag),
+                due: args.due,
+                position: args.position,
             },
             out,
         ),
-        Subcommand::List {
-            tasks,
-            status,
-            tag,
-            priority,
-            json,
-        } => list::run(
+        Subcommand::List(args) => list::run(
             &cwd,
-            &list::Filter { status, tag, priority },
-            list::Style::from_flags(tasks, json),
+            &list::Filter {
+                status: args.status,
+                tag: args.tag,
+                priority: args.priority,
+            },
+            list::Style::from_flags(args.tasks, args.json),
             out,
         ),
-        Subcommand::Done { id } => status::done(&cwd, &id, out),
-        Subcommand::Start { id } => status::start(&cwd, &id, out),
-        Subcommand::Status { id, set, reason } => status::set(&cwd, &id, &set, reason, out),
-        Subcommand::Show { id, json } => show::run(&cwd, &id, json, out),
-        Subcommand::Meta { id, action, key, value } => meta::run(&cwd, &id, &action, &key, value, out),
+        Subcommand::Done(args) => status::done(&cwd, &args.id, out),
+        Subcommand::Start(args) => status::start(&cwd, &args.id, out),
+        Subcommand::Status(args) => status::set(&cwd, &args.id, &args.set, args.reason, out),
+        Subcommand::Show(args) => show::run(&cwd, &args.id, args.json, out),
+        Subcommand::Meta(args) => meta::run(&cwd, &args.id, &args.action, &args.key, args.value, out),
         Subcommand::Tags => tags::run(&cwd, out),
-        Subcommand::Delete { id } => delete::run(&cwd, &id, out),
-        Subcommand::Cwi { format } => cwi::run(&cwd, format.as_deref(), out),
-        Subcommand::Completion { shell } => generate::completion(&shell, out),
+        Subcommand::Delete(args) => delete::run(&cwd, &args.id, out),
+        Subcommand::Cwi(args) => cwi::run(&cwd, args.format.as_deref(), out),
+        Subcommand::Completion(completion) => generate::completion(&completion, out, &mut io.err),
         Subcommand::Usage => generate::usage(out),
     }
 }
 
 /// Bare `lida` lists tasks.
 fn default_command() -> Subcommand {
-    Subcommand::List {
+    Subcommand::List(crate::cli::ListArgs {
         tasks: false,
         status: None,
         tag: None,
         priority: None,
         json: false,
-    }
+    })
 }
 
 fn init_format(yaml: bool, md: bool, both: bool) -> Result<StorageFormat, &'static str> {

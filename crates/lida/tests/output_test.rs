@@ -312,9 +312,90 @@ fn list_aligned() {
 }
 
 #[test]
-fn generated_specs() {
-    snap_empty("completion_zsh", &[&["completion", "zsh"]]);
-    snap_empty("usage", &[&["usage"]]);
+fn completion_is_lidas() {
+    let dir = empty_dir();
+    let run = lida(dir.path(), &["completion", "zsh"]);
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.starts_with("#compdef lida"));
+    assert!(!run.stdout.contains("todo"));
+}
+
+#[test]
+fn completion_rejects_unknown_shell() {
+    let dir = empty_dir();
+    let run = lida(dir.path(), &["completion", "tcsh"]);
+    assert_eq!(run.code, 2);
+}
+
+#[test]
+fn completion_offers_values() {
+    let dir = fixture_dir();
+    // usage-rs completion callback argv: lida __complete_word__ --shell bash --line <line>
+    // add -- offers --priority and --tags
+    let run = lida(
+        dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida add --"],
+    );
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.contains("--priority"));
+    assert!(run.stdout.contains("--tags"));
+
+    // done offers aaaa and bbbb
+    let run = lida(
+        dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida done "],
+    );
+    assert_eq!(run.code, 0);
+    let items: Vec<&str> = run.stdout.lines().collect();
+    assert!(items.contains(&"aaaa"));
+    assert!(items.contains(&"bbbb"));
+
+    // list -t offers docs and setup
+    let run = lida(
+        dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida list -t "],
+    );
+    assert_eq!(run.code, 0);
+    let items: Vec<&str> = run.stdout.lines().collect();
+    assert_eq!(items, ["docs", "setup"]);
+
+    // add X -p offers exactly low medium high none
+    let run = lida(
+        dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida add X -p "],
+    );
+    assert_eq!(run.code, 0);
+    let mut items: Vec<&str> = run.stdout.lines().collect();
+    items.sort_unstable();
+    assert_eq!(items, ["high", "low", "medium", "none"]);
+
+    // status aaaa --set offers exactly todo in-progress done blocked
+    let run = lida(
+        dir.path(),
+        &[
+            "__complete_word__",
+            "--shell",
+            "bash",
+            "--line",
+            "lida status aaaa --set ",
+        ],
+    );
+    assert_eq!(run.code, 0);
+    let mut items: Vec<&str> = run.stdout.lines().collect();
+    items.sort_unstable();
+    assert_eq!(items, ["blocked", "done", "in-progress", "todo"]);
+}
+
+#[test]
+fn usage_spec_is_complete_and_committed() {
+    let dir = empty_dir();
+    let run = lida(dir.path(), &["usage"]);
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.contains("cmd add"));
+    assert!(run.stdout.contains("flag \"-p --priority\""));
+    let spec_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../lida.usage.kdl");
+    let committed = fs::read_to_string(&spec_path).expect("read lida.usage.kdl");
+    assert_eq!(run.stdout, committed);
 }
 
 #[test]
@@ -389,7 +470,6 @@ fn optional_branches() {
             &["meta", "aaaa", "rm", "flag"],
         ],
     );
-    snap_empty("completion_other_shell", &[&["completion", "bash"]]);
     snap_empty("tags_empty", &[&["init", "--md"], &["tags"]]);
     snap_fixture(
         "unknown_id_other_commands",
