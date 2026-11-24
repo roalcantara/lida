@@ -15,4 +15,6 @@ Task #[1maaaa[0m: First task
   Status: Todo
   Priority: Medium
   Tags: setup
+  Comments:
+    #[ID] A note
 --- stderr

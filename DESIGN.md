@@ -126,8 +126,8 @@ Task #bbbb: Second task
   Tags: setup, docs
 ```
 
-Optional lines: `Position: …` and a `Metadata:` block (`    key: value`). Comments, due date and blocked reason are
-not shown. `--json` prints one task:
+Optional lines appear in order when present: `Due: …`, `Blocked reason: …`, `Position: …`, a `Metadata:` block
+(`    key: value`), and a `Comments:` block (`    #<id> <text>`). `--json` prints one task:
 
 ```json
 {

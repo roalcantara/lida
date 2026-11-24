@@ -36,7 +36,7 @@
   - **Tags**: bug, cli, stable, v0.1.1
   - **Position**: "crates/lida/src/commands.rs"
 
-- [ ] 1557 **-** Show comments, due date and blocked reason in lida show
+- [x] 1557 **-** Show comments, due date and blocked reason in lida show
   - **Priority**: medium
   - **Tags**: bug, output, stable, v0.1.1
   - **Position**: "crates/lida/src/commands/show.rs"

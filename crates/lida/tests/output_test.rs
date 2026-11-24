@@ -77,6 +77,17 @@ fn redact(text: &str, dir: &Path) -> String {
     for id in ids {
         text = text.replace(&id, "[ID]");
     }
+    let comment_ids: Vec<String> = text
+        .lines()
+        .filter_map(|line| {
+            let rest = line.strip_prefix("    #")?;
+            let id = rest.split_whitespace().next()?;
+            if id.len() == 4 { Some(id.to_string()) } else { None }
+        })
+        .collect();
+    for id in comment_ids {
+        text = text.replace(&format!("    #{id} "), "    #[ID] ");
+    }
     text
 }
 
@@ -213,6 +224,20 @@ fn status_changes() {
 fn show_variants() {
     snap_fixture("show", &[&["show", "bbbb"]]);
     snap_fixture("show_json", &[&["show", "bbbb", "--json"]]);
+}
+
+#[test]
+fn show_everything() {
+    snap_fixture(
+        "show_everything",
+        &[
+            &["update", "aaaa", "--due", "2026-12-01", "--position", "top"],
+            &["status", "aaaa", "--set", "blocked", "--reason", "Waiting on review"],
+            &["meta", "aaaa", "set", "owner", "alice"],
+            &["add", "--task-id", "aaaa", "-c", "First comment"],
+            &["show", "aaaa"],
+        ],
+    );
 }
 
 #[test]

@@ -15,4 +15,5 @@ Task #[1maaaa[0m: First task
   Status: Blocked
   Priority: Medium
   Tags: setup
+  Blocked reason: Waiting
 --- stderr
