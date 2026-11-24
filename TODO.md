@@ -98,9 +98,9 @@
   - **Priority**: high
   - **Tags**: v0.1.0, release
 
-- [ ] SXJ8 **-** Pin the dots Brewfile to v0.1.0 and run brew bundle (owner)
+- [ ] SXJ8 **-** Pin the dots Brewfile to v0.1.1, run brew bundle, adopt lida's completion, drop todo-cli (owner)
   - **Priority**: high
-  - **Tags**: v0.1.0, dots
+  - **Tags**: v0.1.1, dots
 
 - [x] OvZw **-** Audit every command against README and DESIGN.md
   - **Priority**: high
