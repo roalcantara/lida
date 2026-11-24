@@ -1,5 +1,5 @@
 [files]
-extend-exclude = [".mise/", "crates/*/tests/snapshots/", "target/", "*.lock"]
+extend-exclude = [".mise/", "crates/*/tests/snapshots/", "target/", "*.lock", "CHANGELOG.md"]
 
 [default.extend-words]
 # Part of lida's `en-cours` status alias (French for "in progress").

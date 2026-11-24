@@ -9,6 +9,7 @@
     "tmp/**",
     "crates/*/tests/snapshots/**",
     "TODO.md",
+    "CHANGELOG.md",
     ".mise/**",
     ".claude/settings.local.json",
     "**/*.lock"

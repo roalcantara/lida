@@ -115,10 +115,10 @@ local baseline_steps = new Mapping<String, Step> {
     ["newlines"] = (Builtins.newlines) {
         // One owner, the generator: the todo CLI writes TODO.md without a trailing newline, and
         // fixing it by hand only holds until the CLI next writes it.
-        exclude = binary_excludes + generated + List("TODO.md")
+        exclude = binary_excludes + generated + List("TODO.md", "CHANGELOG.md")
     }
     ["trailing-whitespace"] = (Builtins.trailing_whitespace) {
-        exclude = binary_excludes + generated + List("TODO.md")
+        exclude = binary_excludes + generated + List("TODO.md", "CHANGELOG.md")
     }
     ["merge-conflict"] = Builtins.check_merge_conflict
     ["mixed-line-ending"] = (Builtins.mixed_line_ending) {
