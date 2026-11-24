@@ -163,11 +163,11 @@
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format, data-loss
 
-- [ ] ijwH **-** Keep comment-task links in TODO.md
+- [x] ijwH **-** Keep comment-task links in TODO.md
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format, data-loss
 
-- [ ] K3CU **-** Refuse to save a TODO.md with content lida does not recognise
+- [x] K3CU **-** Refuse to save a TODO.md with content lida does not recognise
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format, data-loss
 
@@ -175,7 +175,7 @@
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, cli, data-loss
 
-- [ ] 1k6Q **-** Keep project names with spaces in TODO.md
+- [x] 1k6Q **-** Keep project names with spaces in TODO.md
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, format, data-loss
 

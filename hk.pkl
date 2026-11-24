@@ -17,7 +17,7 @@ local binary_excludes = List(
 local pinact_token = #"PINACT_GITHUB_TOKEN="${PINACT_GITHUB_TOKEN:-${GITHUB_TOKEN:-$(mise token github --raw 2>/dev/null)}}" "#
 
 // Fixtures and snapshots are authored or recorded byte for byte: one owner each, never a formatter.
-local generated = List("crates/*/tests/snapshots/**/*", ".mise/**/*")
+local generated = List("crates/*/tests/snapshots/**/*", "crates/*/tests/fixtures/**/*", ".mise/**/*")
 
 // Rust sources and the manifests that decide what they compile against.
 local rust_inputs = List("**/*.rs", "**/Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "clippy.toml")

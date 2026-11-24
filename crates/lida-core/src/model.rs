@@ -180,6 +180,8 @@ pub struct ProjectDoc {
     pub comments: Vec<Comment>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub project: Option<String>,
+    #[serde(skip)]
+    pub unrecognised: Vec<(usize, String)>,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_yaml_ng::Value>,
 }

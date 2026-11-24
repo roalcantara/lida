@@ -130,3 +130,64 @@ fn todo_config_is_read_and_written() {
     assert_eq!(fs::read_to_string(todo_dir.join("config")).unwrap().trim(), "md");
     assert!(!dir.path().join(".lida").join("config").exists());
 }
+
+#[test]
+fn unrecognised_lines_are_kept_and_block_saving() {
+    let dir = tempdir().unwrap();
+    let md_path = dir.path().join("TODO.md");
+    let input = "# Tasks\n\n- [ ] aaaa **-** Task 1\n  Some stray note\n\n# Actors\n\n# Comments\n";
+    fs::write(&md_path, input).unwrap();
+
+    let store = Store::load(dir.path()).unwrap();
+    assert_eq!(store.doc().unrecognised.len(), 1);
+    assert_eq!(store.doc().unrecognised[0].0, 4);
+    assert_eq!(store.doc().unrecognised[0].1, "  Some stray note");
+
+    let err = store.save().unwrap_err();
+    match err {
+        lida_core::store::StoreError::UnrecognisedMarkdown { line, text } => {
+            assert_eq!(line, 4);
+            assert_eq!(text, "  Some stray note");
+        }
+        other => panic!("expected UnrecognisedMarkdown, got {other:?}"),
+    }
+    assert_eq!(fs::read_to_string(&md_path).unwrap(), input);
+}
+
+#[test]
+fn cwi_md_refuses_what_markdown_cannot_hold() {
+    let dir = tempdir().unwrap();
+    let blog_yaml = include_str!("fixtures/dots_blog_TODO.yaml");
+    fs::write(dir.path().join("TODO.yaml"), blog_yaml).unwrap();
+
+    let mut store = Store::load(dir.path()).unwrap();
+    let err = store.switch_format(StorageFormat::MdOnly).unwrap_err();
+    match err {
+        lida_core::store::StoreError::Unrepresentable { what } => {
+            assert!(what.contains("actor types"));
+            assert!(what.contains("stay on yaml or both"));
+        }
+        other => panic!("expected Unrepresentable, got {other:?}"),
+    }
+    assert!(dir.path().join("TODO.yaml").exists());
+    assert!(!dir.path().join("TODO.md").exists());
+}
+
+#[test]
+fn cwi_yaml_refuses_unrecognised_markdown() {
+    let dir = tempdir().unwrap();
+    let input = "# Tasks\n\n- [ ] aaaa **-** Task 1\n  Stray text\n\n# Actors\n\n# Comments\n";
+    fs::write(dir.path().join("TODO.md"), input).unwrap();
+
+    let mut store = Store::load(dir.path()).unwrap();
+    let err = store.switch_format(StorageFormat::YamlOnly).unwrap_err();
+    match err {
+        lida_core::store::StoreError::UnrecognisedMarkdown { line, text } => {
+            assert_eq!(line, 4);
+            assert_eq!(text, "  Stray text");
+        }
+        other => panic!("expected UnrecognisedMarkdown, got {other:?}"),
+    }
+    assert!(dir.path().join("TODO.md").exists());
+    assert!(!dir.path().join("TODO.yaml").exists());
+}

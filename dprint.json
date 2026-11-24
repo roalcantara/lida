@@ -8,6 +8,7 @@
     "target/**",
     "tmp/**",
     "crates/*/tests/snapshots/**",
+    "crates/*/tests/fixtures/**",
     "TODO.md",
     "CHANGELOG.md",
     ".mise/**",

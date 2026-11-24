@@ -195,7 +195,7 @@ $ lida cwi both
 ✓ Switched working format to Both
 ```
 
-Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching deletes the file the new format no longer writes (`md` deletes `TODO.yaml`, `yaml` deletes `TODO.md`, `both` deletes nothing). Error: `format must be 'yaml', 'md', or 'both'`.
+Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching deletes the file the new format no longer writes (`md` deletes `TODO.yaml`, `yaml` deletes `TODO.md`, `both` deletes nothing). Switching to `md` or `both` refuses if the document contains data Markdown cannot hold (actor types, actor pictures, task actors, comment actors, unknown fields): `error: TODO.md cannot hold <what> (<target>): stay on yaml or both`. Switching to `yaml` refuses if `TODO.md` holds unrecognised lines. Error: `format must be 'yaml', 'md', or 'both'`.
 
 ### `completion`, `usage`
 
@@ -206,6 +206,8 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching 
 
 - `no TODO file found in directory` when neither `TODO.md` nor `TODO.yaml` exists.
 - `duplicate task ID #<id> in <file>` when a file contains repeated task IDs.
+- `TODO.md line <line> is not something lida writes: <text>` when `TODO.md` contains unrecognised content.
+- `TODO.md cannot hold <what> (<target>): stay on yaml or both` when format conversion would lose fields.
 - `task #<id> not found` for an unknown ID.
 
 ## Files
@@ -216,4 +218,4 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching 
 | Markdown   | `TODO.md`               | `TODO.md`     |
 | Dual-write | `TODO.yaml` + `TODO.md` | `TODO.yaml`   |
 
-Switching formats (`cwi` or `init --force`) deletes the file no longer written. When both files exist, loading follows the configured format (`TODO.md` for `MdOnly`, else `TODO.yaml`). Writes are atomic: both files are written to temporary siblings, then renamed into place.
+Switching formats (`cwi` or `init --force`) deletes the file no longer written. When both files exist, loading follows the configured format (`TODO.md` for `MdOnly`, else `TODO.yaml`). In `TODO.md`, tasks with comments record them with a trailing `  - **Comments**: <id>, ...` line. Lines that lida does not recognise prevent saving to protect unrecognised content from being silently overwritten. Writes are atomic: both files are written to temporary siblings, then renamed into place.

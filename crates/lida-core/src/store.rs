@@ -23,6 +23,8 @@ pub enum StoreError {
     DuplicateId { id: String, file: &'static str },
     #[error("{what}")]
     Unrepresentable { what: String },
+    #[error("TODO.md line {line} is not something lida writes: {text}")]
+    UnrecognisedMarkdown { line: usize, text: String },
 }
 
 /// The active storage format mode for a workspace.
@@ -161,6 +163,7 @@ impl Store {
             actors: Vec::new(),
             comments: Vec::new(),
             project,
+            unrecognised: Vec::new(),
             extra: BTreeMap::new(),
         };
         let store = Self {
@@ -200,6 +203,21 @@ impl Store {
     pub fn switch_format(&mut self, format: StorageFormat) -> Result<(), StoreError> {
         if format == self.format {
             return Ok(());
+        }
+        match format {
+            StorageFormat::MdOnly | StorageFormat::Both => {
+                if let Some(reason) = crate::format::md::markdown_cannot_hold(&self.doc) {
+                    return Err(StoreError::Unrepresentable { what: reason });
+                }
+            }
+            StorageFormat::YamlOnly => {
+                if let Some((line, text)) = self.doc.unrecognised.first() {
+                    return Err(StoreError::UnrecognisedMarkdown {
+                        line: *line,
+                        text: text.clone(),
+                    });
+                }
+            }
         }
         self.format = format;
         self.write_config_format(format)?;
@@ -250,6 +268,14 @@ impl Store {
     /// # Errors
     /// Returns `StoreError` if writing or file replacement fails.
     pub fn save(&self) -> Result<(), StoreError> {
+        if (self.format == StorageFormat::MdOnly || self.format == StorageFormat::Both)
+            && let Some((line, text)) = self.doc.unrecognised.first()
+        {
+            return Err(StoreError::UnrecognisedMarkdown {
+                line: *line,
+                text: text.clone(),
+            });
+        }
         match self.format {
             StorageFormat::YamlOnly => {
                 let content = serialize_yaml(&self.doc)?;
