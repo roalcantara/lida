@@ -41,7 +41,7 @@
   - **Tags**: bug, output, stable, v0.1.1
   - **Position**: "crates/lida/src/commands/show.rs"
 
-- [ ] 8RVU **-** Make error message capitalisation consistent (No TODO file found vs task not found)
+- [x] 8RVU **-** Make error message capitalisation consistent (No TODO file found vs task not found)
   - **Priority**: low
   - **Tags**: bug, output, stable, v0.1.1
 

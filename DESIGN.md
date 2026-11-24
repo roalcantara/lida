@@ -204,7 +204,7 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Error: `fo
 
 ## Errors shared by all commands
 
-- `No TODO file found in directory` when neither `TODO.md` nor `TODO.yaml` exists.
+- `no TODO file found in directory` when neither `TODO.md` nor `TODO.yaml` exists.
 - `task #<id> not found` for an unknown ID.
 
 ## Files

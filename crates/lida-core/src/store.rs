@@ -13,11 +13,11 @@ use thiserror::Error;
 /// Storage errors.
 #[derive(Debug, Error)]
 pub enum StoreError {
-    #[error("I/O error: {0}")]
+    #[error("io error: {0}")]
     Io(#[from] io::Error),
-    #[error("Format error: {0}")]
+    #[error("format error: {0}")]
     Format(#[from] FormatError),
-    #[error("No TODO file found in directory")]
+    #[error("no TODO file found in directory")]
     NotFound,
 }
 
