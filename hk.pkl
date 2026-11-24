@@ -32,6 +32,13 @@ local structure_steps = new Mapping<String, Step> {
       for manifest in {{files}}; do
         [[ -f "$manifest" ]] || continue
         root=$(cd "$(dirname "$manifest")/../.." && pwd)
+        # The check reads the dependency graph offline; fetch the locked crates first, or a cold cache (a fresh clone,
+        # a CI runner) fails with "no matching package". Fixture workspaces in the tests below have no lockfile.
+        if [[ -f "$root/Cargo.lock" ]] && ! fetched=$(mise exec -- cargo fetch --locked --manifest-path "$root/Cargo.toml" 2>&1); then
+          echo "$fetched"
+          status=1
+          continue
+        fi
         if ! tree=$(mise exec -- cargo tree --offline --manifest-path "$root/Cargo.toml" -p lida-core --edges normal --prefix none --format '{p}' 2>&1); then
           echo "$tree"
           status=1
