@@ -2,6 +2,6 @@
   "name": "mise-npm-install",
   "private": true,
   "dependencies": {
-    "jscpd": "5.4.1"
+    "quick-commitlint": "0.1.3"
   }
 }
