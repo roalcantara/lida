@@ -19,18 +19,26 @@ pub struct Args {
 }
 
 pub fn run(cwd: &Path, args: Args, out: &mut impl Write) -> CmdResult {
-    let mut store = Store::load(cwd)?;
     if let Some(target_id) = args.task_id {
         let text = args
             .comment
             .or(args.description)
             .ok_or("comment text is required when specifying --task-id")?;
+        single_line("comment", &text)?;
+        let mut store = Store::load(cwd)?;
         return add_comment(&mut store, &target_id, text, out);
     }
 
     let desc = args
         .description
         .ok_or("task description is required (e.g. `lida add \"Task description\"`)")?;
+    single_line("description", &desc)?;
+    if let Some(ref c) = args.comment {
+        single_line("comment", c)?;
+    }
+    validate_task_fields(args.position.as_deref(), args.due.as_deref(), args.tags.as_deref())?;
+
+    let mut store = Store::load(cwd)?;
     let existing_ids: HashSet<String> = store.doc().tasks.iter().map(|t| t.id.clone()).collect();
     let new_id = generate_id(&existing_ids);
 

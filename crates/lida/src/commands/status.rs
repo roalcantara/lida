@@ -18,8 +18,11 @@ pub fn start(cwd: &Path, id: &str, out: &mut impl Write) -> CmdResult {
 
 /// `--set` takes a status or one of its aliases; `--reason` is kept only for `blocked`.
 pub fn set(cwd: &Path, id: &str, value: &str, reason: Option<String>, out: &mut impl Write) -> CmdResult {
-    let mut store = Store::load(cwd)?;
     let status = parse_status(value)?;
+    if let Some(ref r) = reason {
+        single_line("reason", r)?;
+    }
+    let mut store = Store::load(cwd)?;
     let task = store.find_task_mut(id).ok_or_else(|| not_found(id))?;
     task.status = status;
     if status == Status::Blocked {

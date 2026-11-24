@@ -14,6 +14,11 @@ pub struct Args {
 }
 
 pub fn run(cwd: &Path, id: &str, args: Args, out: &mut impl Write) -> CmdResult {
+    if let Some(ref desc) = args.description {
+        single_line("description", desc)?;
+    }
+    validate_task_fields(args.position.as_deref(), args.due.as_deref(), args.tags.as_deref())?;
+
     let mut store = Store::load(cwd)?;
     let task = store.find_task_mut(id).ok_or_else(|| not_found(id))?;
 

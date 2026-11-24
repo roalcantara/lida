@@ -15,6 +15,7 @@ mod update;
 /// Imports every command module needs.
 mod prelude {
     pub use super::CmdResult;
+    pub(super) use super::{single_line, validate_task_fields};
     pub use lida_core::store::Store;
     pub use owo_colors::OwoColorize;
     pub use std::io::Write;
@@ -47,9 +48,8 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
             project,
             force,
         } => {
-            // `--yaml` is the default; the flag only states it.
-            _ = yaml;
-            init::run(&cwd, init_format(md, both), project, force, out)
+            let format = init_format(yaml, md, both)?;
+            init::run(&cwd, init::Args { format, project, force }, out)
         }
         Subcommand::Add {
             description,
@@ -129,20 +129,48 @@ fn default_command() -> Subcommand {
     }
 }
 
-/// `--both` wins over `--md`; `--yaml` is the default and needs no check.
-fn init_format(md: bool, both: bool) -> StorageFormat {
+fn init_format(yaml: bool, md: bool, both: bool) -> Result<StorageFormat, &'static str> {
+    let count = [yaml, md, both].into_iter().filter(|&b| b).count();
+    if count > 1 {
+        return Err("choose one of --yaml, --md or --both");
+    }
     if both {
-        StorageFormat::Both
+        Ok(StorageFormat::Both)
     } else if md {
-        StorageFormat::MdOnly
+        Ok(StorageFormat::MdOnly)
     } else {
-        StorageFormat::YamlOnly
+        Ok(StorageFormat::YamlOnly)
     }
 }
 
 /// Error text for an unknown task ID.
 fn not_found(id: &str) -> String {
     format!("task #{id} not found")
+}
+
+pub(super) fn single_line(field: &str, value: &str) -> Result<(), String> {
+    if value.contains('\n') || value.contains('\r') {
+        Err(format!("{field} must be a single line"))
+    } else {
+        Ok(())
+    }
+}
+
+pub(super) fn validate_task_fields(
+    position: Option<&str>,
+    due: Option<&str>,
+    tags: Option<&str>,
+) -> Result<(), String> {
+    if let Some(p) = position {
+        single_line("position", p)?;
+    }
+    if let Some(d) = due {
+        single_line("due", d)?;
+    }
+    if let Some(t) = tags {
+        single_line("tags", t)?;
+    }
+    Ok(())
 }
 
 pub(super) fn parse_status(value: &str) -> Result<Status, String> {

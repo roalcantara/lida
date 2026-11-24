@@ -80,19 +80,23 @@ fn redact(text: &str, dir: &Path) -> String {
     text
 }
 
+fn append_run(out: &mut String, args: &[&str], run: &Run) {
+    let _ = write!(
+        out,
+        "$ lida {}\ncode: {}\n--- stdout\n{}--- stderr\n{}\n",
+        args.join(" "),
+        run.code,
+        run.stdout,
+        run.stderr
+    );
+}
+
 /// Runs each command in order in `dir` and renders them as one transcript.
 fn transcript(dir: &Path, commands: &[&[&str]]) -> String {
     let mut out = String::new();
     for args in commands {
         let run = lida(dir, args);
-        let _ = write!(
-            out,
-            "$ lida {}\ncode: {}\n--- stdout\n{}--- stderr\n{}\n",
-            args.join(" "),
-            run.code,
-            run.stdout,
-            run.stderr
-        );
+        append_run(&mut out, args, &run);
     }
     redact(&out, dir)
 }
@@ -402,4 +406,47 @@ fn json_outputs_are_pure() {
         );
         assert!(run.stderr.is_empty(), "{args:?} stderr is empty");
     }
+}
+
+#[test]
+fn input_validation() {
+    let dir = fixture_dir();
+    let initial_bytes = fs::read(dir.path().join("TODO.md")).expect("read fixture");
+    let commands: &[&[&str]] = &[
+        &["add", "Line one\n- [ ] evil **-** Injected"],
+        &["add", "--task-id", "aaaa", "-c", "a\nb"],
+        &["status", "aaaa", "--set", "blocked", "--reason", "a\nb"],
+        &["update", "aaaa", "--position", "a\nb"],
+        &["update", "aaaa", "--due", "a\nb"],
+        &["update", "aaaa", "-t", "a\nb"],
+        &["meta", "aaaa", "set", "k\nx", "v"],
+        &["meta", "aaaa", "set", "k", "a\nb"],
+        &["meta", "aaaa", "set", "a:b", "v"],
+    ];
+    let mut out = String::new();
+    for cmd in commands {
+        let run = lida(dir.path(), cmd);
+        assert_eq!(run.code, 1, "{cmd:?} must exit 1");
+        assert_eq!(
+            fs::read(dir.path().join("TODO.md")).expect("read"),
+            initial_bytes,
+            "{cmd:?} must leave TODO.md unchanged"
+        );
+        append_run(&mut out, cmd, &run);
+    }
+
+    let empty = empty_dir();
+    let empty_commands: &[&[&str]] = &[
+        &["init", "--md", "--project", "a\nb"],
+        &["init", "--md", "--project", "a --> b"],
+        &["init", "--yaml", "--md"],
+    ];
+    for cmd in empty_commands {
+        let run = lida(empty.path(), cmd);
+        assert_eq!(run.code, 1, "{cmd:?} must exit 1");
+        assert!(!empty.path().join("TODO.md").exists());
+        assert!(!empty.path().join("TODO.yaml").exists());
+        append_run(&mut out, cmd, &run);
+    }
+    insta::assert_snapshot!("input_validation", redact(&out, dir.path()));
 }

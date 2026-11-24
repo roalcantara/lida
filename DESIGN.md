@@ -49,7 +49,7 @@ $ lida init --md --project demo
 ```
 
 `--md` writes `TODO.md`, `--yaml` (the default) writes `TODO.yaml`, `--both` writes both. If either file exists:
-`error: TODO file already exists. Use --force to overwrite.` (exit 1). With `--force`, the file of the format no longer written is deleted.
+`error: TODO file already exists. Use --force to overwrite.` (exit 1). With `--force`, the file of the format no longer written is deleted. Passing more than one format flag errors: `error: choose one of --yaml, --md or --both`. Project names cannot contain `-->` (`error: project name cannot contain '-->'`).
 
 ### `add`
 
@@ -164,6 +164,7 @@ an alias of `unset`. Errors:
 ```text
 error: metadata key 'missing' not set on task #aaaa
 error: value required for `meta set <key> <value>`
+error: meta keys cannot contain ':'
 error: unknown meta action 'frob'. Use set, get, or unset
 ```
 
@@ -209,6 +210,7 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching 
 - `TODO.md line <line> is not something lida writes: <text>` when `TODO.md` contains unrecognised content.
 - `TODO.md cannot hold <what> (<target>): stay on yaml or both` when format conversion would lose fields.
 - `task #<id> not found` for an unknown ID.
+- `<field> must be a single line` when multi-line text is passed for a single-line field.
 
 ## Files
 

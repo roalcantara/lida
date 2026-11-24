@@ -159,7 +159,7 @@
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format, data-loss
 
-- [ ] 9gc8 **-** Reject multi-line text (descriptions, comments, reasons) instead of corrupting TODO.md
+- [x] 9gc8 **-** Reject multi-line text (descriptions, comments, reasons) instead of corrupting TODO.md
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format, data-loss
 
@@ -171,7 +171,7 @@
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format, data-loss
 
-- [ ] yBp7 **-** Reject meta keys containing a colon
+- [x] yBp7 **-** Reject meta keys containing a colon
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, cli, data-loss
 
@@ -191,7 +191,7 @@
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, format
 
-- [ ] kBY0 **-** init rejects conflicting format flags (--yaml --md)
+- [x] kBY0 **-** init rejects conflicting format flags (--yaml --md)
   - **Priority**: low
   - **Tags**: v0.1.1, stable, cli
 
