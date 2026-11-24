@@ -1,0 +1,24 @@
+# Weekly dependency updates, one pull request per ecosystem. The prefixes keep them valid Conventional Commits that
+# release nothing by themselves (docs/adr/0001-releases.md).
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: build(deps)
+    groups:
+      cargo:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directories: [/, /.github/actions/*]
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci(deps)
+    groups:
+      github-actions:
+        patterns: ["*"]

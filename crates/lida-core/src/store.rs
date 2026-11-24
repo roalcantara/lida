@@ -62,15 +62,15 @@ impl Store {
             None
         };
 
-        if let Some(path) = cfg_path {
-            if let Ok(content) = fs::read_to_string(path) {
-                return match content.trim().to_lowercase().as_str() {
-                    "yaml" => Some(StorageFormat::YamlOnly),
-                    "md" | "markdown" => Some(StorageFormat::MdOnly),
-                    "both" => Some(StorageFormat::Both),
-                    _ => None,
-                };
-            }
+        if let Some(path) = cfg_path
+            && let Ok(content) = fs::read_to_string(path)
+        {
+            return match content.trim().to_lowercase().as_str() {
+                "yaml" => Some(StorageFormat::YamlOnly),
+                "md" | "markdown" => Some(StorageFormat::MdOnly),
+                "both" => Some(StorageFormat::Both),
+                _ => None,
+            };
         }
         None
     }

@@ -70,15 +70,15 @@
   - **Priority**: high
   - **Tags**: v0.1.0, release
 
-- [ ] HUoE **-** Add SECURITY.md and Dependabot
+- [x] HUoE **-** Add SECURITY.md and Dependabot
   - **Priority**: medium
   - **Tags**: v0.1.0, security
 
-- [ ] a9kP **-** Resolve the RUSTSEC-2024-0449 ignore in deny.toml
+- [x] a9kP **-** Resolve the RUSTSEC-2024-0449 ignore in deny.toml
   - **Priority**: medium
   - **Tags**: v0.1.0, security
 
-- [ ] eJCQ **-** Set rust-version to the tested toolchain (or test the MSRV)
+- [x] eJCQ **-** Set rust-version to the tested toolchain (or test the MSRV)
   - **Priority**: low
   - **Tags**: v0.1.0, build
 
@@ -145,6 +145,11 @@
 - [ ] EnjS **-** Ship prebuilt binaries through a Homebrew tap
   - **Priority**: low
   - **Tags**: v1.0, distribution
+
+- [ ] MRTo **-** Replace serde_yaml_ng (unmaintained unsafe-libyaml, RUSTSEC-2024-0449) with a safe YAML backend, keeping round-trips lossless
+  - **Priority**: high
+  - **Tags**: v1.0, security, deps
+  - **Position**: "crates/lida-core/src/format/yaml.rs"
 
 # Actors
 
