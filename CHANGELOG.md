@@ -2,6 +2,22 @@
 
 Every release of lida, written by semantic-release from the commit messages (docs/adr/0001-releases.md).
 
+## [0.1.1](https://github.com/roalcantara/lida/compare/v0.1.0...v0.1.1) (2026-11-24)
+
+### Bug Fixes
+
+* **cli:** Colour only a terminal and align the list columns ([2f77281](https://github.com/roalcantara/lida/commit/2f77281ff9319eb55361946b301679c12a2bcc67))
+* **cli:** Generate completion and the usage spec from the CLI ([f0c0c7d](https://github.com/roalcantara/lida/commit/f0c0c7de6d7b922bb1dd07651aad99edb13ffe79))
+* **cli:** Keep meta keys with ':' readable and removable ([6c54686](https://github.com/roalcantara/lida/commit/6c54686f5646a413d214c79779c42153b13f3a92))
+* **cli:** Parse statuses and priorities strictly and in one place ([a34c7bb](https://github.com/roalcantara/lida/commit/a34c7bb2c91cb33ec3154a60094ff499d9de4e80))
+* **cli:** Reject input that would corrupt TODO.md ([4e75914](https://github.com/roalcantara/lida/commit/4e75914d829a1c8252bdd41a843d8779d6d21926))
+* **cli:** Show every field a task stores ([21245b4](https://github.com/roalcantara/lida/commit/21245b4cfe7fd3becea03eeb26e930bbc5f1f9d6))
+* **core:** Keep everything TODO.md holds, or refuse to save ([a3d9fd5](https://github.com/roalcantara/lida/commit/a3d9fd50da1a9561a8edaa4a40a812cfb390294d))
+* **core:** Keep one source of truth when the format changes ([e760915](https://github.com/roalcantara/lida/commit/e76091535989ff1896bb75ab2069d699fec510d5))
+* **core:** Leave empty keys out of TODO.yaml ([02bc2bf](https://github.com/roalcantara/lida/commit/02bc2bfdc1794d0d54267a5b2388bc5e6d07e5e4))
+* **core:** Refuse only the format switches that would lose data ([8056016](https://github.com/roalcantara/lida/commit/8056016a86a2b2f79103ecb7e56f063eef3e8577))
+* Start every error message lower-case ([b46a1d7](https://github.com/roalcantara/lida/commit/b46a1d727f0fe4d26b65b34d5bd13c8ebf25712d))
+
 ## [0.1.0](https://github.com/roalcantara/lida/compare/v0.0.1...v0.1.0) (2026-11-24)
 
 ### Features
