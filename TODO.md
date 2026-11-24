@@ -62,7 +62,7 @@
   - **Priority**: high
   - **Tags**: v0.1.0, release
 
-- [ ] BWYZ **-** Fold release.yml and audit.yml into ci.yml (audit, plan, build, release jobs)
+- [x] BWYZ **-** Fold release.yml and audit.yml into ci.yml (audit, plan, build, release jobs)
   - **Priority**: high
   - **Tags**: v0.1.0, ci, release
 
