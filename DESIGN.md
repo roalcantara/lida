@@ -19,21 +19,23 @@ errors start with `error:` and say what to do when there is a fix (`Use --force 
 
 Colour is applied with `owo-colors` and is always on.
 
-| Element                             | Style                               |
-| ----------------------------------- | ----------------------------------- |
-| `✓` success mark                    | bright green                        |
-| `error` label                       | bright red, bold                    |
-| task IDs in messages, metadata keys | bold                                |
-| table headers                       | bold                                |
-| table rule, `-` placeholders, tags  | dimmed                              |
-| status `Todo`                       | dimmed                              |
-| status `InProgress`                 | bright yellow                       |
-| status `Done`                       | bright green                        |
-| status `Blocked`                    | bright red                          |
-| priority `High` / `Medium` / `Low`  | bright red / bright yellow / dimmed |
-| `No tasks found.`                   | dimmed                              |
+| Element                                                                        | Style                               |
+| ------------------------------------------------------------------------------ | ----------------------------------- |
+| `✓` success mark                                                               | bright green                        |
+| `error` label                                                                  | bright red, bold                    |
+| task ID after a status change, `update`, `delete`, `show`'s title, `list` rows | bold                                |
+| metadata key in `meta set` / `meta unset`                                      | bold                                |
+| table headers                                                                  | bold                                |
+| table rule, `-` placeholders, tags                                             | dimmed                              |
+| status `Todo`                                                                  | dimmed                              |
+| status `InProgress`                                                            | bright yellow                       |
+| status `Done`                                                                  | bright green                        |
+| status `Blocked`                                                               | bright red                          |
+| priority `High` / `Medium` / `Low`                                             | bright red / bright yellow / dimmed |
+| `No tasks found.`                                                              | dimmed                              |
 
-Known gap: colour is emitted even when stdout is piped or `NO_COLOR` is set.
+Known gap: colour is emitted even when stdout is piped or `NO_COLOR` is set. IDs in `add` messages, errors and `show`'s
+metadata lines are not bold.
 
 ## Commands
 
@@ -59,8 +61,12 @@ $ lida add --task-id aaaa -c "A note"
 ```
 
 The ID is four random base62 characters. An unknown priority is ignored silently (the task gets none). Errors:
-``task description is required (e.g. \``lida add "Task description"\`)``, ``comment text is required when specifying
---task-id``, ``task #zzzz not found`.
+
+```text
+error: task description is required (e.g. `lida add "Task description"`)
+error: comment text is required when specifying --task-id
+error: task #zzzz not found
+```
 
 ### `update`
 
@@ -69,7 +75,7 @@ $ lida update aaaa -d Renamed -p high --tag docs
 ✓ Updated task #aaaa
 ```
 
-`-t`/`--tag` replace the task's tags.
+`-t`/`--tags` replace the task's tags; `--tag` is a long-only alias, used only when `--tags` is absent.
 
 ### `list` (also bare `lida`)
 
@@ -81,7 +87,8 @@ ID     STATUS       PRIORITY   TITLE                          TAGS
 #bbbb  Todo High Second task                    setup, docs
 ```
 
-Columns are padded before colour is applied, so coloured cells are not aligned. Filters: `-s` status (aliases below),
+Status and priority cells are coloured before they are padded, so the escape codes count toward the column width and
+those columns are not aligned. Filters: `-s` status (aliases below),
 `-t` tag, `-p` priority. Empty result: `No tasks found.`.
 
 `--tasks` prints one plain line per task, for shell completion:
@@ -104,7 +111,8 @@ $ lida status aaaa --set blocked --reason Waiting
 ```
 
 Status values and aliases: `todo`; `in-progress`, `inprogress`, `progress`, `en-cours`, `encours`; `done`, `completed`;
-`blocked`, `bloqued`. `--reason` is kept only for `blocked`. Error:
+`blocked`, `bloqued`. `--set blocked` stores `--reason` (or clears it when absent). Another status clears the reason
+only when `--reason` is passed; `done` and `start` never clear it. Error:
 `invalid status 'nope'. Valid values: todo, in-progress, done, blocked`.
 
 ### `show`
@@ -149,9 +157,14 @@ $ lida meta aaaa unset owner
 ✓ Removed metadata owner from task #aaaa
 ```
 
-``set`` parses the value as JSON and falls back to a string; ``get`` prints strings bare and other values as JSON; ``rm`` is
-an alias of ``unset``. Errors: ``metadata key 'missing' not set on task #aaaa``, ``value required for \``meta set <key>
-<value>\```, ``unknown meta action 'frob'. Use set, get, or unset`.
+`set` parses the value as JSON and falls back to a string; `get` prints strings bare and other values as JSON; `rm` is
+an alias of `unset`. Errors:
+
+```text
+error: metadata key 'missing' not set on task #aaaa
+error: value required for `meta set <key> <value>`
+error: unknown meta action 'frob'. Use set, get, or unset
+```
 
 ### `tags`
 

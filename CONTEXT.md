@@ -8,7 +8,8 @@ Canonical terms used across code, tests, config, and docs.
   Random rather than sequential so tasks added on different branches rarely collide.
 - **status**: `todo`, `in-progress`, `done`, or `blocked`. Accepted aliases: `inprogress`, `progress`, `en-cours`,
   `encours` (in-progress); `completed` (done); `bloqued` (blocked).
-- **blocked reason**: Free text kept only while a task is `blocked`.
+- **blocked reason**: Free text set by `status --set blocked --reason`; another status clears it only when `--reason`
+  is passed, and `done`/`start` never clear it.
 - **priority**: `low`, `medium`, or `high`; optional.
 - **tags**: Comma-separated labels on a task; `--tag`/`--tags` replace them.
 - **position**: Where the work lives in code: a path, `path:line`, or URL.
