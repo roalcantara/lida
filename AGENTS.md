@@ -68,7 +68,9 @@ only the first three. `mise run audit` adds the slow and release checks (coverag
 Conventional Commits with a sentence-case subject, at most 72 characters.
 
 The type decides the release ([docs/adr/0001-releases.md](docs/adr/0001-releases.md)): `feat`, `fix` and `perf` ship on
-the next merge to `main`; `ref`, `docs`, `chore`, `test`, `ci`, `build` and `style` do not. Before 1.0, a breaking
+the next merge to `main`; `ref`, `docs`, `chore`, `test`, `ci`, `build` and `style` do not. The changelog parser reads any
+body line that starts with "BREAKING CHANGE" (any case) as a breaking-change note: never start a body line with
+those words unless the commit really is one. Before 1.0, a breaking
 change bumps the minor version.
 
 Stage named paths with `git add <paths>`, then run `git commit`; never `git commit <paths>` and never `git commit -a`.

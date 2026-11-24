@@ -47,3 +47,8 @@ request, so every release is a merge the owner chose.
   `main` by `GITHUB_TOKEN`. CI must be green on the pull request before the owner merges.
 - `mise run release -- --dry-run --no-ci` previews the next release locally (`GITHUB_TOKEN=$(gh auth token)`).
 - `CHANGELOG.md` is generated; formatters and typos skip it.
+- semantic-release pushes the release commit before the tag. If GitHub rejects the tag push (it did once, for v0.1.0:
+  "remote unpack failed"), `main` carries the bump with no tag. Rerunning the job does not help (its checkout is behind
+  `main`) and a fresh run would release the same version twice. Recover by hand: tag the `chore(release)` commit
+  (`git -c tag.gpgSign=false tag vX.Y.Z <sha>`), push the tag, download that run's build artifacts and create the
+  release with `gh release create vX.Y.Z --verify-tag --notes-file <the CHANGELOG section> dist/*`.
