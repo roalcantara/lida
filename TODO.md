@@ -94,7 +94,7 @@
   - **Priority**: high
   - **Tags**: v0.1.0, release
 
-- [ ] apDG **-** Cut v0.1.0: switch to the v0.1.0 release rules with a feat commit
+- [x] apDG **-** Cut v0.1.0: switch to the v0.1.0 release rules with a feat commit
   - **Priority**: high
   - **Tags**: v0.1.0, release
 

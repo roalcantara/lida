@@ -3,13 +3,13 @@
 branches: [main]
 repositoryUrl: https://github.com/roalcantara/lida.git
 plugins:
-  # Rehearsal (v0.0.x): every release is a patch until the v0.1.0 cut (docs/adr/0001-releases.md).
+  # Pre-1.0: breaking changes bump the minor version (removed at v1.0.0, docs/adr/0001-releases.md).
   # ref, docs, chore, test, ci, build, style → no release.
   - - '@semantic-release/commit-analyzer'
     - preset: conventionalcommits
       releaseRules:
-        - { breaking: true, release: patch }
-        - { type: feat, release: patch }
+        - { breaking: true, release: minor }
+        - { type: feat, release: minor }
         - { type: fix, release: patch }
         - { type: perf, release: patch }
   - - '@semantic-release/release-notes-generator'
