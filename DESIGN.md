@@ -12,7 +12,8 @@ errors start with `error:` and say what to do when there is a fix (`Use --force 
 
 ## Streams and exit codes
 
-- Results go to stdout. Errors go to stderr as one line, `error: <message>`, and exit `1`.
+- Results go to stdout. Command errors go to stderr as one line, `error: <message>`, and exit `1`.
+- Argument and CLI parse errors print usage to stderr and exit `2`.
 - Success exits `0`. Nothing else is printed on success; `--json` output is pure JSON with an empty stderr.
 
 ## Colour

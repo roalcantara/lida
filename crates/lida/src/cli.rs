@@ -158,7 +158,7 @@ pub struct UpdateArgs {
 
 #[derive(Args, Debug)]
 pub struct ListArgs {
-    /// Show tasks only
+    /// Print one plain line per task, for shell completion
     #[usage(long)]
     pub tasks: bool,
 
@@ -254,13 +254,13 @@ pub enum Subcommand {
     /// Initialize a new TODO file (TODO.yaml or TODO.md)
     Init(InitArgs),
 
-    /// Add a new task (optionally with initial comment or metadata)
+    /// Add a new task (optionally with initial comment)
     Add(AddArgs),
 
     /// Update an existing task's attributes
     Update(UpdateArgs),
 
-    /// List tasks, actors, or comments
+    /// List tasks
     List(ListArgs),
 
     /// Mark a task as done

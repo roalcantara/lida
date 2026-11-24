@@ -14,7 +14,7 @@ cmd init help="Initialize a new TODO file (TODO.yaml or TODO.md)" {
     flag "-f --force" help="Overwrite existing TODO files"
     flag "-h --help" help="Print help" action=help builtin=#true
 }
-cmd add help="Add a new task (optionally with initial comment or metadata)" {
+cmd add help="Add a new task (optionally with initial comment)" {
     flag --task help="Legacy flag task description" {
         arg <TASK>
     }
@@ -67,8 +67,8 @@ cmd update help="Update an existing task's attributes" {
     complete tag run="lida __complete_word__ --candidates tag --line={{ words | shell_join | shell_quote }}"
     complete tags run="lida __complete_word__ --candidates tags --line={{ words | shell_join | shell_quote }}"
 }
-cmd list help="List tasks, actors, or comments" {
-    flag --tasks help="Show tasks only"
+cmd list help="List tasks" {
+    flag --tasks help="Print one plain line per task, for shell completion"
     flag "-s --status" help="Filter by status: todo, in-progress, done, blocked" {
         arg <STATUS>
     }

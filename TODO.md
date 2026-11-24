@@ -106,7 +106,7 @@
   - **Priority**: high
   - **Tags**: stable, audit
 
-- [ ] 5BI3 **-** README advertises --meta key=val, which does not exist
+- [x] 5BI3 **-** README advertises --meta key=val, which does not exist
   - **Priority**: medium
   - **Tags**: stable, docs, v0.1.1
 
@@ -199,7 +199,7 @@
   - **Priority**: low
   - **Tags**: v0.1.1, stable, cli
 
-- [ ] foNb **-** Fix docs drift: --json claim, exit 2 on argument errors, help text, Rust floor
+- [x] foNb **-** Fix docs drift: --json claim, exit 2 on argument errors, help text, Rust floor
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, docs
 

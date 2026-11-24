@@ -65,8 +65,8 @@ tools/graph/   code graphs for agents: CRG, Gortex, Graphify (see its README)
 
 - **Dual Native:** Read and write both `TODO.md` and `TODO.yaml` with atomic synchronization.
 - **Git-Centric Reliability:** Collision-resilient random 4-character base62 IDs (`zOaU`).
-- **First-Class Metadata:** Native typed key-value maps on tasks (`--meta key=val`).
-- **Agent Ready:** Instant `--json` output across all commands.
+- **First-Class Metadata:** Native typed key-value maps on tasks (`lida meta <id> set <key> <value>`).
+- **Agent Ready:** Instant `--json` output on `list` and `show`.
 - **Sub-millisecond Speed:** Built in Rust using `usage-rs`.
 
 ## Development Workflow
