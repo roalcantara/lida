@@ -1,0 +1,15 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida list -s done
+code: 0
+--- stdout
+[2mNo tasks found.[0m
+--- stderr
+
+$ lida list -s done --json
+code: 0
+--- stdout
+[]
+--- stderr

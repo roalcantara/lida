@@ -1,18 +1,134 @@
 min_version = "2026.9.13"
 
 [settings]
+# mise.lock records every tool's download and checksum for the machines that run this repo: Apple silicon
+# Macs and CI's Linux runners. Run `mise lock` after changing a tool: CI installs with --locked, and fails otherwise.
 lockfile_platforms = ["linux-x64", "macos-arm64"]
+# Rust comes from rust-toolchain.toml, the file rustup reads: one pin, its channel and components, for both.
 idiomatic_version_file_enable_tools = ["rust"]
 
+# Code graph health (tools/graph/README.md): mise doctor project.
+[doctor.checks.graph_crg_installed]
+description = "code-review-graph is installed and on PATH"
+run = "command -v code-review-graph >/dev/null 2>&1"
+hint = "Run `mise install`."
+timeout = "1s"
+
+[doctor.checks.graph_crg_version]
+description = "code-review-graph matches the pinned version"
+run = '''
+  expected=$(grep -E '"pipx:code-review-graph"[[:space:]]*=[[:space:]]*"[^"]+"' mise.toml | sed -E 's/.*"([^"]+)".*/\1/' | head -n1)
+  if [ -z "$expected" ]; then exit 0; fi
+  actual=$(code-review-graph --version 2>/dev/null || true)
+  printf '%s\n' "$actual" | grep -Eq "v?${expected//./\\.}([[:space:]]|$)"
+'''
+hint = "Align the installed CRG version with the one pinned in mise.toml."
+timeout = "3s"
+
+[doctor.checks.graph_crg_repo]
+description = "CRG has initialized its repo graph directory"
+run = "test -d .code-review-graph"
+hint = "Run `mise run graph setup crg` to build the repository graph."
+timeout = "1s"
+
+[doctor.checks.graph_crg_mcp]
+description = "CRG is wired in .mcp.json"
+run = '''
+  test -f .mcp.json && grep -q '"code-review-graph"' .mcp.json
+'''
+hint = "`.mcp.json` is committed: restore it with `git checkout -- .mcp.json`."
+timeout = "1s"
+
+[doctor.checks.graph_crg_gitignore]
+description = "The repo ignores .code-review-graph"
+run = "git check-ignore -q .code-review-graph"
+hint = "Add `.code-review-graph/` to .gitignore."
+timeout = "1s"
+
+[doctor.checks.graph_gortex_installed]
+description = "gortex is installed and on PATH"
+run = "command -v gortex >/dev/null 2>&1"
+hint = "Run `mise install`."
+timeout = "1s"
+
+[doctor.checks.graph_gortex_daemon]
+description = "Gortex daemon is running"
+run = "gortex daemon status >/dev/null 2>&1"
+hint = "Run `mise run graph setup gortex` or `gortex daemon start --detach` to bring the daemon online."
+timeout = "2s"
+
+[doctor.checks.graph_gortex_repo]
+description = "This repo is tracked by Gortex"
+run = 'gortex repos 2>/dev/null | grep -Fq "$PWD"'
+hint = "Run `mise run graph setup gortex` to track the repository."
+timeout = "2s"
+
+[doctor.checks.graph_graphify_installed]
+description = "graphify is installed and on PATH"
+run = "command -v graphify >/dev/null 2>&1"
+hint = "Run `mise install`."
+timeout = "1s"
+
+[doctor.checks.graph_graphify_artifact]
+description = "Graphify output exists for this repo"
+run = "test -f graphify-out/graph.json"
+hint = "Run `mise run graph setup graphify` (code-only, no LLM) or `mise run graph build graphify --force` (full semantic build)."
+timeout = "1s"
+
+[doctor.checks.graph_graphify_gitignore]
+description = "The repo ignores graphify-out"
+run = "git check-ignore -q graphify-out"
+hint = "Add `graphify-out/` to .gitignore."
+timeout = "1s"
+
+[doctor.checks.graph_fnox_secrets]
+description = "fnox resolves the secrets in .fnox.toml (Graphify's --force pass needs an LLM key)"
+run = "fnox list -P default --sources >/dev/null 2>&1"
+hint = "Run `mise install`; fnox reads password-store (`pass`): see .fnox.toml for the entries it expects."
+
+[task_config]
+includes = [
+  "tools/graph/tasks.toml", # the code graph tools (tools/graph/README.md)
+]
+
 [tools]
-cargo-binstall = "1.25.3"
-"cargo:cargo-deny" = "0.20.2"
+jactionlint = "2.6.0"
+"aqua:gitleaks/gitleaks" = "8.30.1"
+"aqua:jackchuka/mdschema" = "0.16.0"
+cargo-binstall = "1.27.0"
+"cargo:cargo-deny" = "0.21.0"
 "cargo:cargo-llvm-cov" = "0.9.1"
-"cargo:cargo-machete" = "0.9.2"
-"cargo:cargo-nextest" = "0.9.148"
-dprint = "0.63.0"
-hk = { version = "2.6.0", workflow = "release.yml" }
-typos = "1.51.1"
+"cargo:cargo-machete" = "0.10.1"
+"cargo:cargo-nextest" = "0.9.152"
+dprint = "0.65.0"
+hk = { version = "2.13.0", workflow = "release.yml" }
+ls-lint = "2.3.2"
+"npm:jscpd" = "5.4.3"
+pinact = "5.0.2"
+"pipx:commit-check" = "2.21.0"
+# Installs pipx tools from their locks in .mise/locks (mise needs uv >= 0.12.10 for that).
+uv = "0.13.9"
+# The interpreter the pipx tools run on: mise probes `python` on PATH before installing one (2026.10.7).
+python = "3.13.18"
+pkl = "0.33.0"
+shellcheck = "0.11.0"
+shfmt = "3.14.1"
+taplo = "0.10.0"
+# TOML linting against schemas (tombi.toml); taplo formats.
+tombi = "1.11.3"
+typos = "1.52.2"
+zizmor = "1.32.0"
+"npm:quick-commitlint" = { version = "0.1.3", allow_low_downloads = true }
+node = "26.13.1"
+
+# Code graphs for agents (tools/graph/README.md)
+# Runs tools/graph/graph.ts, the `mise run graph` task.
+bun = "1.4.4"
+"github:zzet/gortex" = "0.64.11"
+"pipx:code-review-graph" = "2.4.0"
+"pipx:graphifyy" = "0.9.112"
+# Secrets for Graphify's LLM pass, resolved from password-store (.fnox.toml)
+fnox = "1.48.0"
 
 [tasks.setup]
 description = "Install tools, fetch crates and the git hooks"
@@ -37,9 +153,76 @@ run = '''
   set -euo pipefail
 
   cargo nextest run --workspace --locked
-  cargo test --doc --workspace --locked
+  cargo test --doc --workspace --locked # nextest does not run doctests
   cargo clippy --workspace --all-targets --locked -- -D warnings
   if [ "${usage_fast:-false}" = "true" ]; then exit 0; fi
   cargo build --workspace --release --locked
+  hk check --all
   cargo deny check
+  RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps --locked
+'''
+
+[tasks.audit]
+description = "Run the slow and release hk profiles (rustdoc, coverage, cargo-deny, gitleaks history, zizmor)"
+run = "hk check --all --profile candidate --profile release"
+
+# Releases (docs/adr/0001-releases.md): semantic-release reads .releaserc.yml; CI runs these on push to main.
+[tasks.release]
+description = "semantic-release from the commits since the last tag; `-- --dry-run --no-ci` previews it locally"
+run = '''
+  #!/usr/bin/env bash
+  set -euo pipefail
+  exec npx --yes \
+    -p semantic-release@25.0.9 \
+    -p @semantic-release/changelog@7.0.0 \
+    -p @semantic-release/exec@7.1.0 \
+    -p @semantic-release/git@11.0.1 \
+    -p @semantic-release/github@12.0.10 \
+    -p conventional-changelog-conventionalcommits@9.3.1 \
+    semantic-release "$@"
+'''
+
+[tasks."release:version"]
+description = "Set the release version in Cargo.toml (package and the lida-core pin), Cargo.lock and lida.usage.kdl"
+usage = 'arg "<version>"'
+run = '''
+  #!/usr/bin/env bash
+  set -euo pipefail
+  cargo fetch --locked # before the bump: the lockfile still matches, and the update below needs no network
+  perl -0pi -e 's/(\[workspace\.package\]\n)version = "[^"]*"/${1}version = "$ENV{usage_version}"/' Cargo.toml
+  grep -q "^version = \"${usage_version}\"$" Cargo.toml || { echo "no [workspace.package] version to set"; exit 1; }
+  # The workspace pins lida-core by version too: it must follow, or the workspace stops resolving.
+  perl -pi -e 's/^(lida-core = \{ path = "crates\/lida-core", version = )"[^"]*"/${1}"$ENV{usage_version}"/' Cargo.toml
+  grep -q "^lida-core = .*version = \"${usage_version}\"" Cargo.toml || { echo "no lida-core pin to set"; exit 1; }
+  perl -pi -e 's/^version "[^"]*"/version "$ENV{usage_version}"/' lida.usage.kdl
+  grep -q "^version \"${usage_version}\"$" lida.usage.kdl || { echo "no version line in lida.usage.kdl"; exit 1; }
+  cargo update --workspace --offline
+'''
+
+[tasks.outdated]
+description = "Check for outdated dependencies"
+usage = '''
+  flag "--mise" help="ONLY Mise outdated check"
+'''
+run = '''
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  if [ "${usage_mise:-true}" = "true" ]; then
+    mise outdated --local --bump
+  fi
+'''
+
+[tasks.bump]
+description = "Bump outdated dependencies"
+usage = '''
+  flag "--mise" help="ONLY Mise outdated dependencies bump"
+'''
+run = '''
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  if [ "${usage_mise:-true}" = "true" ]; then
+    mise upgrade --local --bump
+  fi
 '''

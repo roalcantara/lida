@@ -12,21 +12,14 @@ fn test_dual_write_multi_mutation_preserves_yaml_metadata_and_comments() {
     let md_path = dir.path().join("TODO.md");
 
     // Initialize with both formats
-    let mut store = Store::init(
-        dir.path(),
-        StorageFormat::Both,
-        Some("test_proj".to_string()),
-    )
-    .unwrap();
+    let mut store = Store::init(dir.path(), StorageFormat::Both, Some("test_proj".to_string())).unwrap();
 
     // 1. Add a task with comments and meta
     let mut task = Task::new("t001", "Dual-write robustness task");
-    task.meta
-        .insert("numeric_id".to_string(), serde_json::json!(5_048_726));
+    task.meta.insert("numeric_id".to_string(), serde_json::json!(5_048_726));
     task.meta
         .insert("string_number".to_string(), serde_json::json!("12345"));
-    task.meta
-        .insert("bool_val".to_string(), serde_json::json!(true));
+    task.meta.insert("bool_val".to_string(), serde_json::json!(true));
     task.comments.push("c001".to_string());
     store.add_task(task);
     store.doc_mut().comments.push(lida_core::model::Comment {

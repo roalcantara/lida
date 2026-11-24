@@ -1,7 +1,22 @@
 use lida_core::model::{Status, Task};
 use lida_core::store::{StorageFormat, Store};
 use std::fs;
+use std::path::Path;
 use tempfile::tempdir;
+
+/// Loads the store in `dir`, adds one task, saves, and asserts `path` holds its ID.
+fn assert_roundtrip(dir: &Path, path: &Path, format: StorageFormat) -> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::load(dir)?;
+    assert_eq!(store.format(), format);
+    assert_eq!(store.doc().tasks.len(), 1);
+
+    store.add_task(Task::new("c3d4", "Task 2"));
+    store.save()?;
+
+    let content = fs::read_to_string(path)?;
+    assert!(content.contains("c3d4"));
+    Ok(())
+}
 
 #[test]
 fn test_store_single_yaml() {
@@ -13,15 +28,7 @@ fn test_store_single_yaml() {
     )
     .unwrap();
 
-    let mut store = Store::load(dir.path()).unwrap();
-    assert_eq!(store.format(), StorageFormat::YamlOnly);
-    assert_eq!(store.doc().tasks.len(), 1);
-
-    store.add_task(Task::new("c3d4", "Task 2"));
-    store.save().unwrap();
-
-    let content = fs::read_to_string(&yaml_path).unwrap();
-    assert!(content.contains("c3d4"));
+    assert_roundtrip(dir.path(), &yaml_path, StorageFormat::YamlOnly).unwrap();
     assert!(!dir.path().join("TODO.md").exists());
 }
 
@@ -31,15 +38,7 @@ fn test_store_single_markdown() {
     let md_path = dir.path().join("TODO.md");
     fs::write(&md_path, "# Tasks\n\n- [ ] a1b2 **-** Task 1\n").unwrap();
 
-    let mut store = Store::load(dir.path()).unwrap();
-    assert_eq!(store.format(), StorageFormat::MdOnly);
-    assert_eq!(store.doc().tasks.len(), 1);
-
-    store.add_task(Task::new("c3d4", "Task 2"));
-    store.save().unwrap();
-
-    let content = fs::read_to_string(&md_path).unwrap();
-    assert!(content.contains("c3d4"));
+    assert_roundtrip(dir.path(), &md_path, StorageFormat::MdOnly).unwrap();
     assert!(!dir.path().join("TODO.yaml").exists());
 }
 

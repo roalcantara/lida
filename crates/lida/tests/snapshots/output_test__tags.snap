@@ -1,0 +1,10 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida tags
+code: 0
+--- stdout
+  docs               1
+  setup              2
+--- stderr

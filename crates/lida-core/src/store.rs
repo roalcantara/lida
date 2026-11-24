@@ -62,15 +62,15 @@ impl Store {
             None
         };
 
-        if let Some(path) = cfg_path {
-            if let Ok(content) = fs::read_to_string(path) {
-                return match content.trim().to_lowercase().as_str() {
-                    "yaml" => Some(StorageFormat::YamlOnly),
-                    "md" | "markdown" => Some(StorageFormat::MdOnly),
-                    "both" => Some(StorageFormat::Both),
-                    _ => None,
-                };
-            }
+        if let Some(path) = cfg_path
+            && let Ok(content) = fs::read_to_string(path)
+        {
+            return match content.trim().to_lowercase().as_str() {
+                "yaml" => Some(StorageFormat::YamlOnly),
+                "md" | "markdown" => Some(StorageFormat::MdOnly),
+                "both" => Some(StorageFormat::Both),
+                _ => None,
+            };
         }
         None
     }
@@ -136,11 +136,7 @@ impl Store {
     ///
     /// # Errors
     /// Returns `StoreError` if files cannot be written.
-    pub fn init(
-        dir: &Path,
-        format: StorageFormat,
-        project: Option<String>,
-    ) -> Result<Self, StoreError> {
+    pub fn init(dir: &Path, format: StorageFormat, project: Option<String>) -> Result<Self, StoreError> {
         let doc = ProjectDoc {
             tasks: Vec::new(),
             actors: Vec::new(),

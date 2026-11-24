@@ -1,0 +1,10 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida list --tasks
+code: 0
+--- stdout
+[Todo] [Medium] aaaa — First task
+[Todo] [High] bbbb — Second task
+--- stderr

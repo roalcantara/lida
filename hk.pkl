@@ -1,0 +1,302 @@
+amends "package://github.com/jdx/hk/releases/download/v2.13.0/hk@2.13.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.13.0/hk@2.13.0#/Builtins.pkl"
+
+min_hk_version = "2.13.0"
+
+exclude = List("target", ".git", "tmp")
+display_skip_reasons = List()
+terminal_progress = false
+fail_fast = false
+
+local binary_excludes = List(
+    "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico",
+    "*.woff", "*.woff2", "*.ttf", "*.eot", "*.pdf", "*.zip"
+)
+
+// The GitHub token mise resolves, for a tool that reads PINACT_GITHUB_TOKEN (see the pinact step).
+local pinact_token = #"PINACT_GITHUB_TOKEN="${PINACT_GITHUB_TOKEN:-${GITHUB_TOKEN:-$(mise token github --raw 2>/dev/null)}}" "#
+
+// Fixtures and snapshots are authored or recorded byte for byte: one owner each, never a formatter.
+local generated = List("crates/*/tests/snapshots/**/*", ".mise/**/*")
+
+// Rust sources and the manifests that decide what they compile against.
+local rust_inputs = List("**/*.rs", "**/Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "clippy.toml")
+
+local structure_steps = new Mapping<String, Step> {
+  // lida-core is the pure domain and must never depend on the CLI, terminal, or binary crates.
+  ["core-purity"] = new Step {
+    glob = List("crates/lida-core/Cargo.toml")
+    shell = "bash -o pipefail -c"
+    check = """
+      status=0
+      for manifest in {{files}}; do
+        [[ -f "$manifest" ]] || continue
+        root=$(cd "$(dirname "$manifest")/../.." && pwd)
+        if ! tree=$(mise exec -- cargo tree --offline --manifest-path "$root/Cargo.toml" -p lida-core --edges normal --prefix none --format '{p}' 2>&1); then
+          echo "$tree"
+          status=1
+          continue
+        fi
+        bad=$(printf '%s\\n' "$tree" | awk '{print $1}' | grep -E '^(usage-rs|usage|owo-colors([-_].*)?|lida)$' | sort -u || true)
+        if [[ -n "$bad" ]]; then
+          echo "lida-core must not depend on CLI, terminal, or binary crates, but reaches:"
+          printf '    %s\\n' $bad
+          echo "    -> move that code into lida"
+          status=1
+        fi
+      done
+      exit $status
+      """
+    tests {
+      ["accepts a pure core"] {
+        run = "check"
+        files = List("{{tmp}}/crates/lida-core/Cargo.toml")
+        write {
+          ["{{tmp}}/Cargo.toml"] = """
+            [workspace]
+            resolver = "3"
+            members = ["crates/*"]
+            """
+          ["{{tmp}}/crates/lida-core/Cargo.toml"] = """
+            [package]
+            name = "lida-core"
+            version = "0.1.0"
+            edition = "2024"
+            """
+          ["{{tmp}}/crates/lida-core/src/lib.rs"] = ""
+          ["{{tmp}}/crates/owo-colors/Cargo.toml"] = """
+            [package]
+            name = "owo-colors"
+            version = "0.1.0"
+            edition = "2024"
+            """
+          ["{{tmp}}/crates/owo-colors/src/lib.rs"] = ""
+        }
+        expect { code = 0 }
+      }
+      ["rejects a direct owo-colors dependency"] {
+        run = "check"
+        files = List("{{tmp}}/crates/lida-core/Cargo.toml")
+        write {
+          ["{{tmp}}/Cargo.toml"] = """
+            [workspace]
+            resolver = "3"
+            members = ["crates/*"]
+            """
+          ["{{tmp}}/crates/lida-core/Cargo.toml"] = """
+            [package]
+            name = "lida-core"
+            version = "0.1.0"
+            edition = "2024"
+
+            [dependencies]
+            owo-colors = { path = "../owo-colors" }
+            """
+          ["{{tmp}}/crates/lida-core/src/lib.rs"] = ""
+          ["{{tmp}}/crates/owo-colors/Cargo.toml"] = """
+            [package]
+            name = "owo-colors"
+            version = "0.1.0"
+            edition = "2024"
+            """
+          ["{{tmp}}/crates/owo-colors/src/lib.rs"] = ""
+        }
+        expect {
+          code = 1
+          stdout = "lida-core must not depend on CLI, terminal, or binary crates"
+        }
+      }
+    }
+  }
+}
+
+local baseline_steps = new Mapping<String, Step> {
+    ...structure_steps
+    ["newlines"] = (Builtins.newlines) {
+        // One owner, the generator: the todo CLI writes TODO.md without a trailing newline, and
+        // fixing it by hand only holds until the CLI next writes it.
+        exclude = binary_excludes + generated + List("TODO.md", "CHANGELOG.md")
+    }
+    ["trailing-whitespace"] = (Builtins.trailing_whitespace) {
+        exclude = binary_excludes + generated + List("TODO.md", "CHANGELOG.md")
+    }
+    ["merge-conflict"] = Builtins.check_merge_conflict
+    ["mixed-line-ending"] = (Builtins.mixed_line_ending) {
+        exclude = generated
+    }
+    ["large-files"] = Builtins.check_added_large_files
+
+    ["private-key"] = Builtins.detect_private_key
+    ["gitleaks"] = (Builtins.gitleaks) {
+        shell = "bash -o pipefail -c"
+        check = #"""
+            gitleaks=$(mise which gitleaks); config=$PWD/.gitleaks.toml
+            dir=$(mktemp -d); trap 'rm -rf "$dir"' EXIT
+            printf '%s\0' {{files}} | tar --null -cf - -T - | tar -xf - -C "$dir"
+            cd "$dir" && "$gitleaks" dir --config "$config" --redact --no-banner --log-level error .
+            """#
+        exclude = binary_excludes
+    }
+
+    ["pkl"] = Builtins.pkl
+    ["mise"] = Builtins.mise
+    ["dprint"] = Builtins.dprint
+    ["shellcheck"] = Builtins.shellcheck
+    ["actionlint"] {
+        glob = List(".github/workflows/*.yml", ".github/workflows/*.yaml")
+        check = "mise exec -- jactionlint {{files}}"
+    }
+    ["pinact"] = (Builtins.pinact) {
+        check_diff = pinact_token + "mise exec -- pinact run --verify-comment --check {{files}}"
+        fix = pinact_token + "mise exec -- pinact run --verify-comment {{files}}"
+    }
+    ["typos"] = (Builtins.typos) {
+        exclude = binary_excludes + generated + List("*.lock")
+    }
+    ["docs"] = (Builtins.mdschema) {
+        glob = List("README.md")
+    }
+    ["paths"] {
+        check = "mise exec -- ls-lint"
+    }
+    ["branch"] {
+        check = "mise exec -- cchk --branch"
+    }
+
+    // Rust: formatter, compiler, linter. The compiler and clippy see the whole workspace,
+    // because a change to one crate can break another.
+    ["rustfmt"] = (Builtins.cargo_fmt) {
+        check = "mise exec -- cargo fmt -- --check"
+        fix = "mise exec -- cargo fmt"
+    }
+    ["taplo"] {
+        glob = List("**/*.toml")
+        check = "mise exec -- taplo fmt --check {{files}}"
+        fix = "mise exec -- taplo fmt {{files}}"
+    }
+    ["tombi"] {
+        glob = List("**/*.toml")
+        exclude = generated
+        check = "mise exec -- tombi lint --error-on-warnings --quiet {{files}}"
+    }
+    ["cargo-check"] {
+        glob = rust_inputs
+        check = "mise exec -- cargo check --workspace --all-targets --locked"
+    }
+    ["clippy"] {
+        glob = rust_inputs
+        check = "mise exec -- cargo clippy --workspace --all-targets --locked -- -D warnings"
+    }
+    ["machete"] {
+        glob = List("**/Cargo.toml")
+        check = "mise exec -- cargo machete"
+    }
+    ["dupes"] {
+        glob = List("**/*.rs")
+        check = "mise exec -- jscpd"
+    }
+    // Layout guard: a new top-level folder is a deliberate architectural decision.
+    ["root-layout"] {
+        check = #"extra=$(git ls-files | cut -s -d/ -f1 | sort -u | grep -v -x -E '\.agents|\.claude|\.github|\.mise|assets|crates|docs|tools' || true); [ -z "$extra" ] || { echo "unexpected top-level folder (README, Project Structure): $extra"; exit 1; }"#
+    }
+}
+
+local push_steps = new Mapping<String, Step> {
+    ["test"] {
+        check = "mise exec -- cargo nextest run --workspace --locked"
+    }
+    ["build"] {
+        check = "mise exec -- cargo build --workspace --release --locked"
+    }
+}
+
+local candidate_steps = new Mapping<String, Step> {
+    ...(push_steps) {
+        ["test"] { profiles = List("candidate") }
+        ["build"] { profiles = List("candidate") }
+    }
+    ["rustdoc"] {
+        check = "RUSTDOCFLAGS='-D warnings' mise exec -- cargo doc --workspace --no-deps --locked"
+        profiles = List("candidate")
+    }
+    ["coverage"] {
+        check = "mise exec -- cargo llvm-cov nextest --workspace --locked --summary-only"
+        profiles = List("candidate")
+    }
+}
+
+local release_steps = new Mapping<String, Step> {
+    ["gitleaks-release"] {
+        profiles = List("release")
+        check = "mise exec -- gitleaks git --redact --no-banner --config=.gitleaks.toml"
+    }
+    ["cargo-deny"] {
+        profiles = List("release")
+        check = "mise exec -- cargo deny check"
+    }
+    ["zizmor"] = (Builtins.zizmor) {
+        profiles = List("release")
+    }
+}
+
+local precommit_steps = new Mapping<String, Step> {
+    ...(baseline_steps) {
+        ["gitleaks"] = (Builtins.gitleaks) {
+            check = "mise exec -- gitleaks git --pre-commit --redact --staged --verbose --no-banner --log-level error"
+        }
+    }
+}
+
+local all_steps = new Mapping<String, Step> {
+    ...baseline_steps
+    ...candidate_steps
+    ...release_steps
+}
+
+local commit_message_steps = new Mapping<String, Step> {
+    ["conventional-commit"] {
+        check = #"""
+            {% raw %}
+            f="{% endraw %}{{commit_msg_file}}{% raw %}"
+            case "$(grep -v '^#' "$f" | sed -e '/./,$!d' | head -1)" in
+                Merge\ *|Revert\ *|Reapply\ *|fixup!\ *|squash!\ *|amend!\ *) exit 0 ;;
+            esac
+            mise exec -- quick-commitlint --config .quick-commitlint.json "$f"
+            {% endraw %}
+            """#
+    }
+}
+
+// Code graphs (tools/graph/README.md) follow every commit, merge and checkout. The step returns at once and never
+// fails git: the update runs in the background.
+local graph_refresh_steps = new Mapping<String, Step> {
+    ["graph-refresh"] {
+        check = "tools/graph/refresh.sh"
+        allow_failure = true
+    }
+}
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps = precommit_steps
+    }
+    ["commit-msg"] {
+        steps = commit_message_steps
+    }
+    ["pre-push"] {
+        steps = push_steps
+    }
+    ["post-commit"] { steps = graph_refresh_steps }
+    ["post-merge"] { steps = graph_refresh_steps }
+    ["post-checkout"] { steps = graph_refresh_steps }
+    ["fix"] {
+        fix = true
+        steps = baseline_steps
+    }
+    ["check"] {
+        report = "mkdir -p tmp && printf '%s' \"$HK_REPORT_JSON\" > tmp/hk-report.json"
+        steps = all_steps
+    }
+}

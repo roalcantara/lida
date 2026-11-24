@@ -1,0 +1,25 @@
+version = 1
+revision = 5
+requires-python = ">=3.11"
+
+[options]
+exclude-newer = "2026-11-23T02:40:04.784755Z"
+
+[[package]]
+name = "commit-check"
+version = "2.21.0"
+source = { registry = "https://pypi.org/simple/" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/24/bf/4c42badfef70271707aea61f09e90e19d5d5ced853742bd7811ec5ac144e/commit_check-2.21.0-py3-none-any.whl", hash = "sha256:23e275d9bc52cc0cbebe2076b5d0798ed2724f0b52c56b4ac128ec9836992116", size = 105473, upload-time = "2026-11-16T20:24:16.02Z" },
+]
+
+[[package]]
+name = "mise-pypi-tool-environment"
+version = "0.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "commit-check" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "commit-check", specifier = "==2.21.0" }]

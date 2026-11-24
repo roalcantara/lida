@@ -1,0 +1,21 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida add
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: task description is required (e.g. `lida add "Task description"`)
+
+$ lida add --task-id aaaa
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: comment text is required when specifying --task-id
+
+$ lida add --task-id zzzz -c x
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: task #zzzz not found

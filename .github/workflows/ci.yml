@@ -1,34 +1,172 @@
+# CI and releases (docs/adr/0001-releases.md). Every pull request and push to main: the gate on Linux and macOS, and an
+# install from source as dots does it. A push to main also runs the audit, then plans a release; only when
+# semantic-release finds one are the binaries built and the release published. Jobs call mise tasks, as a terminal does.
 name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # A run on main may be releasing: never cancel it.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions: {}
+
+env:
+  CI: true
+  CARGO_TERM_COLOR: always
+  MISE_LOCKED: "true"
+  # Tools in mise.toml that no CI job runs: the code graphs, the bun they run on, and fnox (tools/graph/README.md).
+  MISE_DISABLE_TOOLS: bun,github:zzet/gortex,pipx:code-review-graph,pipx:graphifyy,fnox
 
 jobs:
-  check:
-    name: Test & Lint (${{ matrix.os }})
+  gate:
+    name: Gate (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          components: rustfmt, clippy
+          persist-credentials: false
+      - uses: $/.github/actions/setup
+        with:
+          rust-cache: "true"
+      - run: mise run gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # pinact verifies pins through the GitHub API
 
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
+  install:
+    name: Install from source
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the Rust toolchain
+        run: rustup toolchain install
+      # What the dots Brewfile does (`cargo install` at a tag), from this checkout.
+      - name: cargo install
+        run: cargo install --locked --path crates/lida --root "$RUNNER_TEMP/lida"
+      - name: The binary reports the manifest version
+        shell: bash
+        run: |
+          expected=$(grep -m1 '^version = ' Cargo.toml | cut -d'"' -f2)
+          "$RUNNER_TEMP/lida/bin/lida" --version | grep -F "$expected"
 
-      - name: Run Tests
-        run: cargo test --workspace --locked
+  audit:
+    name: Audit (slow and release checks)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # gitleaks scans the full history
+          persist-credentials: false
+      - uses: $/.github/actions/setup
+      - run: mise run audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Clippy
-        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+  plan:
+    name: Plan the release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [gate, install, audit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # semantic-release checks it could push, even on --dry-run
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # semantic-release reads every tag and commit
+          persist-credentials: false
+      - uses: $/.github/actions/setup
+      - id: plan # .releaserc.yml's verifyReleaseCmd writes `version` here when there is one
+        run: mise run release -- --dry-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Format Check
-        run: cargo fmt --all -- --check
+  build:
+    name: Build (${{ matrix.target }})
+    needs: plan
+    if: needs.plan.outputs.version != ''
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+    env:
+      TARGET: ${{ matrix.target }}
+      VERSION: ${{ needs.plan.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/.github/actions/setup
+      # The binaries report the version they are released as.
+      - run: mise run release:version "$VERSION"
+      - run: rustup target add "$TARGET"
+      - run: cargo build --package lida --release --locked --target "$TARGET"
+      - name: Package archive
+        run: |
+          PKG_NAME="lida-v${VERSION}-${TARGET}"
+          mkdir -p "dist/${PKG_NAME}"
+          cp "target/${TARGET}/release/lida" "dist/${PKG_NAME}/"
+          cp README.md LICENSE "dist/${PKG_NAME}/"
+          tar -czf "dist/${PKG_NAME}.tar.gz" -C dist "${PKG_NAME}"
+          (cd dist && shasum -a 256 "${PKG_NAME}.tar.gz" > "${PKG_NAME}.tar.gz.sha256")
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lida-${{ matrix.target }}
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Release
+    needs: [plan, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # the changelog commit, the tag and the release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false # semantic-release pushes with GITHUB_TOKEN itself
+      - uses: $/.github/actions/setup
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+      - run: mise run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

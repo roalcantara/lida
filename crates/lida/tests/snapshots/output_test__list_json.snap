@@ -1,0 +1,41 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida list --json
+code: 0
+--- stdout
+[
+  {
+    "id": "aaaa",
+    "status": "Todo",
+    "description": "First task",
+    "due": null,
+    "actors": [],
+    "comments": [],
+    "blocked_reason": null,
+    "tags": [
+      "setup"
+    ],
+    "priority": "Medium",
+    "created": null,
+    "position": null
+  },
+  {
+    "id": "bbbb",
+    "status": "Todo",
+    "description": "Second task",
+    "due": null,
+    "actors": [],
+    "comments": [],
+    "blocked_reason": null,
+    "tags": [
+      "setup",
+      "docs"
+    ],
+    "priority": "High",
+    "created": null,
+    "position": null
+  }
+]
+--- stderr

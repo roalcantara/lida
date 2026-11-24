@@ -40,8 +40,8 @@
 ### 5. Terminal ASCII Art (`lida --help`)
 
 ```text
- _ _     _       
-| (_) __| | __ _ 
+ _ _     _
+| (_) __| | __ _
 | | |/ _` |/ _` |
 |_|_|\__,_|\__,_| [YAML · MD]
 ```
@@ -64,7 +64,7 @@
   <rect x="286" y="98" width="86" height="24" rx="12" fill="#F59E0B" fill-opacity="0.15" stroke="#F59E0B" stroke-width="1"/>
   <text x="329" y="114" font-family="'Geist Mono', monospace" font-size="12" font-weight="600" fill="#F59E0B" text-anchor="middle">v0.4.2</text>
   <text x="180" y="162" font-family="'Instrument Sans', system-ui" font-size="20" fill="#8B949E">Dual-format project task engine (YAML · MD)</text>
-  
+
   <!-- Terminal Showcase Card -->
   <g transform="translate(680, 60)">
     <rect width="450" height="260" rx="10" fill="#0D1117" stroke="#30363D" stroke-width="1"/>

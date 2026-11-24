@@ -5,6 +5,8 @@ all-features = true
 version = 2
 yanked = "deny"
 ignore = [
+  # unsafe-libyaml (via serde_yaml_ng → lida-core) is unmaintained: archived 2024-03-25, no safe upgrade. An
+  # unmaintained notice, not a known vulnerability; replacing the YAML backend is tracked in TODO.md (v1.0).
   "RUSTSEC-2024-0449",
 ]
 

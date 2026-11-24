@@ -1,0 +1,21 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida meta aaaa set owner ro
+code: 0
+--- stdout
+[92m✓[39m Set metadata [1mowner[0m for task #[1maaaa[0m
+--- stderr
+
+$ lida meta aaaa get owner
+code: 0
+--- stdout
+ro
+--- stderr
+
+$ lida meta aaaa unset owner
+code: 0
+--- stdout
+[92m✓[39m Removed metadata [1mowner[0m from task #[1maaaa[0m
+--- stderr
