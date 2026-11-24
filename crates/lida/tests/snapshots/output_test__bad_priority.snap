@@ -6,4 +6,4 @@ $ lida add Third task -p urgent
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: invalid priority 'urgent'. Valid values: low, medium, high, none
+error: invalid priority 'urgent'. Valid values: low, medium, high, none

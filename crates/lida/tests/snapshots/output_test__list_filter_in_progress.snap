@@ -5,29 +5,29 @@ expression: "transcript(dir.path(), commands)"
 $ lida start aaaa
 code: 0
 --- stdout
-[92m✓[39m Task #[1maaaa[0m marked as in-progress
+✓ Task #aaaa marked as in-progress
 --- stderr
 
 $ lida list -s in-progress
 code: 0
 --- stdout
-[1mID    [0m [1mSTATUS      [0m [1mPRIORITY  [0m [1mTITLE                         [0m [1mTAGS[0m
-[2m──────────────────────────────────────────────────────────────────────[0m
-#[1maaaa [0m [93mInProgress[39m [93mMedium[39m First task                     [2msetup[0m
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  InProgress   Medium     First task                     setup
 --- stderr
 
 $ lida list -s in_progress
 code: 0
 --- stdout
-[1mID    [0m [1mSTATUS      [0m [1mPRIORITY  [0m [1mTITLE                         [0m [1mTAGS[0m
-[2m──────────────────────────────────────────────────────────────────────[0m
-#[1maaaa [0m [93mInProgress[39m [93mMedium[39m First task                     [2msetup[0m
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  InProgress   Medium     First task                     setup
 --- stderr
 
 $ lida list -s en-cours
 code: 0
 --- stdout
-[1mID    [0m [1mSTATUS      [0m [1mPRIORITY  [0m [1mTITLE                         [0m [1mTAGS[0m
-[2m──────────────────────────────────────────────────────────────────────[0m
-#[1maaaa [0m [93mInProgress[39m [93mMedium[39m First task                     [2msetup[0m
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  InProgress   Medium     First task                     setup
 --- stderr

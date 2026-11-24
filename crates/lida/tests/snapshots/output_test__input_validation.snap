@@ -7,78 +7,78 @@ $ lida add Line one
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: description must be a single line
+error: description must be a single line
 
 $ lida add --task-id aaaa -c a
 b
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: comment must be a single line
+error: comment must be a single line
 
 $ lida status aaaa --set blocked --reason a
 b
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: reason must be a single line
+error: reason must be a single line
 
 $ lida update aaaa --position a
 b
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: position must be a single line
+error: position must be a single line
 
 $ lida update aaaa --due a
 b
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: due must be a single line
+error: due must be a single line
 
 $ lida update aaaa -t a
 b
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: tags must be a single line
+error: tags must be a single line
 
 $ lida meta aaaa set k
 x v
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: meta key must be a single line
+error: meta key must be a single line
 
 $ lida meta aaaa set k a
 b
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: meta value must be a single line
+error: meta value must be a single line
 
 $ lida meta aaaa set a:b v
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: meta keys cannot contain ':'
+error: meta keys cannot contain ':'
 
 $ lida init --md --project a
 b
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: project must be a single line
+error: project must be a single line
 
 $ lida init --md --project a --> b
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: project name cannot contain '-->'
+error: project name cannot contain '-->'
 
 $ lida init --yaml --md
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: choose one of --yaml, --md or --both
+error: choose one of --yaml, --md or --both

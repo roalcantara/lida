@@ -17,7 +17,9 @@ errors start with `error:` and say what to do when there is a fix (`Use --force 
 
 ## Colour
 
-Colour is applied with `owo-colors` and is always on.
+Colour is applied with `owo-colors`. It is enabled on a terminal stream, unless overridden by standard environment
+variables: `false` when `NO_COLOR` is set and non-empty; else `true` when `CLICOLOR_FORCE` is set, non-empty and not
+`0`; else `is_terminal`.
 
 | Element                                                                        | Style                               |
 | ------------------------------------------------------------------------------ | ----------------------------------- |
@@ -34,8 +36,7 @@ Colour is applied with `owo-colors` and is always on.
 | priority `High` / `Medium` / `Low`                                             | bright red / bright yellow / dimmed |
 | `No tasks found.`                                                              | dimmed                              |
 
-Known gap: colour is emitted even when stdout is piped or `NO_COLOR` is set. IDs in `add` messages, errors and `show`'s
-metadata lines are not bold.
+IDs in `add` messages, errors and `show`'s metadata lines are not bold.
 
 ## Commands
 
@@ -84,12 +85,11 @@ $ lida update aaaa -d Renamed -p high --tag docs
 $ lida list
 ID     STATUS       PRIORITY   TITLE                          TAGS
 ──────────────────────────────────────────────────────────────────────
-#aaaa  Todo Medium First task                     setup
-#bbbb  Todo High Second task                    setup, docs
+#aaaa  Todo         Medium     First task                     setup
+#bbbb  Todo         High       Second task                    setup, docs
 ```
 
-Status and priority cells are coloured before they are padded, so the escape codes count toward the column width and
-those columns are not aligned. Filters: `-s` status (aliases below; errors on unknown values),
+Status and priority columns are padded before colouring so they align cleanly. Filters: `-s` status (aliases below; errors on unknown values),
 `-t` tag, `-p` priority (`none` matches tasks without priority; errors on unknown values). Empty result: `No tasks found.`.
 
 `--tasks` prints one plain line per task, for shell completion:

@@ -5,13 +5,13 @@ expression: "transcript(dir.path(), commands)"
 $ lida status aaaa --set blocked --reason Waiting
 code: 0
 --- stdout
-[92m✓[39m Task #[1maaaa[0m status set to Blocked
+✓ Task #aaaa status set to Blocked
 --- stderr
 
 $ lida show aaaa
 code: 0
 --- stdout
-Task #[1maaaa[0m: First task
+Task #aaaa: First task
   Status: Blocked
   Priority: Medium
   Tags: setup

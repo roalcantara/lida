@@ -6,16 +6,16 @@ $ lida add
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task description is required (e.g. `lida add "Task description"`)
+error: task description is required (e.g. `lida add "Task description"`)
 
 $ lida add --task-id aaaa
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: comment text is required when specifying --task-id
+error: comment text is required when specifying --task-id
 
 $ lida add --task-id zzzz -c x
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task #zzzz not found
+error: task #zzzz not found

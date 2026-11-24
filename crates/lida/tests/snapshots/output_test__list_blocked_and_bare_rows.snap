@@ -5,22 +5,22 @@ expression: "transcript(dir.path(), commands)"
 $ lida update bbbb -p none -t 
 code: 0
 --- stdout
-[92m✓[39m Updated task #[1mbbbb[0m
+✓ Updated task #bbbb
 --- stderr
 
 $ lida status aaaa --set blocked
 code: 0
 --- stdout
-[92m✓[39m Task #[1maaaa[0m status set to Blocked
+✓ Task #aaaa status set to Blocked
 --- stderr
 
 $ lida list
 code: 0
 --- stdout
-[1mID    [0m [1mSTATUS      [0m [1mPRIORITY  [0m [1mTITLE                         [0m [1mTAGS[0m
-[2m──────────────────────────────────────────────────────────────────────[0m
-#[1maaaa [0m [91mBlocked[39m [93mMedium[39m First task                     [2msetup[0m
-#[1mbbbb [0m [2mTodo[0m [2m-[0m  Second task                    [2m-[0m
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  Blocked      Medium     First task                     setup
+#bbbb  Todo         -          Second task                    -
 --- stderr
 
 $ lida list --tasks
@@ -68,6 +68,6 @@ code: 0
 $ lida show bbbb
 code: 0
 --- stdout
-Task #[1mbbbb[0m: Second task
+Task #bbbb: Second task
   Status: Todo
 --- stderr

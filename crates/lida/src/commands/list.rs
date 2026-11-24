@@ -113,7 +113,7 @@ fn write_table(items: &[&Task], out: &mut impl Write) -> std::io::Result<()> {
         };
         writeln!(
             out,
-            "#{:<5} {:<12} {:<10} {:<30} {}",
+            "#{:<5} {} {} {:<30} {}",
             t.id.bold(),
             status_cell(t.status),
             priority_cell(t.priority),
@@ -125,18 +125,20 @@ fn write_table(items: &[&Task], out: &mut impl Write) -> std::io::Result<()> {
 }
 
 fn status_cell(status: Status) -> String {
+    let padded = format!("{:<12}", status.as_str());
     match status {
-        Status::Todo => "Todo".dimmed().to_string(),
-        Status::InProgress => "InProgress".bright_yellow().to_string(),
-        Status::Done => "Done".bright_green().to_string(),
-        Status::Blocked => "Blocked".bright_red().to_string(),
+        Status::Todo => padded.dimmed().to_string(),
+        Status::InProgress => padded.bright_yellow().to_string(),
+        Status::Done => padded.bright_green().to_string(),
+        Status::Blocked => padded.bright_red().to_string(),
     }
 }
 
 fn priority_cell(priority: Option<Priority>) -> String {
-    priority.map_or("-".dimmed().to_string(), |p| match p {
-        Priority::High => "High".bright_red().to_string(),
-        Priority::Medium => "Medium".bright_yellow().to_string(),
-        Priority::Low => "Low".dimmed().to_string(),
-    })
+    match priority {
+        None => format!("{:<10}", "-").dimmed().to_string(),
+        Some(Priority::High) => format!("{:<10}", Priority::High.as_str()).bright_red().to_string(),
+        Some(Priority::Medium) => format!("{:<10}", Priority::Medium.as_str()).bright_yellow().to_string(),
+        Some(Priority::Low) => format!("{:<10}", Priority::Low.as_str()).dimmed().to_string(),
+    }
 }

@@ -5,13 +5,13 @@ expression: "transcript(dir.path(), commands)"
 $ lida update aaaa -d Renamed -p high --tag docs --due 2026-12-01
 code: 0
 --- stdout
-[92m✓[39m Updated task #[1maaaa[0m
+✓ Updated task #aaaa
 --- stderr
 
 $ lida show aaaa
 code: 0
 --- stdout
-Task #[1maaaa[0m: Renamed
+Task #aaaa: Renamed
   Status: Todo
   Priority: High
   Tags: docs

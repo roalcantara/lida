@@ -6,22 +6,22 @@ $ lida update zzzz -d x
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task #zzzz not found
+error: task #zzzz not found
 
 $ lida start zzzz
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task #zzzz not found
+error: task #zzzz not found
 
 $ lida status zzzz --set done
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task #zzzz not found
+error: task #zzzz not found
 
 $ lida meta zzzz get k
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task #zzzz not found
+error: task #zzzz not found

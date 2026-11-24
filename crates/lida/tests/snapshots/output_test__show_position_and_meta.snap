@@ -5,19 +5,19 @@ expression: "transcript(dir.path(), commands)"
 $ lida update aaaa --position src/x.rs:1
 code: 0
 --- stdout
-[92m✓[39m Updated task #[1maaaa[0m
+✓ Updated task #aaaa
 --- stderr
 
 $ lida meta aaaa set count 3
 code: 0
 --- stdout
-[92m✓[39m Set metadata [1mcount[0m for task #[1maaaa[0m
+✓ Set metadata count for task #aaaa
 --- stderr
 
 $ lida meta aaaa set flag true
 code: 0
 --- stdout
-[92m✓[39m Set metadata [1mflag[0m for task #[1maaaa[0m
+✓ Set metadata flag for task #aaaa
 --- stderr
 
 $ lida meta aaaa get count
@@ -29,7 +29,7 @@ code: 0
 $ lida show aaaa
 code: 0
 --- stdout
-Task #[1maaaa[0m: First task
+Task #aaaa: First task
   Status: Todo
   Priority: Medium
   Tags: setup
@@ -66,5 +66,5 @@ code: 0
 $ lida meta aaaa rm flag
 code: 0
 --- stdout
-[92m✓[39m Removed metadata [1mflag[0m from task #[1maaaa[0m
+✓ Removed metadata flag from task #aaaa
 --- stderr

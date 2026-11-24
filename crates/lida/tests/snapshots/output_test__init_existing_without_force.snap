@@ -6,10 +6,10 @@ $ lida init --md
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: TODO file already exists. Use --force to overwrite.
+error: TODO file already exists. Use --force to overwrite.
 
 $ lida init --md --force
 code: 0
 --- stdout
-[92m✓[39m Initialized project tasks in [DIR]
+✓ Initialized project tasks in [DIR]
 --- stderr

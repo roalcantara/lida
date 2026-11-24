@@ -6,4 +6,4 @@ $ lida cwi toml
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: format must be 'yaml', 'md', or 'both'
+error: format must be 'yaml', 'md', or 'both'

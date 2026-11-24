@@ -26,7 +26,7 @@
   - **Priority**: medium
   - **Tags**: setup
 
-- [ ] AmZm **-** Respect NO_COLOR and non-TTY output (no ANSI when piped)
+- [x] AmZm **-** Respect NO_COLOR and non-TTY output (no ANSI when piped)
   - **Priority**: high
   - **Tags**: bug, output, stable, v0.1.1
   - **Position**: "crates/lida/src/output.rs"
@@ -45,7 +45,7 @@
   - **Priority**: low
   - **Tags**: bug, output, stable, v0.1.1
 
-- [ ] DjKn **-** Align coloured status and priority columns in lida list
+- [x] DjKn **-** Align coloured status and priority columns in lida list
   - **Priority**: low
   - **Tags**: bug, output, stable, v0.1.1
   - **Position**: "crates/lida/src/commands/list.rs"

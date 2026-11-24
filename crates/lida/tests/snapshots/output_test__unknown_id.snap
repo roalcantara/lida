@@ -6,16 +6,16 @@ $ lida done zzzz
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task #zzzz not found
+error: task #zzzz not found
 
 $ lida show zzzz
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task #zzzz not found
+error: task #zzzz not found
 
 $ lida delete zzzz
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: task #zzzz not found
+error: task #zzzz not found

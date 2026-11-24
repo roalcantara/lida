@@ -6,4 +6,4 @@ $ lida status aaaa --set nope
 code: 1
 --- stdout
 --- stderr
-[1m[91merror[39m[0m: invalid status 'nope'. Valid values: todo, in-progress, done, blocked
+error: invalid status 'nope'. Valid values: todo, in-progress, done, blocked

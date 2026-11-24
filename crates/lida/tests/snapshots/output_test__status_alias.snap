@@ -5,13 +5,13 @@ expression: "transcript(dir.path(), commands)"
 $ lida status aaaa --set en-cours
 code: 0
 --- stdout
-[92m✓[39m Task #[1maaaa[0m status set to InProgress
+✓ Task #aaaa status set to InProgress
 --- stderr
 
 $ lida show aaaa
 code: 0
 --- stdout
-Task #[1maaaa[0m: First task
+Task #aaaa: First task
   Status: InProgress
   Priority: Medium
   Tags: setup

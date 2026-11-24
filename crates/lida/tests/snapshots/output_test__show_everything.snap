@@ -5,31 +5,31 @@ expression: "transcript(dir.path(), commands)"
 $ lida update aaaa --due 2026-12-01 --position top
 code: 0
 --- stdout
-[92m✓[39m Updated task #[1maaaa[0m
+✓ Updated task #aaaa
 --- stderr
 
 $ lida status aaaa --set blocked --reason Waiting on review
 code: 0
 --- stdout
-[92m✓[39m Task #[1maaaa[0m status set to Blocked
+✓ Task #aaaa status set to Blocked
 --- stderr
 
 $ lida meta aaaa set owner alice
 code: 0
 --- stdout
-[92m✓[39m Set metadata [1mowner[0m for task #[1maaaa[0m
+✓ Set metadata owner for task #aaaa
 --- stderr
 
 $ lida add --task-id aaaa -c First comment
 code: 0
 --- stdout
-[92m✓[39m Added comment to task #aaaa
+✓ Added comment to task #aaaa
 --- stderr
 
 $ lida show aaaa
 code: 0
 --- stdout
-Task #[1maaaa[0m: First task
+Task #aaaa: First task
   Status: Blocked
   Priority: Medium
   Tags: setup

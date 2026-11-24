@@ -34,18 +34,22 @@ struct Run {
 }
 
 #[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
-fn lida(dir: &Path, args: &[&str]) -> Run {
-    let output = Command::new(env!("CARGO_BIN_EXE_lida"))
-        .args(args)
-        .current_dir(dir)
-        .env_remove("NO_COLOR")
-        .output()
-        .expect("lida binary runs");
+fn lida_with_env(dir: &Path, args: &[&str], envs: &[(&str, &str)]) -> Run {
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_lida"));
+    cmd.args(args).current_dir(dir).env_remove("NO_COLOR");
+    for (k, v) in envs {
+        cmd.env(k, v);
+    }
+    let output = cmd.output().expect("lida binary runs");
     Run {
         code: output.status.code().unwrap_or(-1),
         stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
         stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
     }
+}
+
+fn lida(dir: &Path, args: &[&str]) -> Run {
+    lida_with_env(dir, args, &[])
 }
 
 #[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
@@ -102,14 +106,18 @@ fn append_run(out: &mut String, args: &[&str], run: &Run) {
     );
 }
 
-/// Runs each command in order in `dir` and renders them as one transcript.
-fn transcript(dir: &Path, commands: &[&[&str]]) -> String {
+fn transcript_with_env(dir: &Path, commands: &[&[&str]], envs: &[(&str, &str)]) -> String {
     let mut out = String::new();
     for args in commands {
-        let run = lida(dir, args);
+        let run = lida_with_env(dir, args, envs);
         append_run(&mut out, args, &run);
     }
     redact(&out, dir)
+}
+
+/// Runs each command in order in `dir` and renders them as one transcript.
+fn transcript(dir: &Path, commands: &[&[&str]]) -> String {
+    transcript_with_env(dir, commands, &[])
 }
 
 fn snap_empty(name: &str, commands: &[&[&str]]) {
@@ -286,6 +294,21 @@ fn strict_values() {
             &["status", "aaaa", "--set", "in_progress"],
         ],
     );
+}
+
+#[test]
+fn colour_forced() {
+    let dir = fixture_dir();
+    insta::assert_snapshot!(
+        "colour_forced",
+        transcript_with_env(dir.path(), &[&["list"]], &[("CLICOLOR_FORCE", "1")])
+    );
+}
+
+#[test]
+fn list_aligned() {
+    let dir = fixture_dir();
+    insta::assert_snapshot!("list_aligned", transcript(dir.path(), &[&["list"]]));
 }
 
 #[test]

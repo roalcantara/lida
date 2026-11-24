@@ -5,7 +5,7 @@ expression: "transcript(dir.path(), commands)"
 $ lida show bbbb
 code: 0
 --- stdout
-Task #[1mbbbb[0m: Second task
+Task #bbbb: Second task
   Status: Todo
   Priority: High
   Tags: setup, docs

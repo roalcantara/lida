@@ -16,8 +16,8 @@ mod update;
 mod prelude {
     pub use super::CmdResult;
     pub(super) use super::{single_line, validate_task_fields};
+    pub use crate::output::OwoColorize;
     pub use lida_core::store::Store;
-    pub use owo_colors::OwoColorize;
     pub use std::io::Write;
     pub use std::path::Path;
 }
