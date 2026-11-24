@@ -1,7 +1,7 @@
 //! `lida update`: change a task's fields.
 
 use super::prelude::*;
-use super::{not_found, parse_priority, parse_tags};
+use super::{not_found, parse_priority_arg, parse_tags};
 
 /// Fields to change; `None` leaves a field as it is. `tags` is `--tags`, else `--tag`.
 #[derive(Debug)]
@@ -21,7 +21,7 @@ pub fn run(cwd: &Path, id: &str, args: Args, out: &mut impl Write) -> CmdResult 
         task.description = desc;
     }
     if let Some(p) = args.priority {
-        task.priority = parse_priority(&p);
+        task.priority = parse_priority_arg(&p)?;
     }
     if let Some(t) = args.tags {
         task.tags = parse_tags(&t);

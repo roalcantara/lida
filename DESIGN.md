@@ -60,9 +60,10 @@ $ lida add --task-id aaaa -c "A note"
 ✓ Added comment to task #aaaa
 ```
 
-The ID is four random base62 characters. An unknown priority is ignored silently (the task gets none). Errors:
+The ID is four random base62 characters. Priority takes `low`, `medium`, `high`, or `none` (clears priority). Unknown values error. Errors:
 
 ```text
+error: invalid priority 'urgent'. Valid values: low, medium, high, none
 error: task description is required (e.g. `lida add "Task description"`)
 error: comment text is required when specifying --task-id
 error: task #zzzz not found
@@ -88,8 +89,8 @@ ID     STATUS       PRIORITY   TITLE                          TAGS
 ```
 
 Status and priority cells are coloured before they are padded, so the escape codes count toward the column width and
-those columns are not aligned. Filters: `-s` status (aliases below),
-`-t` tag, `-p` priority. Empty result: `No tasks found.`.
+those columns are not aligned. Filters: `-s` status (aliases below; errors on unknown values),
+`-t` tag, `-p` priority (`none` matches tasks without priority; errors on unknown values). Empty result: `No tasks found.`.
 
 `--tasks` prints one plain line per task, for shell completion:
 
@@ -110,7 +111,7 @@ $ lida status aaaa --set blocked --reason Waiting
 ✓ Task #aaaa status set to Blocked
 ```
 
-Status values and aliases: `todo`; `in-progress`, `inprogress`, `progress`, `en-cours`, `encours`; `done`, `completed`;
+Status values and aliases: `todo`; `in-progress`, `inprogress`, `progress`, `en-cours`, `encours` (and `_` forms such as `in_progress`); `done`, `completed`;
 `blocked`, `bloqued`. `--set blocked` stores `--reason` (or clears it when absent). Another status clears the reason
 only when `--reason` is passed; `done` and `start` never clear it. Error:
 `invalid status 'nope'. Valid values: todo, in-progress, done, blocked`.

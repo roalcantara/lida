@@ -231,6 +231,35 @@ fn cwi_formats() {
 }
 
 #[test]
+fn list_filter_in_progress() {
+    snap_fixture(
+        "list_filter_in_progress",
+        &[
+            &["start", "aaaa"],
+            &["list", "-s", "in-progress"],
+            &["list", "-s", "in_progress"],
+            &["list", "-s", "en-cours"],
+        ],
+    );
+}
+
+#[test]
+fn strict_values() {
+    snap_fixture(
+        "strict_values",
+        &[
+            &["add", "X", "-p", "urgent"],
+            &["update", "aaaa", "-p", "none"],
+            &["show", "aaaa"],
+            &["list", "-s", "nope"],
+            &["list", "-p", "none"],
+            &["list", "-p", "urgent"],
+            &["status", "aaaa", "--set", "in_progress"],
+        ],
+    );
+}
+
+#[test]
 fn generated_specs() {
     snap_empty("completion_zsh", &[&["completion", "zsh"]]);
     snap_empty("usage", &[&["usage"]]);

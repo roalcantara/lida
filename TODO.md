@@ -31,7 +31,7 @@
   - **Tags**: bug, output, stable, v0.1.1
   - **Position**: "crates/lida/src/output.rs"
 
-- [ ] DcPc **-** Reject unknown priorities instead of silently clearing them (add -p urgent, update -p none)
+- [x] DcPc **-** Reject unknown priorities instead of silently clearing them (add -p urgent, update -p none)
   - **Priority**: medium
   - **Tags**: bug, cli, stable, v0.1.1
   - **Position**: "crates/lida/src/commands.rs"
@@ -183,7 +183,7 @@
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, format, data-loss
 
-- [ ] atU7 **-** list -s in-progress (and its aliases) returns nothing
+- [x] atU7 **-** list -s in-progress (and its aliases) returns nothing
   - **Priority**: high
   - **Tags**: v0.1.1, stable, cli
 
@@ -195,7 +195,7 @@
   - **Priority**: low
   - **Tags**: v0.1.1, stable, cli
 
-- [ ] PxoT **-** Accept in_progress consistently in status --set and list -s
+- [x] PxoT **-** Accept in_progress consistently in status --set and list -s
   - **Priority**: low
   - **Tags**: v0.1.1, stable, cli
 

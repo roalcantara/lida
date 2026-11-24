@@ -1,7 +1,7 @@
 //! `lida add`: create a task, or attach a comment to one with `--task-id`.
 
 use super::prelude::*;
-use super::{not_found, parse_priority, parse_tags};
+use super::{not_found, parse_priority_arg, parse_tags};
 use lida_core::id::generate_id;
 use lida_core::model::{Comment, Task};
 use std::collections::{BTreeMap, HashSet};
@@ -36,7 +36,7 @@ pub fn run(cwd: &Path, args: Args, out: &mut impl Write) -> CmdResult {
 
     let mut new_task = Task::new(&new_id, &desc);
     if let Some(p) = args.priority {
-        new_task.priority = parse_priority(&p);
+        new_task.priority = parse_priority_arg(&p)?;
     }
     if let Some(t) = args.tags {
         new_task.tags = parse_tags(&t);

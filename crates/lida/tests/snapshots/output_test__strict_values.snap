@@ -1,0 +1,49 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida add X -p urgent
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: invalid priority 'urgent'. Valid values: low, medium, high, none
+
+$ lida update aaaa -p none
+code: 0
+--- stdout
+[92m✓[39m Updated task #[1maaaa[0m
+--- stderr
+
+$ lida show aaaa
+code: 0
+--- stdout
+Task #[1maaaa[0m: First task
+  Status: Todo
+  Tags: setup
+--- stderr
+
+$ lida list -s nope
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: invalid status 'nope'. Valid values: todo, in-progress, done, blocked
+
+$ lida list -p none
+code: 0
+--- stdout
+[1mID    [0m [1mSTATUS      [0m [1mPRIORITY  [0m [1mTITLE                         [0m [1mTAGS[0m
+[2m──────────────────────────────────────────────────────────────────────[0m
+#[1maaaa [0m [2mTodo[0m [2m-[0m  First task                     [2msetup[0m
+--- stderr
+
+$ lida list -p urgent
+code: 1
+--- stdout
+--- stderr
+[1m[91merror[39m[0m: invalid priority 'urgent'. Valid values: low, medium, high, none
+
+$ lida status aaaa --set in_progress
+code: 0
+--- stdout
+[92m✓[39m Task #[1maaaa[0m status set to InProgress
+--- stderr

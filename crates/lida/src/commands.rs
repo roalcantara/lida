@@ -23,7 +23,7 @@ mod prelude {
 
 use crate::cli::{LidaCli, Subcommand};
 use crate::output::Output;
-use lida_core::model::Priority;
+use lida_core::model::{Priority, Status};
 use lida_core::store::StorageFormat;
 use std::env;
 use std::io::Write;
@@ -145,13 +145,18 @@ fn not_found(id: &str) -> String {
     format!("task #{id} not found")
 }
 
-/// `high`, `medium` or `low`, any case; anything else is no priority.
-fn parse_priority(value: &str) -> Option<Priority> {
-    match value.to_lowercase().as_str() {
-        "high" => Some(Priority::High),
-        "medium" => Some(Priority::Medium),
-        "low" => Some(Priority::Low),
-        _ => None,
+pub(super) fn parse_status(value: &str) -> Result<Status, String> {
+    Status::parse(value)
+        .ok_or_else(|| format!("invalid status '{value}'. Valid values: todo, in-progress, done, blocked"))
+}
+
+pub(super) fn parse_priority_arg(value: &str) -> Result<Option<Priority>, String> {
+    if value.eq_ignore_ascii_case("none") {
+        Ok(None)
+    } else {
+        Priority::parse(value)
+            .map(Some)
+            .ok_or_else(|| format!("invalid priority '{value}'. Valid values: low, medium, high, none"))
     }
 }
 
