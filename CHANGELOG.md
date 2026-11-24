@@ -2,6 +2,19 @@
 
 Every release of lida, written by semantic-release from the commit messages (docs/adr/0001-releases.md).
 
+## [0.1.0](https://github.com/roalcantara/lida/compare/v0.0.1...v0.1.0) (2026-11-24)
+
+### ⚠ BREAKING CHANGES
+
+* **release:** a minor version until 1.0. Merging this releases v0.1.0,
+the tag the dots Brewfile pins.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* **release:** Start the v0.1 release line ([acf1a02](https://github.com/roalcantara/lida/commit/acf1a0229538005f8b5ddaf7c9d1a37bdd4866cc))
+
 ## [0.0.1](https://github.com/roalcantara/lida/compare/v0.0.0...v0.0.1) (2026-11-24)
 
 ### Features

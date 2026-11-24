@@ -106,7 +106,7 @@ checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
 name = "lida"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "insta",
  "lida-core",
@@ -118,7 +118,7 @@ dependencies = [
 
 [[package]]
 name = "lida-core"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "fastrand",
  "serde",
