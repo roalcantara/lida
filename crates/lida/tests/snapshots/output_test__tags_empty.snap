@@ -1,0 +1,14 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida init --md
+code: 0
+--- stdout
+[92m✓[39m Initialized project tasks in [DIR]
+--- stderr
+
+$ lida tags
+code: 0
+--- stdout
+--- stderr

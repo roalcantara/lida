@@ -235,6 +235,48 @@ fn generated_specs() {
 }
 
 #[test]
+fn optional_branches() {
+    snap_fixture(
+        "list_empty",
+        &[&["list", "-s", "done"], &["list", "-s", "done", "--json"]],
+    );
+    snap_fixture(
+        "list_blocked_and_bare_rows",
+        &[
+            &["update", "bbbb", "-p", "none", "-t", ""],
+            &["status", "aaaa", "--set", "blocked"],
+            &["list"],
+            &["list", "--tasks"],
+            &["list", "--tasks", "--json"],
+            &["show", "bbbb"],
+        ],
+    );
+    snap_fixture(
+        "show_position_and_meta",
+        &[
+            &["update", "aaaa", "--position", "src/x.rs:1"],
+            &["meta", "aaaa", "set", "count", "3"],
+            &["meta", "aaaa", "set", "flag", "true"],
+            &["meta", "aaaa", "get", "count"],
+            &["show", "aaaa"],
+            &["show", "aaaa", "--json"],
+            &["meta", "aaaa", "rm", "flag"],
+        ],
+    );
+    snap_empty("completion_other_shell", &[&["completion", "bash"]]);
+    snap_empty("tags_empty", &[&["init", "--md"], &["tags"]]);
+    snap_fixture(
+        "unknown_id_other_commands",
+        &[
+            &["update", "zzzz", "-d", "x"],
+            &["start", "zzzz"],
+            &["status", "zzzz", "--set", "done"],
+            &["meta", "zzzz", "get", "k"],
+        ],
+    );
+}
+
+#[test]
 fn errors() {
     snap_fixture(
         "unknown_id",
