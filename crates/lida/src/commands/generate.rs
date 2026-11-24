@@ -15,7 +15,7 @@ pub fn usage(out: &mut impl Write) -> CmdResult {
     writeln!(out, "# lida.usage.kdl")?;
     writeln!(out, "name \"lida\"")?;
     writeln!(out, "bin \"lida\"")?;
-    writeln!(out, "version \"0.1.0\"")?;
+    writeln!(out, "version \"{}\"", env!("CARGO_PKG_VERSION"))?;
     writeln!(out, "about \"Dual-format project task engine (YAML · MD)\"")?;
     Ok(())
 }

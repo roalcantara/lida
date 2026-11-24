@@ -67,6 +67,8 @@ fn redact(text: &str, dir: &Path) -> String {
         text = text.replace(&canonical.display().to_string(), "[DIR]");
     }
     text = text.replace(&dir.display().to_string(), "[DIR]");
+    // A release bump must not fail the snapshots.
+    text = text.replace(env!("CARGO_PKG_VERSION"), "[VERSION]");
     let ids: Vec<String> = text
         .match_indices("Added task #")
         .filter_map(|(at, marker)| text.get(at + marker.len()..at + marker.len() + 4))
@@ -301,6 +303,18 @@ fn errors() {
             &["add", "--task-id", "aaaa"],
             &["add", "--task-id", "zzzz", "-c", "x"],
         ],
+    );
+}
+
+#[test]
+fn version_matches_manifest() {
+    let dir = empty_dir();
+    let run = lida(dir.path(), &["--version"]);
+    assert_eq!(run.code, 0, "--version exit code; stderr: {}", run.stderr);
+    assert!(
+        run.stdout.contains(env!("CARGO_PKG_VERSION")),
+        "--version prints the Cargo.toml version, got {:?}",
+        run.stdout
     );
 }
 

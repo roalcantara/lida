@@ -66,7 +66,7 @@
   - **Priority**: high
   - **Tags**: v0.1.0, ci, release
 
-- [ ] vIoq **-** Single-source the version and redact it in snapshots
+- [x] vIoq **-** Single-source the version and redact it in snapshots
   - **Priority**: high
   - **Tags**: v0.1.0, release
 

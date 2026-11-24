@@ -5,7 +5,7 @@ use usage_rs::{Cli, Subcommands};
 #[derive(Cli, Debug)]
 #[usage(
     bin = "lida",
-    version = "0.1.0",
+    version = env!("CARGO_PKG_VERSION"),
     about = "Dual-format project task engine (YAML · MD)"
 )]
 pub struct LidaCli {
