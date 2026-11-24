@@ -5,12 +5,14 @@ use super::prelude::*;
 
 /// `set` stores the value as JSON when it parses, else as a string; `get` prints strings bare.
 pub fn run(cwd: &Path, id: &str, action: &str, key: &str, value: Option<String>, out: &mut impl Write) -> CmdResult {
-    single_line("meta key", key)?;
-    if key.contains(':') {
-        return Err("meta keys cannot contain ':'".into());
-    }
-    if let Some(ref v) = value {
-        single_line("meta value", v)?;
+    if action.eq_ignore_ascii_case("set") {
+        single_line("meta key", key)?;
+        if key.contains(':') {
+            return Err("meta keys cannot contain ':'".into());
+        }
+        if let Some(ref v) = value {
+            single_line("meta value", v)?;
+        }
     }
     let mut store = Store::load(cwd)?;
     let task = store.find_task_mut(id).ok_or_else(|| not_found(id))?;

@@ -1,6 +1,7 @@
 //! Golden output of every `lida` subcommand: stdout, stderr and exit code, byte for byte.
 //!
-//! These snapshots pin today's behaviour (ANSI colour codes included) so refactors can prove they changed nothing.
+//! These snapshots pin today's behaviour so refactors can prove they changed nothing. Output is piped, so it carries no
+//! colour; `colour_forced` pins the ANSI codes.
 
 use std::fmt::Write as _;
 use std::fs;
@@ -36,7 +37,10 @@ struct Run {
 #[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
 fn lida_with_env(dir: &Path, args: &[&str], envs: &[(&str, &str)]) -> Run {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_lida"));
-    cmd.args(args).current_dir(dir).env_remove("NO_COLOR");
+    cmd.args(args)
+        .current_dir(dir)
+        .env_remove("NO_COLOR")
+        .env_remove("CLICOLOR_FORCE");
     for (k, v) in envs {
         cmd.env(k, v);
     }
@@ -607,4 +611,18 @@ fn input_validation() {
         append_run(&mut out, cmd, &run);
     }
     insta::assert_snapshot!("input_validation", redact(&out, dir.path()));
+}
+
+/// Keys with ':' are refused only when set; existing ones (TODO.yaml allows them) stay readable and removable.
+#[test]
+fn meta_colon_keys_stay_readable() {
+    let dir = empty_dir();
+    let yaml = "tasks:\n- id: aaaa\n  status: todo\n  description: T\n  meta:\n    ci:run: 42\n";
+    fs::write(dir.path().join("TODO.yaml"), yaml).expect("write fixture");
+    let get = lida(dir.path(), &["meta", "aaaa", "get", "ci:run"]);
+    assert_eq!((get.code, get.stdout.as_str()), (0, "42\n"), "{}", get.stderr);
+    let unset = lida(dir.path(), &["meta", "aaaa", "unset", "ci:run"]);
+    assert_eq!(unset.code, 0, "{}", unset.stderr);
+    let set = lida(dir.path(), &["meta", "aaaa", "set", "a:b", "1"]);
+    assert_eq!(set.stderr, "error: meta keys cannot contain ':'\n");
 }

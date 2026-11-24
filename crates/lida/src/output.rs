@@ -101,5 +101,6 @@ mod tests {
         owo_colors::set_override(true);
         let s = format!("{}", "hello".bright_red().bold());
         assert_eq!(s, "\u{1b}[1m\u{1b}[91mhello\u{1b}[39m\u{1b}[0m");
+        owo_colors::unset_override();
     }
 }
