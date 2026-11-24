@@ -28,26 +28,26 @@
 
 - [ ] AmZm **-** Respect NO_COLOR and non-TTY output (no ANSI when piped)
   - **Priority**: high
-  - **Tags**: bug, output, stable
+  - **Tags**: bug, output, stable, v0.1.1
   - **Position**: "crates/lida/src/output.rs"
 
 - [ ] DcPc **-** Reject unknown priorities instead of silently clearing them (add -p urgent, update -p none)
   - **Priority**: medium
-  - **Tags**: bug, cli, stable
+  - **Tags**: bug, cli, stable, v0.1.1
   - **Position**: "crates/lida/src/commands.rs"
 
 - [ ] 1557 **-** Show comments, due date and blocked reason in lida show
   - **Priority**: medium
-  - **Tags**: bug, output, stable
+  - **Tags**: bug, output, stable, v0.1.1
   - **Position**: "crates/lida/src/commands/show.rs"
 
 - [ ] 8RVU **-** Make error message capitalisation consistent (No TODO file found vs task not found)
   - **Priority**: low
-  - **Tags**: bug, output, stable
+  - **Tags**: bug, output, stable, v0.1.1
 
 - [ ] DjKn **-** Align coloured status and priority columns in lida list
   - **Priority**: low
-  - **Tags**: bug, output, stable
+  - **Tags**: bug, output, stable, v0.1.1
   - **Position**: "crates/lida/src/commands/list.rs"
 
 - [x] 2hI8 **-** Create the public GitHub repo, add origin, push, open the PR
@@ -102,21 +102,17 @@
   - **Priority**: high
   - **Tags**: v0.1.0, dots
 
-- [ ] OvZw **-** Audit every command against README and DESIGN.md
+- [x] OvZw **-** Audit every command against README and DESIGN.md
   - **Priority**: high
   - **Tags**: stable, audit
 
 - [ ] 5BI3 **-** README advertises --meta key=val, which does not exist
   - **Priority**: medium
-  - **Tags**: stable, docs
+  - **Tags**: stable, docs, v0.1.1
 
 - [ ] Yiq8 **-** lida usage prints a stub instead of the real usage spec
   - **Priority**: medium
-  - **Tags**: stable, cli
-
-- [ ] FuFw **-** completion exits 0 for unsupported shells
-  - **Priority**: low
-  - **Tags**: stable, cli
+  - **Tags**: stable, cli, v0.1.1
 
 - [ ] 8NUT **-** Design the CLI evolution
   - **Priority**: medium
@@ -150,6 +146,98 @@
   - **Priority**: high
   - **Tags**: v1.0, security, deps
   - **Position**: "crates/lida-core/src/format/yaml.rs"
+
+- [ ] vBbs **-** Generate shell completion from the CLI declaration (replaces todo-cli's zsh script)
+  - **Priority**: high
+  - **Tags**: v0.1.1, stable, cli
+
+- [ ] pbSp **-** TODO.yaml writer drops null and empty keys (no position: null flood)
+  - **Priority**: high
+  - **Tags**: v0.1.1, stable, format
+
+- [ ] 7X7b **-** Switching format (cwi) or init --force deletes the file lida stops writing; load follows the config
+  - **Priority**: high
+  - **Tags**: v0.1.1, stable, format, data-loss
+
+- [ ] 9gc8 **-** Reject multi-line text (descriptions, comments, reasons) instead of corrupting TODO.md
+  - **Priority**: high
+  - **Tags**: v0.1.1, stable, format, data-loss
+
+- [ ] ijwH **-** Keep comment-task links in TODO.md
+  - **Priority**: high
+  - **Tags**: v0.1.1, stable, format, data-loss
+
+- [ ] K3CU **-** Refuse to save a TODO.md with content lida does not recognise
+  - **Priority**: high
+  - **Tags**: v0.1.1, stable, format, data-loss
+
+- [ ] yBp7 **-** Reject meta keys containing a colon
+  - **Priority**: medium
+  - **Tags**: v0.1.1, stable, cli, data-loss
+
+- [ ] 1k6Q **-** Keep project names with spaces in TODO.md
+  - **Priority**: medium
+  - **Tags**: v0.1.1, stable, format, data-loss
+
+- [ ] 13FF **-** Refuse to load a file with duplicate task IDs
+  - **Priority**: medium
+  - **Tags**: v0.1.1, stable, format, data-loss
+
+- [ ] atU7 **-** list -s in-progress (and its aliases) returns nothing
+  - **Priority**: high
+  - **Tags**: v0.1.1, stable, cli
+
+- [ ] 6OvK **-** Read and write the same config file (.lida/config vs .todo/config)
+  - **Priority**: medium
+  - **Tags**: v0.1.1, stable, format
+
+- [ ] kBY0 **-** init rejects conflicting format flags (--yaml --md)
+  - **Priority**: low
+  - **Tags**: v0.1.1, stable, cli
+
+- [ ] PxoT **-** Accept in_progress consistently in status --set and list -s
+  - **Priority**: low
+  - **Tags**: v0.1.1, stable, cli
+
+- [ ] foNb **-** Fix docs drift: --json claim, exit 2 on argument errors, help text, Rust floor
+  - **Priority**: medium
+  - **Tags**: v0.1.1, stable, docs
+
+- [ ] ctfm **-** Set an honest rust-version and test it in CI
+  - **Priority**: medium
+  - **Tags**: v0.1.1, build, ci
+
+- [ ] 9w3r **-** Run the audit job on pull requests
+  - **Priority**: medium
+  - **Tags**: v0.1.1, ci
+
+- [ ] kx1F **-** Redact the version in snapshots by pattern, not substring
+  - **Priority**: low
+  - **Tags**: v0.1.1, test
+
+- [ ] YWKq **-** Stamp created on add (todo-cli parity)
+  - **Priority**: medium
+  - **Tags**: v0.2, cli
+
+- [ ] zmch **-** Accept -t/--tags and --tag on add, update and list
+  - **Priority**: medium
+  - **Tags**: v0.2, cli
+
+- [ ] lTfk **-** update --due/--position with an empty value clears it; reject empty descriptions
+  - **Priority**: low
+  - **Tags**: v0.2, cli
+
+- [ ] z5Js **-** Tags containing commas survive the Markdown round-trip
+  - **Priority**: low
+  - **Tags**: v0.2, format
+
+- [ ] eYxQ **-** Keep YAML comments and formatting on round-trip
+  - **Priority**: low
+  - **Tags**: v0.2, format
+
+- [ ] OJnq **-** tags counts a duplicate tag once; meta unset reports an absent key
+  - **Priority**: low
+  - **Tags**: v0.2, cli
 
 # Actors
 
