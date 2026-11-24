@@ -211,7 +211,7 @@
   - **Priority**: medium
   - **Tags**: v0.1.1, ci
 
-- [ ] kx1F **-** Redact the version in snapshots by pattern, not substring
+- [x] kx1F **-** Redact the version in snapshots by pattern, not substring
   - **Priority**: low
   - **Tags**: v0.1.1, test
 

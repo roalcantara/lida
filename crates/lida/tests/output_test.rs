@@ -71,8 +71,21 @@ fn redact(text: &str, dir: &Path) -> String {
         text = text.replace(&canonical.display().to_string(), "[DIR]");
     }
     text = text.replace(&dir.display().to_string(), "[DIR]");
-    // A release bump must not fail the snapshots.
-    text = text.replace(env!("CARGO_PKG_VERSION"), "[VERSION]");
+    // A release bump must not fail the snapshots: redact exact "lida <version>" lines and
+    // 'version "<version>"' tokens without altering other numeric occurrences.
+    let version = env!("CARGO_PKG_VERSION");
+    let version_token = format!("version \"{version}\"");
+    text = text.replace(&version_token, "version \"[VERSION]\"");
+    let lida_line = format!("lida {version}");
+    let mut lines = Vec::new();
+    for line in text.split('\n') {
+        if line == lida_line {
+            lines.push("lida [VERSION]".to_string());
+        } else {
+            lines.push(line.to_string());
+        }
+    }
+    text = lines.join("\n");
     let ids: Vec<String> = text
         .match_indices("Added task #")
         .filter_map(|(at, marker)| text.get(at + marker.len()..at + marker.len() + 4))
@@ -309,6 +322,15 @@ fn colour_forced() {
 fn list_aligned() {
     let dir = fixture_dir();
     insta::assert_snapshot!("list_aligned", transcript(dir.path(), &[&["list"]]));
+}
+
+#[test]
+fn redaction_leaves_other_numbers() {
+    let dir = empty_dir();
+    let v = env!("CARGO_PKG_VERSION");
+    let input = format!("lida {v}\nversion \"{v}\"\nfoo 1{v}");
+    let expected = format!("lida [VERSION]\nversion \"[VERSION]\"\nfoo 1{v}");
+    assert_eq!(redact(&input, dir.path()), expected);
 }
 
 #[test]
