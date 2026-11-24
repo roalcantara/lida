@@ -50,15 +50,15 @@
   - **Tags**: bug, output, stable
   - **Position**: "crates/lida/src/commands/list.rs"
 
-- [ ] 2hI8 **-** Create the public GitHub repo, add origin, push, open the PR
+- [x] 2hI8 **-** Create the public GitHub repo, add origin, push, open the PR
   - **Priority**: high
   - **Tags**: v0.1.0, repo
 
-- [ ] 7Wi3 **-** Configure repo security settings, merge methods and the main ruleset
+- [x] 7Wi3 **-** Configure repo security settings, merge methods and the main ruleset
   - **Priority**: high
   - **Tags**: v0.1.0, repo, security
 
-- [ ] gMYx **-** Add semantic-release with the v0.0.x rehearsal rules and the v0.0.0 seed tag
+- [x] gMYx **-** Add semantic-release with the v0.0.x rehearsal rules and the v0.0.0 seed tag
   - **Priority**: high
   - **Tags**: v0.1.0, release
 
