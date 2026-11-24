@@ -9,7 +9,7 @@ Dual-format project task engine maintaining bidirectional, lossless synchronicit
 
 ## Technology Stack
 
-- Rust 1.88+ (edition 2024), Cargo workspace (`lida-core` + `lida`)
+- Rust 1.91+ (edition 2024), Cargo workspace (`lida-core` + `lida`)
 - usage-rs for CLI parsing, owo-colors for terminal output
 - serde, serde_json and serde_yaml_ng for the task model and its two file formats
 - mise for tool versions and tasks; hk for git hooks and quality gates
