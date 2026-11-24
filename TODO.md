@@ -86,15 +86,15 @@
   - **Priority**: medium
   - **Tags**: v0.1.0, docs
 
-- [ ] dSjs **-** Verify a v0.0.x release: tag, CHANGELOG.md, version bump and the three assets agree
+- [x] dSjs **-** Verify a v0.0.x release: tag, CHANGELOG.md, version bump and the three assets agree
   - **Priority**: high
   - **Tags**: v0.1.0, release
 
-- [ ] Mqa7 **-** Rehearse installs from a v0.0.x tag: cargo install --git --tag and brew bundle with a temporary pin
+- [x] Mqa7 **-** Rehearse installs from a v0.0.x tag: cargo install --git --tag and brew bundle with a temporary pin
   - **Priority**: high
   - **Tags**: v0.1.0, release
 
-- [ ] apDG **-** Cut v0.1.0: switch to the v0.1.0 release rules with a feat commit
+- [x] apDG **-** Cut v0.1.0: switch to the v0.1.0 release rules with a feat commit
   - **Priority**: high
   - **Tags**: v0.1.0, release
 
