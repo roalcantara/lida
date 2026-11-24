@@ -21,6 +21,8 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ github.token }}
       MISE_LOCKED: "true"
+      # Tools in mise.toml that no CI job runs: the code graphs, the bun they run on, and fnox (tools/graph/README.md).
+      MISE_DISABLE_TOOLS: bun,github:zzet/gortex,pipx:code-review-graph,pipx:graphifyy,fnox
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:

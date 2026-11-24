@@ -14,6 +14,8 @@
 - `crates/lida/tests/snapshots/`: golden output of every command (insta).
 - `assets/design/`: brand identity and icon proposals.
 - `docs/superpowers/`: design specs and implementation plans.
+- `tools/graph/`: code graphs for agents (code-review-graph MCP server, Gortex, Graphify); `mise run graph`, see its
+  README. Graph outputs are local state and never committed.
 - `PRODUCT.md`: why `lida` exists, users, principles, and anti-goals.
 - `DESIGN.md`: the CLI output contract (copy, colours, streams, exit codes, JSON shape). Read before changing output.
 - `CONTEXT.md`: domain vocabulary.

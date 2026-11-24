@@ -11,3 +11,12 @@
 
 # Local agent worktrees, never committed.
 /.delta/
+
+# fnox: local overrides, never committed.
+/fnox.local.toml
+/.fnox.local.toml
+
+# Local state of the code graph tools (tools/graph/README.md), never committed.
+/graphify-out/
+/.code-review-graph/
+/.gortex/

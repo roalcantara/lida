@@ -22,6 +22,7 @@ Dual-format project task engine maintaining bidirectional, lossless synchronicit
 | `crates/lida`      | CLI: argument parsing, commands, completion, terminal output                             |
 | `assets/design`    | Brand identity and logo proposals                                                        |
 | `docs/superpowers` | Specs and implementation plans                                                           |
+| `tools/graph`      | Code graphs for agents: CRG, Gortex, Graphify ([README](tools/graph/README.md))          |
 
 `lida-core` never depends on `usage-rs`, `usage`, `owo-colors` or `lida`; the `core-purity` hk step enforces it. See
 [CONTEXT.md](CONTEXT.md) for the vocabulary and [DESIGN.md](DESIGN.md) for the CLI output contract.
@@ -50,6 +51,7 @@ crates/
   lida/        binary, commands, completion, terminal output
 assets/design/ brand identity and logo proposals
 docs/          specs and implementation plans
+tools/graph/   code graphs for agents: CRG, Gortex, Graphify (see its README)
 ```
 
 ## Key Features
@@ -62,11 +64,13 @@ docs/          specs and implementation plans
 
 ## Development Workflow
 
-| Command          | Does                                                     |
-| ---------------- | -------------------------------------------------------- |
-| `mise run setup` | Install tools, fetch crates, and install git hooks       |
-| `mise run gate`  | Run all quality gates in order (`--fast` for inner loop) |
-| `hk check --all` | Run all baseline repository checks                       |
+| Command                | Does                                                          |
+| ---------------------- | ------------------------------------------------------------- |
+| `mise run setup`       | Install tools, fetch crates, and install git hooks            |
+| `mise run gate`        | Run all quality gates in order (`--fast` for inner loop)      |
+| `hk check --all`       | Run all baseline repository checks                            |
+| `mise run graph setup` | Initialize the code graphs for agents (CRG, Gortex, Graphify) |
+| `mise doctor project`  | Verify code graph health, MCP wiring and secrets              |
 
 ## Coding Standards
 
