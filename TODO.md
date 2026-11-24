@@ -151,7 +151,7 @@
   - **Priority**: high
   - **Tags**: v0.1.1, stable, cli
 
-- [ ] pbSp **-** TODO.yaml writer drops null and empty keys (no position: null flood)
+- [x] pbSp **-** TODO.yaml writer drops null and empty keys (no position: null flood)
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format
 

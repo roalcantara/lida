@@ -409,6 +409,14 @@ fn json_outputs_are_pure() {
 }
 
 #[test]
+fn json_still_has_nulls() {
+    let dir = fixture_dir();
+    let run = lida(dir.path(), &["show", "aaaa", "--json"]);
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.contains("\"due\": null"));
+}
+
+#[test]
 fn input_validation() {
     let dir = fixture_dir();
     let initial_bytes = fs::read(dir.path().join("TODO.md")).expect("read fixture");
