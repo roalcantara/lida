@@ -239,6 +239,14 @@
   - **Priority**: low
   - **Tags**: v0.2, cli
 
+- [ ] esxq **-** Reject meta keys TODO.md reads back as a task line or field ([ ] x, **Tags**)
+  - **Priority**: low
+  - **Tags**: stable, core, bug
+
+- [ ] 2pKq **-** delete removes comments listed on the task, not only those linked by task_id (v0.1.0 TODO.md)
+  - **Priority**: low
+  - **Tags**: stable, core, bug
+
 # Actors
 
 # Comments
