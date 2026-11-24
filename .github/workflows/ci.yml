@@ -66,9 +66,35 @@ jobs:
           expected=$(grep -m1 '^version = ' Cargo.toml | cut -d'"' -f2)
           "$RUNNER_TEMP/lida/bin/lida" --version | grep -F "$expected"
 
+  msrv:
+    name: MSRV
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Read MSRV from Cargo.toml
+        id: msrv
+        shell: bash
+        run: |
+          version=$(grep -m1 '^rust-version = ' Cargo.toml | cut -d'"' -f2)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Install MSRV toolchain
+        env:
+          MSRV: ${{ steps.msrv.outputs.version }}
+        run: rustup toolchain install "$MSRV" --profile minimal
+      - name: cargo check and test on MSRV
+        env:
+          MSRV: ${{ steps.msrv.outputs.version }}
+        run: |
+          cargo "+$MSRV" check --workspace --locked
+          cargo "+$MSRV" test --workspace --locked
+
   audit:
     name: Audit (slow and release checks)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -86,7 +112,7 @@ jobs:
   plan:
     name: Plan the release
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [gate, install, audit]
+    needs: [gate, install, audit, msrv]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

@@ -203,11 +203,11 @@
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, docs
 
-- [ ] ctfm **-** Set an honest rust-version and test it in CI
+- [x] ctfm **-** Set an honest rust-version and test it in CI
   - **Priority**: medium
   - **Tags**: v0.1.1, build, ci
 
-- [ ] 9w3r **-** Run the audit job on pull requests
+- [x] 9w3r **-** Run the audit job on pull requests
   - **Priority**: medium
   - **Tags**: v0.1.1, ci
 
