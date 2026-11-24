@@ -111,3 +111,12 @@ fn real_markdown_round_trips() {
     let toma_reparsed = parse_markdown(&toma_serialized).unwrap();
     assert_eq!(toma_doc, toma_reparsed);
 }
+
+#[test]
+fn invalid_status_and_priority_lines_are_unrecognised() {
+    let input =
+        "# Tasks\n\n- [ ] aaaa **-** T\n  - **Status**: wip\n  - **Priority**: urgent\n\n# Actors\n\n# Comments\n";
+    let doc = parse_markdown(input).unwrap();
+    let lines: Vec<usize> = doc.unrecognised.iter().map(|(n, _)| *n).collect();
+    assert_eq!(lines, vec![4, 5]);
+}

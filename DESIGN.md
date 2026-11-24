@@ -197,7 +197,7 @@ $ lida cwi both
 ✓ Switched working format to Both
 ```
 
-Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching deletes the file the new format no longer writes (`md` deletes `TODO.yaml`, `yaml` deletes `TODO.md`, `both` deletes nothing). Switching to `md` or `both` refuses if the document contains data Markdown cannot hold (actor types, actor pictures, task actors, comment actors, unknown fields): `error: TODO.md cannot hold <what> (<target>): stay on yaml or both`. Switching to `yaml` refuses if `TODO.md` holds unrecognised lines. Error: `format must be 'yaml', 'md', or 'both'`.
+Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching deletes the file the new format no longer writes (`md` deletes `TODO.yaml`, `yaml` deletes `TODO.md`, `both` deletes nothing). Switching to `md` refuses if the document contains data Markdown cannot hold (actor types, actor pictures, task actors, comment actors, unknown fields, multi-line text, meta keys with `:`, a project name with `-->`, comment links missing from the task): `error: TODO.md cannot hold <what> (<target>): stay on yaml or both`. Any switch refuses while `TODO.md` holds unrecognised lines. A refused switch writes nothing, config included. Error: `format must be 'yaml', 'md', or 'both'`.
 
 ### `completion`, `usage`
 

@@ -136,7 +136,27 @@ pub fn markdown_cannot_hold(doc: &ProjectDoc) -> Option<String> {
         }
     }
 
+    if doc
+        .project
+        .as_deref()
+        .is_some_and(|p| is_multi_line(p) || p.contains("-->"))
+    {
+        return Some("TODO.md cannot hold this project name: stay on yaml or both".to_string());
+    }
+
     for task in &doc.tasks {
+        if task_has_multi_line_text(task) {
+            return Some(format!(
+                "TODO.md cannot hold multi-line text (task #{}): stay on yaml or both",
+                task.id
+            ));
+        }
+        if task.meta.keys().any(|k| k.contains(':')) {
+            return Some(format!(
+                "TODO.md cannot hold meta keys with ':' (task #{}): stay on yaml or both",
+                task.id
+            ));
+        }
         if !task.actors.is_empty() {
             return Some(format!(
                 "TODO.md cannot hold task actors (task #{}): stay on yaml or both",
@@ -152,6 +172,22 @@ pub fn markdown_cannot_hold(doc: &ProjectDoc) -> Option<String> {
     }
 
     for comment in &doc.comments {
+        if is_multi_line(&comment.text) {
+            return Some(format!(
+                "TODO.md cannot hold multi-line text (comment {}): stay on yaml or both",
+                comment.id
+            ));
+        }
+        let listed = doc
+            .tasks
+            .iter()
+            .any(|t| t.id == comment.task_id && t.comments.contains(&comment.id));
+        if !comment.task_id.is_empty() && !listed {
+            return Some(format!(
+                "TODO.md cannot hold comment links (comment {}): stay on yaml or both",
+                comment.id
+            ));
+        }
         if !comment.actors.is_empty() {
             return Some(format!(
                 "TODO.md cannot hold comment actors (comment {}): stay on yaml or both",
@@ -167,6 +203,22 @@ pub fn markdown_cannot_hold(doc: &ProjectDoc) -> Option<String> {
     }
 
     None
+}
+
+fn is_multi_line(text: &str) -> bool {
+    text.contains(['\n', '\r'])
+}
+
+/// Whether any text TODO.md writes on one line for `task` spans several.
+fn task_has_multi_line_text(task: &Task) -> bool {
+    let fields = [&task.due, &task.created, &task.position, &task.blocked_reason];
+    is_multi_line(&task.description)
+        || fields.iter().any(|f| f.as_deref().is_some_and(is_multi_line))
+        || task.tags.iter().any(|t| is_multi_line(t))
+        || task
+            .meta
+            .iter()
+            .any(|(k, v)| is_multi_line(k) || v.as_str().is_some_and(is_multi_line))
 }
 
 /// Checkbox prefixes that open a task line.
@@ -231,22 +283,17 @@ fn apply_task_line(task: &mut Task, trimmed: &str, in_meta_block: &mut bool) -> 
         *in_meta_block = false;
         let value = value.trim();
         match field {
-            "Priority" => {
-                task.priority = match value.to_lowercase().as_str() {
-                    "low" => Some(Priority::Low),
-                    "medium" => Some(Priority::Medium),
-                    "high" => Some(Priority::High),
-                    _ => None,
-                };
-            }
+            "Priority" => match Priority::parse(value) {
+                Some(priority) => task.priority = Some(priority),
+                None => return false,
+            },
             "Created" => task.created = Some(value.to_string()),
             "Due" => task.due = Some(value.to_string()),
             "Position" => task.position = Some(value.trim_matches('"').trim().to_string()),
-            "Status" => {
-                if let Ok(status) = serde_json::from_value::<Status>(serde_json::Value::String(value.to_string())) {
-                    task.status = status;
-                }
-            }
+            "Status" => match Status::parse(value) {
+                Some(status) => task.status = status,
+                None => return false,
+            },
             "Blocked Reason" => task.blocked_reason = Some(value.to_string()),
             "Comments" => {
                 task.comments = value

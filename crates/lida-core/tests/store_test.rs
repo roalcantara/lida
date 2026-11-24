@@ -191,3 +191,77 @@ fn cwi_yaml_refuses_unrecognised_markdown() {
     assert!(dir.path().join("TODO.md").exists());
     assert!(!dir.path().join("TODO.yaml").exists());
 }
+
+#[test]
+fn cwi_both_keeps_what_markdown_cannot_hold() {
+    let dir = tempdir().unwrap();
+    fs::write(
+        dir.path().join("TODO.yaml"),
+        include_str!("fixtures/dots_blog_TODO.yaml"),
+    )
+    .unwrap();
+
+    let mut store = Store::load(dir.path()).unwrap();
+    store.switch_format(StorageFormat::Both).unwrap();
+    assert_files_exist(dir.path(), true, true);
+    assert!(
+        fs::read_to_string(dir.path().join("TODO.yaml"))
+            .unwrap()
+            .contains("actor_type")
+    );
+}
+
+#[test]
+fn refused_switch_leaves_config_unchanged() {
+    let dir = tempdir().unwrap();
+    fs::write(
+        dir.path().join("TODO.md"),
+        "A stray paragraph\n\n# Tasks\n\n- [ ] aaaa **-** Task 1\n",
+    )
+    .unwrap();
+
+    assert!(
+        Store::load(dir.path())
+            .unwrap()
+            .switch_format(StorageFormat::Both)
+            .is_err()
+    );
+    assert!(!dir.path().join(".lida").join("config").exists());
+    assert_files_exist(dir.path(), false, true);
+}
+
+#[expect(clippy::unwrap_used, reason = "test helper: a failed setup is a failed test")]
+fn assert_cwi_md_refused(yaml: &str, expected: &str) {
+    let dir = tempdir().unwrap();
+    fs::write(dir.path().join("TODO.yaml"), yaml).unwrap();
+    let mut store = Store::load(dir.path()).unwrap();
+    match store.switch_format(StorageFormat::MdOnly).unwrap_err() {
+        lida_core::store::StoreError::Unrepresentable { what } => assert!(what.contains(expected), "{what}"),
+        other => panic!("expected Unrepresentable, got {other:?}"),
+    }
+    assert_files_exist(dir.path(), true, false);
+}
+
+#[test]
+fn cwi_md_refuses_multi_line_text() {
+    assert_cwi_md_refused(
+        "tasks:\n- id: aaaa\n  status: todo\n  description: \"line1\\nline2\"\n",
+        "multi-line text (task #aaaa)",
+    );
+}
+
+#[test]
+fn cwi_md_refuses_meta_keys_with_a_colon() {
+    assert_cwi_md_refused(
+        "tasks:\n- id: aaaa\n  status: todo\n  description: T\n  meta:\n    ci:run: 1\n",
+        "meta keys with ':' (task #aaaa)",
+    );
+}
+
+#[test]
+fn cwi_md_refuses_comments_linked_only_by_task() {
+    assert_cwi_md_refused(
+        "tasks:\n- id: aaaa\n  status: todo\n  description: T\ncomments:\n- id: c1\n  text: note\n  task: aaaa\n",
+        "comment links (comment c1)",
+    );
+}
