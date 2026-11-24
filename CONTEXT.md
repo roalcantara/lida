@@ -20,7 +20,7 @@ Canonical terms used across code, tests, config, and docs.
 - **store**: Loads and saves the project document in the working directory.
 - **format mode**: Which files the store writes: YAML only (`TODO.yaml`), Markdown only (`TODO.md`), or dual-write
   (both). Inferred from the files present, or read from `.lida/config` (or `.todo/config` when that exists); switched with
-  `lida cwi`.
+  `lida cwi`. Switching format mode deletes the file no longer written so only one source of truth remains.
 - **authoritative file**: The file read back in dual-write mode: `TODO.yaml`. `TODO.md` is regenerated from it.
 - **atomic write**: Every save writes temporary siblings, then renames them into place, so a crash never leaves a
   half-written file.

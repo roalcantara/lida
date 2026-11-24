@@ -72,3 +72,61 @@ fn test_store_dual_write_synchronization() {
 
     assert!(md_content.contains("- [x] e5f6 **-** Task Dual"));
 }
+
+fn assert_files_exist(dir: &Path, yaml: bool, md: bool) {
+    assert_eq!(dir.join("TODO.yaml").exists(), yaml);
+    assert_eq!(dir.join("TODO.md").exists(), md);
+}
+
+#[test]
+fn cwi_to_current_format_deletes_nothing() {
+    let dir = tempdir().unwrap();
+    let mut store = Store::init(dir.path(), StorageFormat::Both, None).unwrap();
+    assert_files_exist(dir.path(), true, true);
+    store.switch_format(StorageFormat::Both).unwrap();
+    assert_files_exist(dir.path(), true, true);
+}
+
+#[test]
+fn cwi_both_keeps_both_files() {
+    let dir = tempdir().unwrap();
+    let mut store = Store::init(dir.path(), StorageFormat::MdOnly, None).unwrap();
+    assert_files_exist(dir.path(), false, true);
+    store.switch_format(StorageFormat::Both).unwrap();
+    assert_files_exist(dir.path(), true, true);
+}
+
+#[test]
+fn duplicate_ids_refuse_to_load() {
+    let dir = tempdir().unwrap();
+    let md_path = dir.path().join("TODO.md");
+    fs::write(&md_path, "# Tasks\n\n- [ ] aaaa **-** One\n- [ ] aaaa **-** Two\n").unwrap();
+    let err = Store::load(dir.path()).unwrap_err();
+    match err {
+        lida_core::store::StoreError::DuplicateId { id, file } => {
+            assert_eq!(id, "aaaa");
+            assert_eq!(file, "TODO.md");
+        }
+        other => panic!("expected DuplicateId, got {other:?}"),
+    }
+}
+
+#[test]
+fn todo_config_is_read_and_written() {
+    let dir = tempdir().unwrap();
+    let todo_dir = dir.path().join(".todo");
+    fs::create_dir_all(&todo_dir).unwrap();
+    fs::write(todo_dir.join("config"), "yaml\n").unwrap();
+    fs::write(
+        dir.path().join("TODO.yaml"),
+        "tasks:\n- id: aaaa\n  status: Todo\n  description: One\n",
+    )
+    .unwrap();
+
+    let mut store = Store::load(dir.path()).unwrap();
+    assert_eq!(store.format(), StorageFormat::YamlOnly);
+    store.switch_format(StorageFormat::MdOnly).unwrap();
+
+    assert_eq!(fs::read_to_string(todo_dir.join("config")).unwrap().trim(), "md");
+    assert!(!dir.path().join(".lida").join("config").exists());
+}

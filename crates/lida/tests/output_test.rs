@@ -266,6 +266,49 @@ fn generated_specs() {
 }
 
 #[test]
+fn cwi_md_then_add_keeps_every_task() {
+    let dir = empty_dir();
+    assert_eq!(lida(dir.path(), &["init", "--both", "--project", "test"]).code, 0);
+    assert_eq!(lida(dir.path(), &["add", "First"]).code, 0);
+    assert_eq!(lida(dir.path(), &["cwi", "md"]).code, 0);
+    assert!(!dir.path().join("TODO.yaml").exists());
+    assert_eq!(lida(dir.path(), &["add", "Second"]).code, 0);
+    assert_eq!(lida(dir.path(), &["add", "Third"]).code, 0);
+    let run = lida(dir.path(), &["list", "--tasks"]);
+    assert_eq!(run.code, 0);
+    assert!(run.stdout.contains("First"));
+    assert!(run.stdout.contains("Second"));
+    assert!(run.stdout.contains("Third"));
+}
+
+#[test]
+fn init_force_replaces_the_other_format() {
+    let dir = empty_dir();
+    assert_eq!(lida(dir.path(), &["init", "--yaml", "--project", "test"]).code, 0);
+    assert_eq!(lida(dir.path(), &["add", "OldTask"]).code, 0);
+    assert!(dir.path().join("TODO.yaml").exists());
+    assert_eq!(
+        lida(dir.path(), &["init", "--md", "--force", "--project", "test"]).code,
+        0
+    );
+    assert!(!dir.path().join("TODO.yaml").exists());
+    let run = lida(dir.path(), &["list"]);
+    assert_eq!(run.code, 0);
+    assert!(!run.stdout.contains("OldTask"));
+}
+
+#[test]
+fn duplicate_ids_refuse_to_load_cli() {
+    let dir = empty_dir();
+    let content = "# Tasks\n\n- [ ] aaaa **-** One\n- [ ] aaaa **-** Two\n";
+    fs::write(dir.path().join("TODO.md"), content).expect("write");
+    let run = lida(dir.path(), &["list"]);
+    assert_eq!(run.code, 1);
+    assert!(run.stderr.contains("duplicate task ID #aaaa in TODO.md"));
+    assert_eq!(fs::read_to_string(dir.path().join("TODO.md")).unwrap(), content);
+}
+
+#[test]
 fn optional_branches() {
     snap_fixture(
         "list_empty",

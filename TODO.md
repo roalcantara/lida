@@ -155,7 +155,7 @@
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format
 
-- [ ] 7X7b **-** Switching format (cwi) or init --force deletes the file lida stops writing; load follows the config
+- [x] 7X7b **-** Switching format (cwi) or init --force deletes the file lida stops writing; load follows the config
   - **Priority**: high
   - **Tags**: v0.1.1, stable, format, data-loss
 
@@ -179,7 +179,7 @@
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, format, data-loss
 
-- [ ] 13FF **-** Refuse to load a file with duplicate task IDs
+- [x] 13FF **-** Refuse to load a file with duplicate task IDs
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, format, data-loss
 
@@ -187,7 +187,7 @@
   - **Priority**: high
   - **Tags**: v0.1.1, stable, cli
 
-- [ ] 6OvK **-** Read and write the same config file (.lida/config vs .todo/config)
+- [x] 6OvK **-** Read and write the same config file (.lida/config vs .todo/config)
   - **Priority**: medium
   - **Tags**: v0.1.1, stable, format
 

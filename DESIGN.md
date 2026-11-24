@@ -49,7 +49,7 @@ $ lida init --md --project demo
 ```
 
 `--md` writes `TODO.md`, `--yaml` (the default) writes `TODO.yaml`, `--both` writes both. If either file exists:
-`error: TODO file already exists. Use --force to overwrite.` (exit 1).
+`error: TODO file already exists. Use --force to overwrite.` (exit 1). With `--force`, the file of the format no longer written is deleted.
 
 ### `add`
 
@@ -195,7 +195,7 @@ $ lida cwi both
 ✓ Switched working format to Both
 ```
 
-Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Error: `format must be 'yaml', 'md', or 'both'`.
+Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching deletes the file the new format no longer writes (`md` deletes `TODO.yaml`, `yaml` deletes `TODO.md`, `both` deletes nothing). Error: `format must be 'yaml', 'md', or 'both'`.
 
 ### `completion`, `usage`
 
@@ -205,6 +205,7 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Error: `fo
 ## Errors shared by all commands
 
 - `no TODO file found in directory` when neither `TODO.md` nor `TODO.yaml` exists.
+- `duplicate task ID #<id> in <file>` when a file contains repeated task IDs.
 - `task #<id> not found` for an unknown ID.
 
 ## Files
@@ -215,4 +216,4 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Error: `fo
 | Markdown   | `TODO.md`               | `TODO.md`     |
 | Dual-write | `TODO.yaml` + `TODO.md` | `TODO.yaml`   |
 
-Writes are atomic: both files are written to temporary siblings, then renamed into place.
+Switching formats (`cwi` or `init --force`) deletes the file no longer written. When both files exist, loading follows the configured format (`TODO.md` for `MdOnly`, else `TODO.yaml`). Writes are atomic: both files are written to temporary siblings, then renamed into place.
