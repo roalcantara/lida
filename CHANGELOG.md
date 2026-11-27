@@ -2,6 +2,14 @@
 
 Every release of lida, written by semantic-release from the commit messages (docs/adr/0001-releases.md).
 
+## [0.3.0](https://github.com/roalcantara/lida/compare/v0.2.0...v0.3.0) (2026-11-27)
+
+### Features
+
+* **cli:** Draw next's priority as bold warm letters ([d72c4f9](https://github.com/roalcantara/lida/commit/d72c4f99129bd3dfff80f93b389b9f50bb411c97))
+* **cli:** Filter next by due with +OVERDUE, +TODAY, +TOMORROW, +WEEK ([0315378](https://github.com/roalcantara/lida/commit/03153781f191e90c763fc8baeca54f9cefe26292))
+* **cli:** List in-progress tasks first in next ([49b4a26](https://github.com/roalcantara/lida/commit/49b4a26690a4cd970031fe7cac1c42df5a44b725))
+
 ## [0.2.0](https://github.com/roalcantara/lida/compare/v0.1.1...v0.2.0) (2026-11-27)
 
 ### Features
