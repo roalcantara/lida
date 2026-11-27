@@ -7,6 +7,8 @@ mod generate;
 mod init;
 mod list;
 mod meta;
+#[cfg_attr(not(test), expect(dead_code, reason = "consumed by Task 6 (commands/next)"))]
+mod next;
 mod show;
 mod status;
 mod tags;
