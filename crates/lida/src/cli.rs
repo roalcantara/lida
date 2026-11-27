@@ -69,6 +69,9 @@ fn complete_next_word<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate<
         return Vec::new();
     };
     let mut words = std::collections::BTreeSet::new();
+    for tag in lida_core::query::DueTag::ALL {
+        words.insert(format!("+{}", tag.name()));
+    }
     for task in &store.doc().tasks {
         if let Some(project) = lida_core::query::task_project(task) {
             let mut prefix = String::new();
@@ -216,7 +219,7 @@ pub struct NextArgs {
     #[usage(long)]
     pub json: bool,
 
-    /// Filter words: @project, +tag, key:value, or search text
+    /// Filter words: @project, +tag, +TODAY/+OVERDUE/+TOMORROW/+WEEK, key:value, or search text
     #[usage(complete = complete_next_word)]
     pub words: Vec<String>,
 }

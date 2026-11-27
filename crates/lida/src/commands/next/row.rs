@@ -2,8 +2,8 @@
 
 use super::layout::{Col, Layout};
 use super::palette::{
-    CHIP, CHIP_LEFT, CHIP_RIGHT, CHIP_TEXT, DISC_H, DISC_L, DISC_M, HEADER_BG, ID, LATER, MUTED, OVERDUE, PRIORITY,
-    SOON, TAGS, TEXT, dimmed, project_colour,
+    CHIP, CHIP_LEFT, CHIP_RIGHT, CHIP_TEXT, HEADER_BG, ID, LATER, MUTED, OVERDUE, PRIORITY_HIGH, PRIORITY_LOW,
+    PRIORITY_MEDIUM, SOON, TAGS, TEXT, dimmed, project_colour,
 };
 use super::span::{Span, Style};
 use crate::text::{cut, fit, sanitise, width};
@@ -152,17 +152,18 @@ fn push_urg(spans: &mut Vec<Span>, urgency: Option<f64>, w: usize) {
 }
 
 fn push_prio(spans: &mut Vec<Span>, priority: Option<Priority>) {
-    let glyph = match priority {
-        Some(Priority::High) => Some(DISC_H),
-        Some(Priority::Medium) => Some(DISC_M),
-        Some(Priority::Low) => Some(DISC_L),
+    let fg = match priority {
+        Some(Priority::High) => Some(PRIORITY_HIGH),
+        Some(Priority::Medium) => Some(PRIORITY_MEDIUM),
+        Some(Priority::Low) => Some(PRIORITY_LOW),
         None => None,
     };
-    if let Some(ch) = glyph {
+    if let Some(colour) = fg {
         spans.push(Span {
-            text: ch.to_string(),
+            text: priority_letter(priority).to_owned(),
             style: Style {
-                fg: Some(PRIORITY),
+                fg: Some(colour),
+                bold: true,
                 ..Style::default()
             },
         });
@@ -557,17 +558,42 @@ mod tests {
     }
 
     #[test]
-    fn chip_and_disc_spans() {
+    fn chip_and_priority_spans() {
         let mut task = Task::new("bbbb", "Series: account-wide numbers");
         task.status = Status::InProgress;
         task.priority = Some(Priority::Low);
         let spans = render_row(&task, Some(5.8), Waiting::No);
 
         assert!(spans.iter().any(|s| s.text == "bbbb" && s.style.bg == Some(CHIP)));
+
+        for (priority, letter, colour) in [
+            (Priority::High, "H", PRIORITY_HIGH),
+            (Priority::Medium, "M", PRIORITY_MEDIUM),
+            (Priority::Low, "L", PRIORITY_LOW),
+        ] {
+            let mut t = Task::new("aaaa", "Check priority");
+            t.priority = Some(priority);
+            let row = render_row(&t, Some(1.0), Waiting::No);
+            assert!(
+                row.iter()
+                    .any(|s| s.text == letter && s.style.fg == Some(colour) && s.style.bold),
+                "missing bold {letter} span for {priority:?}"
+            );
+            assert!(
+                row.iter()
+                    .all(|s| !s.text.chars().any(|c| ('\u{F0000}'..='\u{FFFFF}').contains(&c))),
+                "unexpected Nerd Font PUA glyph in {row:?}"
+            );
+        }
+
+        let none_task = Task::new("cccc", "No priority");
+        let none_row = render_row(&none_task, Some(1.0), Waiting::No);
+        assert_eq!(none_row[2].text, " ");
+        assert_eq!(none_row[2].style, Style::default());
         assert!(
-            spans
+            none_row
                 .iter()
-                .any(|s| s.text == DISC_L.to_string() && s.style.fg == Some(PRIORITY))
+                .all(|s| !s.text.chars().any(|c| ('\u{F0000}'..='\u{FFFFF}').contains(&c)))
         );
     }
 

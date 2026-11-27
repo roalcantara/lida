@@ -297,3 +297,29 @@ fn tiny_window() {
     let run = run_lida(dir.path(), &["nx", "-l"], &[("CLICOLOR_FORCE", "1"), ("COLUMNS", "20")]);
     assert_eq!(run.code, 0, "stderr: {}", run.stderr);
 }
+
+#[test]
+fn in_progress_first_in_raw_and_json() {
+    let dir = fixture_dir();
+    let raw = run_lida(dir.path(), &["nx", "--raw"], &[]);
+    assert_eq!(raw_ids(&raw.stdout).first(), Some(&"bbbb"));
+    let json = run_lida(dir.path(), &["nx", "--json"], &[]);
+    let parsed: Vec<serde_json::Value> = serde_json::from_str(&json.stdout).unwrap_or_default();
+    assert_eq!(parsed.first().and_then(|t| t["id"].as_str()), Some("bbbb"));
+}
+
+#[test]
+fn due_tags_from_the_cli() {
+    let dir = fixture_dir();
+    let run = run_lida(dir.path(), &["nx", "+TODAY", "+OVERDUE", "--raw"], &[]);
+    assert_eq!(run.code, 0, "stderr: {}", run.stderr);
+    assert_eq!(raw_ids(&run.stdout), ["aaaa", "cccc", "jjjj"]);
+    let tomorrow = run_lida(
+        dir.path(),
+        &["nx", "+TOMORROW", "--raw"],
+        &[("LIDA_TODAY", "2026-12-01")],
+    );
+    assert_eq!(raw_ids(&tomorrow.stdout), ["cccc"]);
+    let none = run_lida(dir.path(), &["nx", "+TOMORROW"], &[]);
+    assert_eq!((none.code, none.stdout.as_str()), (0, "No tasks found.\n"));
+}

@@ -90,7 +90,7 @@ cmd next help="List open tasks by urgency" {
     flag --raw help="Print plain tab-separated text with every field"
     flag --json help="Output as structured JSON array"
     flag "-h --help" help="Print help" action=help builtin=#true
-    arg "[WORDS]..." help="Filter words: @project, +tag, key:value, or search text"
+    arg "[WORDS]..." help="Filter words: @project, +tag, +TODAY/+OVERDUE/+TOMORROW/+WEEK, key:value, or search text"
     complete words run="lida __complete_word__ --candidates words --line={{ words | shell_join | shell_quote }}"
 }
 cmd done help="Mark a task as done" {

@@ -103,11 +103,14 @@ Status and priority columns are padded before colouring so they align cleanly. F
 
 ### next (also nx)
 
-Lists open tasks (status not `Done`, and `wait` absent or not after today), ordered by `meta.urgency` descending
-(missing or non-numeric last), then priority `High`, `Medium`, `Low`, none, then ID ascending. Filter words narrow the
-list: `@project` (project or dotted subproject; any of several), `+tag` (all must match), `key:value` (scalar equality
-or list membership in `meta`; any per key), and plain words (case-insensitive substring in description; all must match).
-Empty result prints `No tasks found.` (or `[]` with `--json`) and exits `0`. `next` is read-only.
+Lists open tasks (status not `Done`, and `wait` absent or not after today), `InProgress` first, then by
+`meta.urgency` descending (missing or non-numeric last), then priority `High`, `Medium`, `Low`, none, then ID
+ascending. Filter words narrow the list: `@project` (project or dotted subproject; any of several), `+tag` (all must
+match), `+OVERDUE`, `+TODAY`, `+TOMORROW`, `+WEEK` (due before today, today, tomorrow, or today through today + 6;
+uppercase only, so they shadow a literal tag of the same name; any of several, and only tasks with a parseable
+`due`), `key:value` (scalar equality or list membership in `meta`; any per key), and plain words (case-insensitive
+substring in description; all must match). Empty result prints `No tasks found.` (or `[]` with `--json`) and exits
+`0`. `next` is read-only.
 
 For `next` only, the 24-bit true-colour table overrides the shared colour table above:
 
@@ -127,7 +130,7 @@ drop `WHY`, then `TAGS` (falling back to inline tags after the description), the
 | header band               | background `#161b22`, muted `#737aa2` bold labels                                                              |
 | ID                        | `#7aa2f7` bold, without `#`, inside a 6-cell lane                                                              |
 | task in progress          | green `#9ece6a` chip with `#1d202f` bold ID, framed by `▕` (U+2595) and `▏` (U+258F) in `#9ece6a`              |
-| priority                  | Nerd Font letter disc (`\u{F0C01}`/`\u{F0C10}`/`\u{F0C0D}`) in `#e0af68`; blank when absent                    |
+| priority                  | bold letter `H`/`M`/`L` in `#ff9e64` / `#e0af68` / `#cec0ac`; blank when absent                                |
 | DUE overdue               | `{n}d` in `#f7768e` bold                                                                                       |
 | DUE today / within a week | `today` or weekday (`Mon`–`Sun`) in `#c0caf5` bold                                                             |
 | DUE later / far / none    | `{n}d` (7–59d) or date (`Feb 20` under 300d, `Jan'28` from 300d on) in `#a9b1d6`; `-` in `#737aa2` when absent |
