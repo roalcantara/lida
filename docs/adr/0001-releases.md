@@ -51,4 +51,7 @@ request, so every release is a merge the owner chose.
   "remote unpack failed"), `main` carries the bump with no tag. Rerunning the job does not help (its checkout is behind
   `main`) and a fresh run would release the same version twice. Recover by hand: tag the `chore(release)` commit
   (`git -c tag.gpgSign=false tag vX.Y.Z <sha>`), push the tag, download that run's build artifacts and create the
-  release with `gh release create vX.Y.Z --verify-tag --notes-file <the CHANGELOG section> dist/*`.
+  release with `gh release create vX.Y.Z --verify-tag --notes-file <the CHANGELOG section> dist/*`. The rejected push
+  can also be the `refs/notes/semantic-release-vX.Y.Z` note that follows the tag (v0.2.0: "remote rejected ...
+  (failed)"): the tag is then already on GitHub, so skip the tagging and only create the release. The missing note is
+  harmless; later releases do not need it.
