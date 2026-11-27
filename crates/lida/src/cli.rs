@@ -64,6 +64,29 @@ fn complete_cwi_format<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate
     ["yaml", "md", "both"].into_iter().map(Candidate::new).collect()
 }
 
+fn complete_next_word<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate<'static>> {
+    let Some(store) = load_current_store() else {
+        return Vec::new();
+    };
+    let mut words = std::collections::BTreeSet::new();
+    for task in &store.doc().tasks {
+        if let Some(project) = lida_core::query::task_project(task) {
+            let mut prefix = String::new();
+            for segment in project.split('.') {
+                if !prefix.is_empty() {
+                    prefix.push('.');
+                }
+                prefix.push_str(segment);
+                words.insert(format!("@{prefix}"));
+            }
+        }
+        for tag in &task.tags {
+            words.insert(format!("+{tag}"));
+        }
+    }
+    words.into_iter().map(Candidate::new).collect()
+}
+
 #[derive(Args, Debug)]
 #[expect(
     clippy::struct_excessive_bools,
@@ -194,6 +217,7 @@ pub struct NextArgs {
     pub json: bool,
 
     /// Filter words: @project, +tag, key:value, or search text
+    #[usage(complete = complete_next_word)]
     pub words: Vec<String>,
 }
 
