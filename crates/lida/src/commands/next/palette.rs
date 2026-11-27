@@ -5,7 +5,9 @@ use super::span::Rgb;
 pub const ID: Rgb = (0x7a, 0xa2, 0xf7);
 pub const CHIP: Rgb = (0x9e, 0xce, 0x6a);
 pub const CHIP_TEXT: Rgb = (0x1d, 0x20, 0x2f);
-pub const PRIORITY: Rgb = (0xe0, 0xaf, 0x68);
+pub const PRIORITY_HIGH: Rgb = (0xff, 0x9e, 0x64);
+pub const PRIORITY_MEDIUM: Rgb = (0xe0, 0xaf, 0x68);
+pub const PRIORITY_LOW: Rgb = (0xce, 0xc0, 0xac);
 pub const OVERDUE: Rgb = (0xf7, 0x76, 0x8e);
 pub const SOON: Rgb = (0xc0, 0xca, 0xf5);
 pub const LATER: Rgb = (0xa9, 0xb1, 0xd6);
@@ -26,9 +28,6 @@ pub const PROJECTS: [Rgb; 8] = [
     (0xfd, 0xb6, 0xf0),
 ];
 
-pub const DISC_H: char = '\u{F0C01}';
-pub const DISC_M: char = '\u{F0C10}';
-pub const DISC_L: char = '\u{F0C0D}';
 pub const CHIP_LEFT: char = '\u{2595}';
 pub const CHIP_RIGHT: char = '\u{258F}';
 
@@ -62,7 +61,9 @@ mod tests {
         assert_eq!(ID, (0x7a, 0xa2, 0xf7));
         assert_eq!(CHIP, (0x9e, 0xce, 0x6a));
         assert_eq!(CHIP_TEXT, (0x1d, 0x20, 0x2f));
-        assert_eq!(PRIORITY, (0xe0, 0xaf, 0x68));
+        assert_eq!(PRIORITY_HIGH, (0xff, 0x9e, 0x64));
+        assert_eq!(PRIORITY_MEDIUM, (0xe0, 0xaf, 0x68));
+        assert_eq!(PRIORITY_LOW, (0xce, 0xc0, 0xac));
         assert_eq!(OVERDUE, (0xf7, 0x76, 0x8e));
         assert_eq!(SOON, (0xc0, 0xca, 0xf5));
         assert_eq!(LATER, (0xa9, 0xb1, 0xd6));
@@ -83,9 +84,6 @@ mod tests {
         ]
         .map(|h| (((h >> 16) & 0xff) as u8, ((h >> 8) & 0xff) as u8, (h & 0xff) as u8));
         assert_eq!(PROJECTS, expected_projects);
-        assert_eq!(DISC_H, '\u{F0C01}');
-        assert_eq!(DISC_M, '\u{F0C10}');
-        assert_eq!(DISC_L, '\u{F0C0D}');
         assert_eq!(CHIP_LEFT, '\u{2595}');
         assert_eq!(CHIP_RIGHT, '\u{258F}');
     }

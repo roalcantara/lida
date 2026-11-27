@@ -129,7 +129,7 @@ drop `WHY`, then `TAGS` (falling back to inline tags after the description), the
 | header band               | background `#161b22`, muted `#737aa2` bold labels                                                              |
 | ID                        | `#7aa2f7` bold, without `#`, inside a 6-cell lane                                                              |
 | task in progress          | green `#9ece6a` chip with `#1d202f` bold ID, framed by `▕` (U+2595) and `▏` (U+258F) in `#9ece6a`              |
-| priority                  | Nerd Font letter disc (`\u{F0C01}`/`\u{F0C10}`/`\u{F0C0D}`) in `#e0af68`; blank when absent                    |
+| priority                  | bold letter `H`/`M`/`L` in `#ff9e64` / `#e0af68` / `#cec0ac`; blank when absent                                |
 | DUE overdue               | `{n}d` in `#f7768e` bold                                                                                       |
 | DUE today / within a week | `today` or weekday (`Mon`–`Sun`) in `#c0caf5` bold                                                             |
 | DUE later / far / none    | `{n}d` (7–59d) or date (`Feb 20` under 300d, `Jan'28` from 300d on) in `#a9b1d6`; `-` in `#737aa2` when absent |
