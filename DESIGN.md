@@ -112,14 +112,15 @@ Empty result prints `No tasks found.` (or `[]` with `--json`) and exits `0`. `ne
 For `next` only, the 24-bit true-colour table overrides the shared colour table above:
 
 ```text
-ID     P  DUE    PROJECT         DESCRIPTION
-gLIS   H  6d     @jobx.hunt      Log outcomes for the 18 applied opportunities
-nYv5   L  -      @dots.blog      Series: account-wide numbers and decisions  +series
+ID     P  DUE     PROJECT         DESCRIPTION
+gLIS   H  6d      @jobx.hunt      Log outcomes for the 18 applied opportunities
+nYv5   L  -       @dots.blog      Series: account-wide numbers and decisions  +series
 ```
 
-With `-l`/`--long`, `URG`, `TAGS`, and `WHY` columns are added; narrow windows drop `WHY`, then `TAGS` (falling back
-to inline tags after the description), then `URG` until `DESCRIPTION` has at least 30 cells. When no shown task has a
-`project`, the `PROJECT` column is omitted.
+Column widths (with 2-space alleys): ID 6, P 1, DUE 6 (rulers: P 8, DUE 11, PROJECT 19, DESCRIPTION 35; 45 cells for
+description at 80 columns). With `-l`/`--long`, `URG` (5), `TAGS` (17), and `WHY` (23) columns are added; narrow windows
+drop `WHY`, then `TAGS` (falling back to inline tags after the description), then `URG` until `DESCRIPTION` has at least
+30 cells. When no shown task has a `project`, the `PROJECT` column is omitted.
 
 | Element                   | Style                                                                                             |
 | ------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -129,7 +130,7 @@ to inline tags after the description), then `URG` until `DESCRIPTION` has at lea
 | priority                  | Nerd Font letter disc (`\u{F0C01}`/`\u{F0C10}`/`\u{F0C0D}`) in `#e0af68`; blank when absent       |
 | DUE overdue               | `{n}d` in `#f7768e` bold                                                                          |
 | DUE today / within a week | `today` or weekday (`Mon`–`Sun`) in `#c0caf5` bold                                                |
-| DUE later / far / none    | `{n}d` (7–59d) or date (`Feb 20` / `Feb 20 2028`) in `#a9b1d6`; `-` in `#737aa2` when absent      |
+| DUE later / far / none    | `{n}d` (7–59d) or date (`Feb 20` / `Jan'28`) in `#a9b1d6`; `-` in `#737aa2` when absent           |
 | project                   | `@top` bold in a stable 8-colour hash, `.sub` at 70% mixed over `#1d212f`                         |
 | tags                      | `#03ffd2` (bold when following the description after two spaces)                                  |
 | URG (`-l`)                | right-aligned one decimal in `#c0caf5` (`#737aa2` when negative or `-`)                           |

@@ -50,7 +50,7 @@ pub fn layout(width: usize, long: bool, has_project: bool) -> Layout {
         cols.push((Col::Urg, 5));
     }
     cols.push((Col::Prio, 1));
-    cols.push((Col::Due, 5));
+    cols.push((Col::Due, 6));
     if has_project {
         cols.push((Col::Project, 14));
     }
@@ -99,13 +99,13 @@ mod tests {
     fn default_at_120() {
         let l = layout(120, false, true);
         assert_eq!(cols(&l), [Col::Id, Col::Prio, Col::Due, Col::Project]);
-        assert_eq!(l.desc, 86);
+        assert_eq!(l.desc, 85);
         assert!(l.tags_after_desc);
     }
 
     #[test]
     fn default_at_80() {
-        assert_eq!(layout(80, false, true).desc, 46);
+        assert_eq!(layout(80, false, true).desc, 45);
     }
 
     #[test]
@@ -124,7 +124,7 @@ mod tests {
             ]
         );
         assert!(!l.tags_after_desc);
-        assert_eq!(l.desc, 35);
+        assert_eq!(l.desc, 34);
     }
 
     #[test]

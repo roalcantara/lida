@@ -94,21 +94,21 @@ Generated from the mock's renderer (real data, today shifted to Thursday 2026-12
 and the chip are described below the frame):
 
 ```text
-ID     P  DUE    PROJECT         DESCRIPTION
-gLIS   H  6d     @jobx.hunt      Log outcomes for the 18 applied opportunities
-nTe4   H  1d     @jobx.learn     Study the Forward Deployed Engineer path and write a fit note
-DV8O   H  Fri    @jobx.hunt      Build the seed list: 30 people who know your work
-G2ri   H  Fri    @jobx.bridge    Apply to 3 platform-task-work roles
-GmuC   H  6d     @jobx.cadence   Weekly recalibration, every Friday 45 min
-HGGP   H  6d     @jobx.hunt      Follow up the 5 in-progress opportunities and decide GM Financial
-ijrV   H  2d     @jobx.bridge    Open the bridge queue: 3 messages to network and prior employers
-wuu5   H  6d     @jobx.cadence   Define the weekly scoreboard
-6hTP   H  1d     @jobx.hunt      Brainstorm strategy rev 5: why 46 boards gave silence
-mxtA   L  -      @lida           README demo (asciinema or GIF) of the Markdown and YAML round-trip
-nYv5   L  -      @dots.blog      Series: account-wide numbers and decisions  +series
-vINB   L  3d     @dots.blog      Reddit runway: comment and answer only, no own links  +community
-6jNz   L  -      @summon         Store listing experiments on Play
-ufyn   L  -      @summon         Launch posts: the blog, LinkedIn, r/AndroidGaming and r/IndieDev
+ID     P  DUE     PROJECT         DESCRIPTION
+gLIS   H  6d      @jobx.hunt      Log outcomes for the 18 applied opportunities
+nTe4   H  1d      @jobx.learn     Study the Forward Deployed Engineer path and write a fit note
+DV8O   H  Fri     @jobx.hunt      Build the seed list: 30 people who know your work
+G2ri   H  Fri     @jobx.bridge    Apply to 3 platform-task-work roles
+GmuC   H  6d      @jobx.cadence   Weekly recalibration, every Friday 45 min
+HGGP   H  6d      @jobx.hunt      Follow up the 5 in-progress opportunities and decide GM Financial
+ijrV   H  2d      @jobx.bridge    Open the bridge queue: 3 messages to network and prior employers
+wuu5   H  6d      @jobx.cadence   Define the weekly scoreboard
+6hTP   H  1d      @jobx.hunt      Brainstorm strategy rev 5: why 46 boards gave silence
+mxtA   L  -       @lida           README demo (asciinema or GIF) of the Markdown and YAML round-trip
+nYv5   L  -       @dots.blog      Series: account-wide numbers and decisions  +series
+vINB   L  3d      @dots.blog      Reddit runway: comment and answer only, no own links  +community
+6jNz   L  -       @summon         Store listing experiments on Play
+ufyn   L  -       @summon         Launch posts: the blog, LinkedIn, r/AndroidGaming and r/IndieDev
 ```
 
 In the terminal, `H`/`M`/`L` are Nerd Font letter discs, `nYv5` (in progress) sits on a green chip, `6hTP` (waiting on
@@ -117,12 +117,12 @@ In the terminal, `H`/`M`/`L` are Nerd Font letter discs, `nYv5` (in progress) si
 ### `lida nx -l`
 
 ```text
-ID      URG  P  DUE    PROJECT         TAGS               WHY                      DESCRIPTION
-gLIS   23.0  H  6d     @jobx.hunt                                                  Log outcomes for the 18 applied opp…
-6hTP   18.0  H  1d     @jobx.hunt                                                  Brainstorm strategy rev 5: why 46 b…
-mxtA    5.8  L  -      @lida                              showcase need branding   README demo (asciinema or GIF) of t…
-nYv5    5.8  L  -      @dots.blog      +series            branding                 Series: account-wide numbers and de…
-6jNz   -3.2  L  -      @summon                            showcase income          Store listing experiments on Play
+ID      URG  P  DUE     PROJECT         TAGS               WHY                      DESCRIPTION
+gLIS   23.0  H  6d      @jobx.hunt                                                  Log outcomes for the 18 applied opp…
+6hTP   18.0  H  1d      @jobx.hunt                                                  Brainstorm strategy rev 5: why 46 b…
+mxtA    5.8  L  -       @lida                              showcase need branding   README demo (asciinema or GIF) of t…
+nYv5    5.8  L  -       @dots.blog      +series            branding                 Series: account-wide numbers and de…
+6jNz   -3.2  L  -       @summon                            showcase income          Store listing experiments on Play
 ```
 
 (URG is 5 cells wide so `-13.2` fits; the frame above was drawn at 4, before that call.)
@@ -134,16 +134,16 @@ nYv5    5.8  L  -      @dots.blog      +series            branding              
 | ID lane     | 0–6       | 0–6           | 6 cells: a space, the 4-character id, a space. The chip fills this lane, never more |
 | P           | 8         | after URG     | 1 cell, a Nerd Font disc                                                            |
 | URG         | –         | right edge    | numbers end on their ruler; one decimal; `-` when absent                            |
-| DUE         | 11        | +3            | 5 cells, left-aligned                                                               |
-| PROJECT     | 18        | +7            | 14 cells; longer names cut with `…`                                                 |
+| DUE         | 11        | +3            | 6 cells, left-aligned                                                               |
+| PROJECT     | 19        | +8            | 14 cells; longer names cut with `…`                                                 |
 | TAGS        | –         | after PROJECT | 17 cells; cut with `…`                                                              |
 | WHY         | –         | after TAGS    | 23 cells; cut with `…`                                                              |
-| DESCRIPTION | 34        | to W          | from its ruler to the edge W, cut with `…` only at W                                |
+| DESCRIPTION | 35        | to W          | from its ruler to the edge W, cut with `…` only at W                                |
 
 Alleys between columns are 2 spaces. Nothing crosses a ruler. The header is a dark band (`#161b22`) with muted bold
 labels. No stripes, no glyph columns, ids without `#`.
 
-**Narrow windows.** `lida nx` fits at 80 columns (the description gets 46 cells). `lida nx -l` drops columns, in this
+**Narrow windows.** `lida nx` fits at 80 columns (the description gets 45 cells). `lida nx -l` drops columns, in this
 order, until the description has at least 30 cells: WHY, then TAGS (which then follow the description, as in `lida nx`),
 then URG.
 
@@ -162,7 +162,7 @@ whole letters).
 | priority                  | Nerd Font filled letter disc in gold `#e0af68`: `md-alpha-h-circle` U+F0C01, `-m-` U+F0C10, `-l-` U+F0C0D (one cell wide in Cascadia Code NF); blank when the task has no priority                                                                                                      |
 | DUE overdue               | days late, no "ago", red `#f7768e` bold: `6d`                                                                                                                                                                                                                                           |
 | DUE today / within a week | `today` for today (a time earlier today still counts as today, not overdue), the weekday for 1–6 days ahead, bright bold `#c0caf5`: `Fri`                                                                                                                                               |
-| DUE later                 | days for 7–59 days ahead (`36d`); from 60 days a date (`Feb 20`, with the year when it differs: `Feb 20 2028`); plain `#a9b1d6`                                                                                                                                                         |
+| DUE later                 | days for 7–59 days ahead (`36d`); from 60 days a date (`Feb 20`, or `Jan'28` when the year differs); plain `#a9b1d6`                                                                                                                                                                    |
 | DUE none                  | `-`, muted                                                                                                                                                                                                                                                                              |
 | project                   | `@top` bold in the project's colour, `.sub` in the same colour at 70% (mixed over the background)                                                                                                                                                                                       |
 | project colours           | 8 colours, each pair ΔE ≥ 16 on `#1D212F`, contrast ≥ 3:1: `#12aedb`, `#d78b3d`, `#36ba6d`, `#d6da4d`, `#aa86f5`, `#d958c0`, `#4be9fc`, `#fdb6f0`. A project's colour comes from a stable hash of its top-level name, so it is the same in every repository; two projects may share one |

@@ -213,11 +213,10 @@ fn push_due(spans: &mut Vec<Span>, due: Option<&str>, today: Date, w: usize) {
         ),
         Due::Far { date, same_year } => {
             let month = month_short(date.month());
-            let day = date.day();
             let s = if same_year {
-                format!("{month} {day}")
+                format!("{month} {}", date.day())
             } else {
-                format!("{month} {day} {}", date.year())
+                format!("{month}'{:02}", date.year().rem_euclid(100))
             };
             (
                 s,
@@ -582,5 +581,18 @@ mod tests {
                 .iter()
                 .any(|s| s.text.contains("Brainstorm") && s.style.fg == Some(MUTED))
         );
+    }
+
+    #[test]
+    fn far_due_formats_same_and_other_year() {
+        let mut other_year = Vec::new();
+        push_due(&mut other_year, Some("2027-02-20"), Date::constant(2026, 12, 3), 6);
+        assert_eq!(other_year[0].text, "Feb'27");
+        assert_eq!(other_year[0].style.fg, Some(LATER));
+
+        let mut same_year = Vec::new();
+        push_due(&mut same_year, Some("2026-03-02"), Date::constant(2026, 1, 1), 6);
+        assert_eq!(same_year[0].text, "Mar 2 ");
+        assert_eq!(same_year[0].style.fg, Some(LATER));
     }
 }
