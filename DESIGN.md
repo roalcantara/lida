@@ -122,20 +122,20 @@ description at 80 columns). With `-l`/`--long`, `URG` (5), `TAGS` (17), and `WHY
 drop `WHY`, then `TAGS` (falling back to inline tags after the description), then `URG` until `DESCRIPTION` has at least
 30 cells. When no shown task has a `project`, the `PROJECT` column is omitted.
 
-| Element                   | Style                                                                                             |
-| ------------------------- | ------------------------------------------------------------------------------------------------- |
-| header band               | background `#161b22`, muted `#737aa2` bold labels                                                 |
-| ID                        | `#7aa2f7` bold, without `#`, inside a 6-cell lane                                                 |
-| task in progress          | green `#9ece6a` chip with `#1d202f` bold ID, framed by `▕` (U+2595) and `▏` (U+258F) in `#9ece6a` |
-| priority                  | Nerd Font letter disc (`\u{F0C01}`/`\u{F0C10}`/`\u{F0C0D}`) in `#e0af68`; blank when absent       |
-| DUE overdue               | `{n}d` in `#f7768e` bold                                                                          |
-| DUE today / within a week | `today` or weekday (`Mon`–`Sun`) in `#c0caf5` bold                                                |
-| DUE later / far / none    | `{n}d` (7–59d) or date (`Feb 20` / `Jan'28`) in `#a9b1d6`; `-` in `#737aa2` when absent           |
-| project                   | `@top` bold in a stable 8-colour hash, `.sub` at 70% mixed over `#1d212f`                         |
-| tags                      | `#03ffd2` (bold when following the description after two spaces)                                  |
-| URG (`-l`)                | right-aligned one decimal in `#c0caf5` (`#737aa2` when negative or `-`)                           |
-| WHY (`-l`)                | lead purpose bold `#c0caf5`, remaining purposes `#737aa2`                                         |
-| description               | `#c0caf5`, muted `#737aa2` when waiting (`Blocked` or open `depends`); search matches underlined  |
+| Element                   | Style                                                                                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| header band               | background `#161b22`, muted `#737aa2` bold labels                                                              |
+| ID                        | `#7aa2f7` bold, without `#`, inside a 6-cell lane                                                              |
+| task in progress          | green `#9ece6a` chip with `#1d202f` bold ID, framed by `▕` (U+2595) and `▏` (U+258F) in `#9ece6a`              |
+| priority                  | Nerd Font letter disc (`\u{F0C01}`/`\u{F0C10}`/`\u{F0C0D}`) in `#e0af68`; blank when absent                    |
+| DUE overdue               | `{n}d` in `#f7768e` bold                                                                                       |
+| DUE today / within a week | `today` or weekday (`Mon`–`Sun`) in `#c0caf5` bold                                                             |
+| DUE later / far / none    | `{n}d` (7–59d) or date (`Feb 20` under 300d, `Jan'28` from 300d on) in `#a9b1d6`; `-` in `#737aa2` when absent |
+| project                   | `@top` bold in a stable 8-colour hash, `.sub` at 70% mixed over `#1d212f`                                      |
+| tags                      | `#03ffd2` (bold when following the description after two spaces)                                               |
+| URG (`-l`)                | right-aligned one decimal in `#c0caf5` (`#737aa2` when negative or `-`)                                        |
+| WHY (`-l`)                | lead purpose bold `#c0caf5`, remaining purposes `#737aa2`                                                      |
+| description               | `#c0caf5`, muted `#737aa2` when waiting (`Blocked` or open `depends`); search matches underlined               |
 
 `--raw` (and any non-terminal stdout, or `NO_COLOR` on a terminal) prints uncut, tab-separated plain text without
 headers, colours, or Nerd Font glyphs: `id`, priority letter (`H`/`M`/`L`/empty), exact stored `due`, `@project`, and

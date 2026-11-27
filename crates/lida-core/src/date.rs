@@ -10,7 +10,7 @@ pub enum Due {
     Today,
     Soon { weekday: Weekday },
     Later { days: i64 },
-    Far { date: Date, same_year: bool },
+    Far { date: Date, within_year: bool },
 }
 
 /// Parses a `YYYY-MM-DD` or `YYYY-MM-DD HH:MM` string into a civil date.
@@ -42,7 +42,7 @@ pub fn classify(due: Option<&str>, today: Date) -> Due {
         7..=59 => Due::Later { days },
         _ => Due::Far {
             date: due_date,
-            same_year: due_date.year() == today.year(),
+            within_year: days < 300,
         },
     }
 }
@@ -86,14 +86,14 @@ mod tests {
             classify(Some("2027-02-01"), t),
             Due::Far {
                 date: date(2027, 2, 1),
-                same_year: false
+                within_year: true
             }
         );
         assert_eq!(
-            classify(Some("2026-12-03"), date(2026, 1, 1)),
+            classify(Some("2027-12-03"), t),
             Due::Far {
-                date: date(2026, 12, 3),
-                same_year: true
+                date: date(2027, 12, 3),
+                within_year: false
             }
         );
     }
