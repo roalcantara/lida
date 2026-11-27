@@ -1,6 +1,6 @@
 name lida
 bin lida
-version "0.1.1"
+version "0.2.0"
 about "Dual-format project task engine (YAML · MD)"
 flag "-h --help" help="Print help" action=help builtin=#true
 flag "-V --version" help="Print version" action=version builtin=#true

@@ -2,6 +2,23 @@
 
 Every release of lida, written by semantic-release from the commit messages (docs/adr/0001-releases.md).
 
+## [0.2.0](https://github.com/roalcantara/lida/compare/v0.1.1...v0.2.0) (2026-11-27)
+
+### Features
+
+* **cli:** Add lida next to list open tasks by urgency ([d9d6c31](https://github.com/roalcantara/lida/commit/d9d6c314ff2bef35a37a6dbd719eaf9152c3ab7a))
+* **cli:** Add the next palette and span writer ([0bae57f](https://github.com/roalcantara/lida/commit/0bae57f6675c856c1595ca74941263c1efa180bd))
+* **cli:** Add width-aware text fitting and sanitising ([afdbc3a](https://github.com/roalcantara/lida/commit/afdbc3a55516289d69bbac1d888660c2ca60d7c8))
+* **cli:** Complete next filter words ([e75a20b](https://github.com/roalcantara/lida/commit/e75a20b290d745eced5b16cca71784502b7f0b35))
+* **cli:** Lay out next columns for any window width ([1a18b68](https://github.com/roalcantara/lida/commit/1a18b681ed12b454d993558a9493e2f0a3904aee))
+* **core:** Classify due dates against a given day ([2ec3917](https://github.com/roalcantara/lida/commit/2ec39178f28dbc87e1b59bc43d04e082d6ea1280))
+* **core:** Filter, order and mark waiting tasks for next ([5eec7a3](https://github.com/roalcantara/lida/commit/5eec7a320e282b90cd8b399e966e8c27ae7f331f))
+
+### Bug Fixes
+
+* **cli:** Fit far due dates in the next DUE lane ([3f778ac](https://github.com/roalcantara/lida/commit/3f778ac4fee7937c4c9fbebf738c3b0919b65d28))
+* **cli:** Keep the day on next's far due dates ([6a016c1](https://github.com/roalcantara/lida/commit/6a016c1da1b63578e7c4fffc944131af80693abc))
+
 ## [0.1.1](https://github.com/roalcantara/lida/compare/v0.1.0...v0.1.1) (2026-11-24)
 
 ### Bug Fixes
