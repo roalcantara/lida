@@ -1,8 +1,58 @@
 //! Filter-word parsing and matching for `lida next`.
 
+use crate::date::{Date, parse_day};
 use crate::model::Task;
 use std::collections::BTreeMap;
 use std::ops::Range;
+
+/// Reserved virtual due-date tag recognised in `lida next` queries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DueTag {
+    Overdue,
+    Today,
+    Tomorrow,
+    Week,
+}
+
+impl DueTag {
+    /// All supported due tags in canonical order.
+    pub const ALL: [Self; 4] = [Self::Overdue, Self::Today, Self::Tomorrow, Self::Week];
+
+    /// Parses an uppercase due tag name (without the leading `+`).
+    #[must_use]
+    pub fn parse(name: &str) -> Option<Self> {
+        match name {
+            "OVERDUE" => Some(Self::Overdue),
+            "TODAY" => Some(Self::Today),
+            "TOMORROW" => Some(Self::Tomorrow),
+            "WEEK" => Some(Self::Week),
+            _ => None,
+        }
+    }
+
+    /// Returns the uppercase due tag name (without the leading `+`).
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Overdue => "OVERDUE",
+            Self::Today => "TODAY",
+            Self::Tomorrow => "TOMORROW",
+            Self::Week => "WEEK",
+        }
+    }
+
+    /// Returns whether `due` falls in this tag's window relative to `today`.
+    #[must_use]
+    pub fn matches(self, due: Date, today: Date) -> bool {
+        let days = (due - today).get_days();
+        match self {
+            Self::Overdue => days < 0,
+            Self::Today => days == 0,
+            Self::Tomorrow => days == 1,
+            Self::Week => (0..=6).contains(&days),
+        }
+    }
+}
 
 /// Parsed filter query for `lida next`.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -10,6 +60,7 @@ pub struct Query {
     pub words: Vec<String>,
     pub projects: Vec<String>,
     pub tags: Vec<String>,
+    pub due_tags: Vec<DueTag>,
     pub meta: BTreeMap<String, Vec<String>>,
 }
 
@@ -29,7 +80,13 @@ impl Query {
             if let Some(project) = word.strip_prefix('@') {
                 query.projects.push(project.to_owned());
             } else if let Some(tag) = word.strip_prefix('+') {
-                query.tags.push(tag.to_owned());
+                if let Some(due_tag) = DueTag::parse(tag) {
+                    if !query.due_tags.contains(&due_tag) {
+                        query.due_tags.push(due_tag);
+                    }
+                } else {
+                    query.tags.push(tag.to_owned());
+                }
             } else if let Some((key, value)) = word.split_once(':') {
                 query.meta.entry(key.to_owned()).or_default().push(value.to_owned());
             } else {
@@ -39,12 +96,13 @@ impl Query {
         query
     }
 
-    /// Returns whether `task` satisfies every clause in this query.
+    /// Returns whether `task` satisfies every clause in this query as of `today`.
     #[must_use]
-    pub fn matches(&self, task: &Task) -> bool {
+    pub fn matches(&self, task: &Task, today: Date) -> bool {
         self.matches_words(&task.description)
             && self.matches_projects(task)
             && self.matches_tags(task)
+            && self.matches_due(task, today)
             && self.matches_meta(task)
     }
 
@@ -128,6 +186,16 @@ impl Query {
             .all(|tag| !tag.is_empty() && task.tags.iter().any(|t| t == tag))
     }
 
+    fn matches_due(&self, task: &Task, today: Date) -> bool {
+        if self.due_tags.is_empty() {
+            return true;
+        }
+        let Some(due_date) = task.due.as_deref().and_then(parse_day) else {
+            return false;
+        };
+        self.due_tags.iter().any(|tag| tag.matches(due_date, today))
+    }
+
     fn matches_meta(&self, task: &Task) -> bool {
         self.meta.iter().all(|(key, values)| {
             if key.is_empty() {
@@ -156,5 +224,18 @@ fn scalar_matches(value: &serde_json::Value, target: &str) -> bool {
         serde_json::Value::Number(n) => n.to_string() == target,
         serde_json::Value::Bool(b) => (if *b { "true" } else { "false" }) == target,
         serde_json::Value::Null | serde_json::Value::Array(_) | serde_json::Value::Object(_) => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::DueTag;
+
+    #[test]
+    fn due_tag_round_trips_and_rejects_lowercase() {
+        for tag in DueTag::ALL {
+            assert_eq!(DueTag::parse(tag.name()), Some(tag));
+        }
+        assert_eq!(DueTag::parse("today"), None);
     }
 }

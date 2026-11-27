@@ -30,7 +30,7 @@ pub fn next<'a>(doc: &'a ProjectDoc, query: &Query, today: Date) -> Vec<Entry<'a
     let mut entries: Vec<Entry<'a>> = doc
         .tasks
         .iter()
-        .filter(|task| is_open(task, today) && query.matches(task))
+        .filter(|task| is_open(task, today) && query.matches(task, today))
         .map(|task| Entry {
             task,
             urgency: task_urgency(task),

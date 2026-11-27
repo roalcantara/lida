@@ -433,6 +433,9 @@ fn completion_offers_values() {
     assert_eq!(run.code, 0);
     let items: Vec<&str> = run.stdout.lines().collect();
     assert!(items.contains(&"+series"), "missing +series in {items:?}");
+    for expected in ["+OVERDUE", "+TODAY", "+TOMORROW", "+WEEK"] {
+        assert!(items.contains(&expected), "missing {expected} in {items:?}");
+    }
 }
 
 #[test]
