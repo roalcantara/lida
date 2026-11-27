@@ -22,7 +22,7 @@ pub struct Entry<'a> {
     pub waiting: Waiting,
 }
 
-/// Returns open tasks matching `query` as of `today`, ordered by urgency, priority, then ID.
+/// Returns open tasks matching `query` as of `today`, ordered in-progress first, then by urgency, priority, then ID.
 #[must_use]
 pub fn next<'a>(doc: &'a ProjectDoc, query: &Query, today: Date) -> Vec<Entry<'a>> {
     let statuses: HashMap<&str, Status> = doc.tasks.iter().map(|task| (task.id.as_str(), task.status)).collect();
@@ -78,9 +78,18 @@ fn task_waiting(task: &Task, statuses: &HashMap<&str, Status>) -> Waiting {
 }
 
 fn compare_entries(a: &Entry<'_>, b: &Entry<'_>) -> Ordering {
-    compare_urgency(a.urgency, b.urgency)
+    status_rank(a.task.status)
+        .cmp(&status_rank(b.task.status))
+        .then_with(|| compare_urgency(a.urgency, b.urgency))
         .then_with(|| priority_rank(a.task.priority).cmp(&priority_rank(b.task.priority)))
         .then_with(|| a.task.id.cmp(&b.task.id))
+}
+
+fn status_rank(status: Status) -> u8 {
+    match status {
+        Status::InProgress => 0,
+        Status::Todo | Status::Blocked | Status::Done => 1,
+    }
 }
 
 fn compare_urgency(a: Option<f64>, b: Option<f64>) -> Ordering {

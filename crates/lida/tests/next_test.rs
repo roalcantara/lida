@@ -297,3 +297,13 @@ fn tiny_window() {
     let run = run_lida(dir.path(), &["nx", "-l"], &[("CLICOLOR_FORCE", "1"), ("COLUMNS", "20")]);
     assert_eq!(run.code, 0, "stderr: {}", run.stderr);
 }
+
+#[test]
+fn in_progress_first_in_raw_and_json() {
+    let dir = fixture_dir();
+    let raw = run_lida(dir.path(), &["nx", "--raw"], &[]);
+    assert_eq!(raw_ids(&raw.stdout).first(), Some(&"bbbb"));
+    let json = run_lida(dir.path(), &["nx", "--json"], &[]);
+    let parsed: Vec<serde_json::Value> = serde_json::from_str(&json.stdout).unwrap_or_default();
+    assert_eq!(parsed.first().and_then(|t| t["id"].as_str()), Some("bbbb"));
+}

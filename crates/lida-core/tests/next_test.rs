@@ -37,17 +37,27 @@ fn waiting_by_id() -> HashMap<String, Waiting> {
 
 #[test]
 fn order_and_open() {
-    let document = doc();
+    assert_eq!(
+        ids_for(&[]),
+        [
+            "bbbb", "aaaa", "cccc", "iiii", "dddd", "jjjj", "kkkk", "mmmm", "eeee", "llll", "ffff"
+        ]
+    );
+}
+
+#[test]
+fn in_progress_sort_by_urgency_among_themselves() {
+    let mut document = doc();
+    for task in &mut document.tasks {
+        if task.id == "dddd" {
+            task.status = lida_core::model::Status::InProgress;
+        }
+    }
     let ids: Vec<_> = next(&document, &Query::parse::<&str>(&[]), today())
         .iter()
         .map(|e| e.task.id.as_str())
         .collect();
-    assert_eq!(
-        ids,
-        [
-            "aaaa", "cccc", "iiii", "dddd", "bbbb", "jjjj", "kkkk", "mmmm", "eeee", "llll", "ffff"
-        ]
-    );
+    assert_eq!(&ids[..3], ["dddd", "bbbb", "aaaa"]);
 }
 
 #[test]

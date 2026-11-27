@@ -103,7 +103,7 @@ Status and priority columns are padded before colouring so they align cleanly. F
 
 ### next (also nx)
 
-Lists open tasks (status not `Done`, and `wait` absent or not after today), ordered by `meta.urgency` descending
+Lists open tasks (status not `Done`, and `wait` absent or not after today), `InProgress` first, then by `meta.urgency` descending
 (missing or non-numeric last), then priority `High`, `Medium`, `Low`, none, then ID ascending. Filter words narrow the
 list: `@project` (project or dotted subproject; any of several), `+tag` (all must match), `key:value` (scalar equality
 or list membership in `meta`; any per key), and plain words (case-insensitive substring in description; all must match).
