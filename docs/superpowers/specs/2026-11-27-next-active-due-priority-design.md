@@ -62,9 +62,10 @@ rule `@project` already uses. Matching is case-sensitive: `+today` stays an ordi
 seven-day window as the `DUE` column's weekday lane, not a calendar week. Completion (`complete_next_word`) offers the
 four names.
 
-**Priority marker** (_call_). Replace the discs with a full-size bold letter `H`/`M`/`L` in the existing 1-cell `P`
-column, coloured by level so the three can be told apart at a glance: `H` `#ff9e64`, `M` `#e0af68`, `L` `#a9b1d6`;
-blank when absent. Plain letters render at full cell height in any font, with no Nerd Font dependency.
+**Priority marker** (operator picked, from mockups). Replace the discs with a full-size bold letter `H`/`M`/`L` in
+the existing 1-cell `P` column, coloured by level in one warm family: `H` `#ff9e64`, `M` `#e0af68`, `L` `#cec0ac`;
+blank when absent. Plain letters render at full cell height in any font, with no Nerd Font dependency. A filled cell
+(letter on a coloured background) was shown and rejected: it competes with the green in-progress chip.
 
 ```text
 ID     P  DUE     PROJECT         DESCRIPTION
