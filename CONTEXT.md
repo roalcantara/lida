@@ -4,8 +4,8 @@ Canonical terms used across code, tests, config, and docs.
 
 - **task**: One unit of work: ID, description, status, and optional priority, tags, due date, position, meta, and
   comment IDs.
-- **ID**: Four random base62 characters (`0-9a-zA-Z`, e.g. `GWY9`), unique within the document; shown as `#GWY9`.
-  Random rather than sequential so tasks added on different branches rarely collide.
+- **ID**: Four random base62 characters (`0-9a-zA-Z`, e.g. `GWY9`), unique within the document; shown as `#GWY9` (`next`
+  shows it without `#`). Random rather than sequential so tasks added on different branches rarely collide.
 - **status**: `todo`, `in-progress`, `done`, or `blocked`. Accepted aliases: `inprogress`, `progress`, `en-cours`,
   `encours` (in-progress); `completed` (done); `bloqued` (blocked).
 - **blocked reason**: Free text set by `status --set blocked --reason`; another status clears it only when `--reason`

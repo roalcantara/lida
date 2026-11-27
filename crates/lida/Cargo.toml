@@ -7,9 +7,13 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+jiff.workspace = true
 lida-core.workspace = true
 owo-colors.workspace = true
 serde_json.workspace = true
+terminal_size.workspace = true
+unicode-segmentation.workspace = true
+unicode-width.workspace = true
 usage-rs = { workspace = true, features = ["completions"] }
 
 [dev-dependencies]

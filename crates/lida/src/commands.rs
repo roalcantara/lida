@@ -7,6 +7,7 @@ mod generate;
 mod init;
 mod list;
 mod meta;
+mod next;
 mod show;
 mod status;
 mod tags;
@@ -88,6 +89,25 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
             list::Style::from_flags(args.tasks, args.json),
             out,
         ),
+        Subcommand::Next(args) => {
+            let today = env::var("LIDA_TODAY")
+                .ok()
+                .and_then(|s| lida_core::date::parse_day(&s))
+                .unwrap_or_else(|| jiff::Zoned::now().date());
+            let no_color = env::var("NO_COLOR").is_ok_and(|v| !v.is_empty());
+            let force_colour = env::var("CLICOLOR_FORCE").is_ok_and(|v| !v.is_empty() && v != "0");
+            let columns = env::var("COLUMNS").ok().and_then(|s| s.parse::<usize>().ok());
+            let mode = next::mode::mode(
+                args.json,
+                args.raw,
+                crate::output::stdout_is_terminal(),
+                no_color,
+                force_colour,
+                columns,
+                crate::output::terminal_width(),
+            );
+            next::run(&cwd, &args.words, args.long, mode, today, out)
+        }
         Subcommand::Done(args) => status::done(&cwd, &args.id, out),
         Subcommand::Start(args) => status::start(&cwd, &args.id, out),
         Subcommand::Status(args) => status::set(&cwd, &args.id, &args.set, args.reason, out),

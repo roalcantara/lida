@@ -410,6 +410,29 @@ fn completion_offers_values() {
     let mut items: Vec<&str> = run.stdout.lines().collect();
     items.sort_unstable();
     assert_eq!(items, ["blocked", "done", "in-progress", "todo"]);
+
+    // nx @ and + offer project prefixes and tags from TODO.yaml
+    let next_dir = empty_dir();
+    let next_fixture = include_str!("../../lida-core/tests/fixtures/next.yaml");
+    fs::write(next_dir.path().join("TODO.yaml"), next_fixture).expect("write next fixture");
+
+    let run = lida(
+        next_dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida nx @"],
+    );
+    assert_eq!(run.code, 0);
+    let items: Vec<&str> = run.stdout.lines().collect();
+    for expected in ["@jobx", "@jobx.hunt", "@dots", "@dots.blog", "@dots.agentic"] {
+        assert!(items.contains(&expected), "missing {expected} in {items:?}");
+    }
+
+    let run = lida(
+        next_dir.path(),
+        &["__complete_word__", "--shell", "bash", "--line", "lida nx +"],
+    );
+    assert_eq!(run.code, 0);
+    let items: Vec<&str> = run.stdout.lines().collect();
+    assert!(items.contains(&"+series"), "missing +series in {items:?}");
 }
 
 #[test]

@@ -64,6 +64,29 @@ fn complete_cwi_format<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate
     ["yaml", "md", "both"].into_iter().map(Candidate::new).collect()
 }
 
+fn complete_next_word<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate<'static>> {
+    let Some(store) = load_current_store() else {
+        return Vec::new();
+    };
+    let mut words = std::collections::BTreeSet::new();
+    for task in &store.doc().tasks {
+        if let Some(project) = lida_core::query::task_project(task) {
+            let mut prefix = String::new();
+            for segment in project.split('.') {
+                if !prefix.is_empty() {
+                    prefix.push('.');
+                }
+                prefix.push_str(segment);
+                words.insert(format!("@{prefix}"));
+            }
+        }
+        for tag in &task.tags {
+            words.insert(format!("+{tag}"));
+        }
+    }
+    words.into_iter().map(Candidate::new).collect()
+}
+
 #[derive(Args, Debug)]
 #[expect(
     clippy::struct_excessive_bools,
@@ -180,6 +203,25 @@ pub struct ListArgs {
 }
 
 #[derive(Args, Debug)]
+pub struct NextArgs {
+    /// Show URG, TAGS and WHY columns
+    #[usage(short = 'l', long)]
+    pub long: bool,
+
+    /// Print plain tab-separated text with every field
+    #[usage(long)]
+    pub raw: bool,
+
+    /// Output as structured JSON array
+    #[usage(long)]
+    pub json: bool,
+
+    /// Filter words: @project, +tag, key:value, or search text
+    #[usage(complete = complete_next_word)]
+    pub words: Vec<String>,
+}
+
+#[derive(Args, Debug)]
 pub struct DoneArgs {
     /// 4-character task ID
     #[usage(complete = complete_task_id)]
@@ -262,6 +304,10 @@ pub enum Subcommand {
 
     /// List tasks
     List(ListArgs),
+
+    /// List open tasks by urgency
+    #[usage(alias = "nx")]
+    Next(NextArgs),
 
     /// Mark a task as done
     Done(DoneArgs),

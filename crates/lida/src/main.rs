@@ -5,6 +5,7 @@
 mod cli;
 mod commands;
 mod output;
+mod text;
 
 use cli::LidaCli;
 use output::{Output, OwoColorize, colour_enabled};

@@ -1,0 +1,6 @@
+---
+source: crates/lida/tests/next_test.rs
+expression: table.stdout
+---
+[1;38;2;115;122;162;48;2;22;27;34m ID     P  DUE     PROJECT         DESCRIPTION                                                                          [0m
+[1;38;2;122;162;247m ffff [0m     [38;2;115;122;162m-     [0m  [1;38;2;75;233;252m@toma[0m           [38;2;192;202;245mPrepare the international portfolio [0m[4;38;2;192;202;245mrésumé[0m[38;2;192;202;245m 🚀 for 日本語[0m[38;2;192;202;245m…[0m  [1;38;2;3;255;210m+alpha +beta +gamma +delta[0m

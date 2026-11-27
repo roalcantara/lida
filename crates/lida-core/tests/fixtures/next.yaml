@@ -1,0 +1,130 @@
+project: next-fixture
+tasks:
+  - id: aaaa
+    status: Todo
+    priority: High
+    due: "2026-11-27"
+    project: jobx.hunt
+    description: Log outcomes for the 18 applied opportunities
+    meta:
+      urgency: 23
+
+  - id: bbbb
+    status: InProgress
+    priority: Low
+    project: dots.blog
+    tags:
+      - series
+    description: "Series: account-wide numbers"
+    meta:
+      urgency: 5.8
+      purposes:
+        - branding
+      lead: branding
+
+  - id: cccc
+    status: Todo
+    priority: High
+    due: "2026-12-02"
+    project: jobx.hunt
+    depends:
+      - aaaa
+    description: Brainstorm strategy rev 5
+    meta:
+      urgency: 18
+
+  - id: dddd
+    status: Todo
+    priority: Medium
+    due: "2026-12-09"
+    project: jobx.hunt
+    description: Follow up on active interviews
+    meta:
+      urgency: 11.9
+
+  - id: eeee
+    status: Todo
+    priority: Low
+    project: summon
+    description: Store listing experiments on Play
+    meta:
+      urgency: -3.2
+      purposes:
+        - showcase
+        - income
+      lead: showcase
+
+  - id: ffff
+    status: Todo
+    project: toma
+    tags:
+      - alpha
+      - beta
+      - gamma
+      - delta
+    description: "Prepare the international portfolio résumé 🚀 for 日本語 readers with detailed engineering notes, benchmarks, architecture diagrams, case studies, deployment checklists, and verification steps across every region and cloud"
+
+  - id: gggg
+    status: Done
+    priority: High
+    project: jobx
+    description: Completed task
+    meta:
+      urgency: 30
+
+  - id: hhhh
+    status: Todo
+    priority: High
+    project: jobx
+    wait: "2027-02-20"
+    description: Deferred task waiting until next year
+    meta:
+      urgency: 25
+
+  - id: iiii
+    status: Blocked
+    priority: Medium
+    due: "2027-01-08"
+    project: lida
+    description: Blocked on upstream release
+    meta:
+      urgency: 12
+
+  - id: jjjj
+    status: Todo
+    priority: Low
+    due: "2026-12-03 09:00"
+    project: dots.agentic
+    description: Review agentic workflow notes
+    meta:
+      urgency: 2.8
+
+  - id: kkkk
+    status: Todo
+    priority: Low
+    due: "2028-01-15"
+    project: a-very-long-project.subproject
+    description: Long project name check
+    meta:
+      urgency: 1.8
+
+  - id: llll
+    status: Todo
+    priority: Low
+    due: tomorrow
+    project: lion
+    wait: soon
+    depends: zzzz
+    description: "Line one\nline two \u001b[31mred"
+    meta:
+      urgency: high
+
+  - id: mmmm
+    status: Todo
+    priority: Low
+    project: dots.blog
+    depends:
+      - hhhh
+    description: Wait on deferred task
+    meta:
+      urgency: 1.8

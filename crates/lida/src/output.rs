@@ -28,6 +28,16 @@ pub fn colour_enabled(is_terminal: bool, no_color: Option<&str>, clicolor_force:
     is_terminal
 }
 
+/// Whether stdout is a terminal.
+pub fn stdout_is_terminal() -> bool {
+    std::io::IsTerminal::is_terminal(&std::io::stdout())
+}
+
+/// The terminal's width in cells, when stdout is a terminal.
+pub fn terminal_width() -> Option<usize> {
+    terminal_size::terminal_size().map(|(w, _)| usize::from(w.0))
+}
+
 /// Colorization trait that respects `owo_colors::set_override`.
 pub trait OwoColorize: std::fmt::Display + Sized {
     fn bold(&self) -> impl std::fmt::Display + '_ {

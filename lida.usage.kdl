@@ -84,6 +84,15 @@ cmd list help="List tasks" {
     complete status run="lida __complete_word__ --candidates status --line={{ words | shell_join | shell_quote }}"
     complete tag run="lida __complete_word__ --candidates tag --line={{ words | shell_join | shell_quote }}"
 }
+cmd next help="List open tasks by urgency" {
+    alias nx
+    flag "-l --long" help="Show URG, TAGS and WHY columns"
+    flag --raw help="Print plain tab-separated text with every field"
+    flag --json help="Output as structured JSON array"
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg "[WORDS]..." help="Filter words: @project, +tag, key:value, or search text"
+    complete words run="lida __complete_word__ --candidates words --line={{ words | shell_join | shell_quote }}"
+}
 cmd done help="Mark a task as done" {
     flag "-h --help" help="Print help" action=help builtin=#true
     arg <ID> help="4-character task ID"
