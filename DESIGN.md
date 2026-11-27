@@ -103,13 +103,14 @@ Status and priority columns are padded before colouring so they align cleanly. F
 
 ### next (also nx)
 
-Lists open tasks (status not `Done`, and `wait` absent or not after today), `InProgress` first, then by `meta.urgency` descending
-(missing or non-numeric last), then priority `High`, `Medium`, `Low`, none, then ID ascending. Filter words narrow the
-list: `@project` (project or dotted subproject; any of several), `+tag` (all must match), `+OVERDUE`, `+TODAY`,
-`+TOMORROW`, `+WEEK` (due before today, today, tomorrow, or today through today + 6; uppercase only; any of several,
-and only tasks with a parseable `due`), `key:value` (scalar equality
-or list membership in `meta`; any per key), and plain words (case-insensitive substring in description; all must match).
-Empty result prints `No tasks found.` (or `[]` with `--json`) and exits `0`. `next` is read-only.
+Lists open tasks (status not `Done`, and `wait` absent or not after today), `InProgress` first, then by
+`meta.urgency` descending (missing or non-numeric last), then priority `High`, `Medium`, `Low`, none, then ID
+ascending. Filter words narrow the list: `@project` (project or dotted subproject; any of several), `+tag` (all must
+match), `+OVERDUE`, `+TODAY`, `+TOMORROW`, `+WEEK` (due before today, today, tomorrow, or today through today + 6;
+uppercase only, so they shadow a literal tag of the same name; any of several, and only tasks with a parseable
+`due`), `key:value` (scalar equality or list membership in `meta`; any per key), and plain words (case-insensitive
+substring in description; all must match). Empty result prints `No tasks found.` (or `[]` with `--json`) and exits
+`0`. `next` is read-only.
 
 For `next` only, the 24-bit true-colour table overrides the shared colour table above:
 
