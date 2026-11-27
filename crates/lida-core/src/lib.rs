@@ -2,6 +2,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod date;
 pub mod format;
 pub mod id;
 pub mod model;
