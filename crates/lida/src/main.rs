@@ -5,7 +5,6 @@
 mod cli;
 mod commands;
 mod output;
-#[cfg_attr(not(test), expect(dead_code, reason = "consumed by Task 6 (commands/next)"))]
 mod text;
 
 use cli::LidaCli;

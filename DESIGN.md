@@ -101,6 +101,47 @@ Status and priority columns are padded before colouring so they align cleanly. F
 
 `--json` prints a JSON array of task objects (shape under `show`).
 
+### next (also nx)
+
+Lists open tasks (status not `Done`, and `wait` absent or not after today), ordered by `meta.urgency` descending
+(missing or non-numeric last), then priority `High`, `Medium`, `Low`, none, then ID ascending. Filter words narrow the
+list: `@project` (project or dotted subproject; any of several), `+tag` (all must match), `key:value` (scalar equality
+or list membership in `meta`; any per key), and plain words (case-insensitive substring in description; all must match).
+Empty result prints `No tasks found.` (or `[]` with `--json`) and exits `0`. `next` is read-only.
+
+For `next` only, the 24-bit true-colour table overrides the shared colour table above:
+
+```text
+ID     P  DUE    PROJECT         DESCRIPTION
+gLIS   H  6d     @jobx.hunt      Log outcomes for the 18 applied opportunities
+nYv5   L  -      @dots.blog      Series: account-wide numbers and decisions  +series
+```
+
+With `-l`/`--long`, `URG`, `TAGS`, and `WHY` columns are added; narrow windows drop `WHY`, then `TAGS` (falling back
+to inline tags after the description), then `URG` until `DESCRIPTION` has at least 30 cells. When no shown task has a
+`project`, the `PROJECT` column is omitted.
+
+| Element                   | Style                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------- |
+| header band               | background `#161b22`, muted `#737aa2` bold labels                                                 |
+| ID                        | `#7aa2f7` bold, without `#`, inside a 6-cell lane                                                 |
+| task in progress          | green `#9ece6a` chip with `#1d202f` bold ID, framed by `▕` (U+2595) and `▏` (U+258F) in `#9ece6a` |
+| priority                  | Nerd Font letter disc (`\u{F0C01}`/`\u{F0C10}`/`\u{F0C0D}`) in `#e0af68`; blank when absent       |
+| DUE overdue               | `{n}d` in `#f7768e` bold                                                                          |
+| DUE today / within a week | `today` or weekday (`Mon`–`Sun`) in `#c0caf5` bold                                                |
+| DUE later / far / none    | `{n}d` (7–59d) or date (`Feb 20` / `Feb 20 2028`) in `#a9b1d6`; `-` in `#737aa2` when absent      |
+| project                   | `@top` bold in a stable 8-colour hash, `.sub` at 70% mixed over `#1d212f`                         |
+| tags                      | `#03ffd2` (bold when following the description after two spaces)                                  |
+| URG (`-l`)                | right-aligned one decimal in `#c0caf5` (`#737aa2` when negative or `-`)                           |
+| WHY (`-l`)                | lead purpose bold `#c0caf5`, remaining purposes `#737aa2`                                         |
+| description               | `#c0caf5`, muted `#737aa2` when waiting (`Blocked` or open `depends`); search matches underlined  |
+
+`--raw` (and any non-terminal stdout, or `NO_COLOR` on a terminal) prints uncut, tab-separated plain text without
+headers, colours, or Nerd Font glyphs: `id`, priority letter (`H`/`M`/`L`/empty), exact stored `due`, `@project`, and
+description prefixed with `(doing) `, `(blocked) `, or `(waiting) ` plus trailing `+tags`. `-l --raw` adds urgency,
+`+tags`, and space-separated purposes (lead first) as separate columns and does not repeat tags after the description.
+`CLICOLOR_FORCE` on a pipe renders the coloured table at `COLUMNS` wide (default 80).
+
 ### `done`, `start`, `status`
 
 ```text

@@ -73,6 +73,7 @@ pub fn ansi(line: &[Span]) -> String {
 }
 
 /// Concatenates the plain text of all spans without styling.
+#[cfg_attr(not(test), expect(dead_code, reason = "helper for span unit tests"))]
 #[must_use]
 pub fn plain(line: &[Span]) -> String {
     let mut out = String::new();

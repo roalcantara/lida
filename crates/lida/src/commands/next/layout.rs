@@ -10,8 +10,24 @@ pub enum Col {
     Project,
     Tags,
     Why,
-    #[cfg_attr(test, expect(dead_code, reason = "consumed by Task 6 (header and row rendering)"))]
     Desc,
+}
+
+impl Col {
+    /// Column header label.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Id => "ID",
+            Self::Urg => "URG",
+            Self::Prio => "P",
+            Self::Due => "DUE",
+            Self::Project => "PROJECT",
+            Self::Tags => "TAGS",
+            Self::Why => "WHY",
+            Self::Desc => "DESCRIPTION",
+        }
+    }
 }
 
 const ALLEY: usize = 2;

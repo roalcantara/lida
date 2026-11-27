@@ -7,7 +7,6 @@ mod generate;
 mod init;
 mod list;
 mod meta;
-#[cfg_attr(not(test), expect(dead_code, reason = "consumed by Task 6 (commands/next)"))]
 mod next;
 mod show;
 mod status;
@@ -29,7 +28,7 @@ use crate::output::Output;
 use lida_core::model::{Priority, Status};
 use lida_core::store::StorageFormat;
 use std::env;
-use std::io::Write;
+use std::io::{self, IsTerminal, Write};
 
 /// What every command returns; the error is printed once, by `main`.
 pub type CmdResult = Result<(), Box<dyn std::error::Error>>;
@@ -90,6 +89,26 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
             list::Style::from_flags(args.tasks, args.json),
             out,
         ),
+        Subcommand::Next(args) => {
+            let today = env::var("LIDA_TODAY")
+                .ok()
+                .and_then(|s| lida_core::date::parse_day(&s))
+                .unwrap_or_else(|| jiff::Zoned::now().date());
+            let no_color = env::var("NO_COLOR").is_ok_and(|v| !v.is_empty());
+            let force_colour = env::var("CLICOLOR_FORCE").is_ok_and(|v| !v.is_empty() && v != "0");
+            let columns = env::var("COLUMNS").ok().and_then(|s| s.parse::<usize>().ok());
+            let terminal_width = terminal_size::terminal_size().map(|(w, _)| usize::from(w.0));
+            let mode = next::mode::mode(
+                args.json,
+                args.raw,
+                io::stdout().is_terminal(),
+                no_color,
+                force_colour,
+                columns,
+                terminal_width,
+            );
+            next::run(&cwd, &args.words, args.long, mode, today, out)
+        }
         Subcommand::Done(args) => status::done(&cwd, &args.id, out),
         Subcommand::Start(args) => status::start(&cwd, &args.id, out),
         Subcommand::Status(args) => status::set(&cwd, &args.id, &args.set, args.reason, out),

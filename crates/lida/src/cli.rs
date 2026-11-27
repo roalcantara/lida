@@ -180,6 +180,24 @@ pub struct ListArgs {
 }
 
 #[derive(Args, Debug)]
+pub struct NextArgs {
+    /// Show URG, TAGS and WHY columns
+    #[usage(short = 'l', long)]
+    pub long: bool,
+
+    /// Print plain tab-separated text with every field
+    #[usage(long)]
+    pub raw: bool,
+
+    /// Output as structured JSON array
+    #[usage(long)]
+    pub json: bool,
+
+    /// Filter words: @project, +tag, key:value, or search text
+    pub words: Vec<String>,
+}
+
+#[derive(Args, Debug)]
 pub struct DoneArgs {
     /// 4-character task ID
     #[usage(complete = complete_task_id)]
@@ -262,6 +280,10 @@ pub enum Subcommand {
 
     /// List tasks
     List(ListArgs),
+
+    /// List open tasks by urgency
+    #[usage(alias = "nx")]
+    Next(NextArgs),
 
     /// Mark a task as done
     Done(DoneArgs),
