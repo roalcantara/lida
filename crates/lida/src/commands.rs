@@ -28,7 +28,7 @@ use crate::output::Output;
 use lida_core::model::{Priority, Status};
 use lida_core::store::StorageFormat;
 use std::env;
-use std::io::{self, IsTerminal, Write};
+use std::io::Write;
 
 /// What every command returns; the error is printed once, by `main`.
 pub type CmdResult = Result<(), Box<dyn std::error::Error>>;
@@ -97,15 +97,14 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
             let no_color = env::var("NO_COLOR").is_ok_and(|v| !v.is_empty());
             let force_colour = env::var("CLICOLOR_FORCE").is_ok_and(|v| !v.is_empty() && v != "0");
             let columns = env::var("COLUMNS").ok().and_then(|s| s.parse::<usize>().ok());
-            let terminal_width = terminal_size::terminal_size().map(|(w, _)| usize::from(w.0));
             let mode = next::mode::mode(
                 args.json,
                 args.raw,
-                io::stdout().is_terminal(),
+                crate::output::stdout_is_terminal(),
                 no_color,
                 force_colour,
                 columns,
-                terminal_width,
+                crate::output::terminal_width(),
             );
             next::run(&cwd, &args.words, args.long, mode, today, out)
         }
