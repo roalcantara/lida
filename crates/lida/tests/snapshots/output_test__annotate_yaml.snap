@@ -1,0 +1,27 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript_with_env(y.path(),\n&[&[\"start\", \"aaaa\", \"-a\", \"picked up\"], &[\"stop\", \"aaaa\", \"-a\", \"paused\"],\n&[\"done\", \"aaaa\", \"-a\", \"shipped\"], &[\"done\", \"aaaa\"],],\n&[(\"LIDA_TODAY\", \"2026-11-28\")])"
+---
+$ lida start aaaa -a picked up
+code: 0
+--- stdout
+✓ Task #aaaa marked as in-progress, with annotation
+--- stderr
+
+$ lida stop aaaa -a paused
+code: 0
+--- stdout
+✓ Task #aaaa marked as todo, with annotation
+--- stderr
+
+$ lida done aaaa -a shipped
+code: 0
+--- stdout
+✓ Task #aaaa marked as done, with annotation
+--- stderr
+
+$ lida done aaaa
+code: 0
+--- stdout
+✓ Task #aaaa marked as done
+--- stderr

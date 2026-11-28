@@ -1,0 +1,33 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(d.path(),\n&[&[\"-f\", \"other/TODO.md\", \"list\"], &[\"list\", \"-f\", \"other\"],\n&[\"--file\", \"other/TODO.md\", \"done\", \"aaaa\"], &[\"-f\", \"nope\", \"list\"],])"
+---
+$ lida -f other/TODO.md list
+code: 0
+--- stdout
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  Todo         Medium     Other task                     setup
+#bbbb  Todo         High       Second task                    setup, docs
+--- stderr
+
+$ lida list -f other
+code: 0
+--- stdout
+ID     STATUS       PRIORITY   TITLE                          TAGS
+──────────────────────────────────────────────────────────────────────
+#aaaa  Todo         Medium     Other task                     setup
+#bbbb  Todo         High       Second task                    setup, docs
+--- stderr
+
+$ lida --file other/TODO.md done aaaa
+code: 0
+--- stdout
+✓ Task #aaaa marked as done
+--- stderr
+
+$ lida -f nope list
+code: 1
+--- stdout
+--- stderr
+error: no such directory: [DIR]/nope

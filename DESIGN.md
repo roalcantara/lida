@@ -39,6 +39,14 @@ variables: `false` when `NO_COLOR` is set and non-empty; else `true` when `CLICO
 
 IDs in `add` messages, errors and `show`'s metadata lines are not bold.
 
+## Global options
+
+`-f, --file <path>`, or `LIDA_FILE` when the flag is absent, selects the TODO file every command works on. The flag
+wins over the variable. The target is a **directory**: lida behaves exactly as if run there, reading its
+`.lida/config` and honouring dual-write. A path to `TODO.yaml` or `TODO.md` resolves to its parent directory, whether
+or not the file exists; any other file name is an error. A relative path is resolved against the current directory,
+and `~` is left to the shell.
+
 ## Commands
 
 Examples run against two tasks, `aaaa` (medium, `setup`) and `bbbb` (high, `setup, docs`). Colour codes are left out.
@@ -50,14 +58,16 @@ $ lida init --md --project demo
 ✓ Initialized project tasks in /path/to/repo
 ```
 
-`--md` writes `TODO.md`, `--yaml` (the default) writes `TODO.yaml`, `--both` writes both. If either file exists:
-`error: TODO file already exists. Use --force to overwrite.` (exit 1). With `--force`, the file of the format no longer written is deleted. Passing more than one format flag errors: `error: choose one of --yaml, --md or --both`. Project names cannot contain `-->` (`error: project name cannot contain '-->'`).
+`--md` writes `TODO.md`, `--yaml` (the default) writes `TODO.yaml`, `--both` writes both. `init` writes into the `-f` target when given. If either file exists:
+`error: TODO file already exists. Use --force to overwrite.` (exit 1). `--force` has no short form; `-f` selects the target. With `--force`, the file of the format no longer written is deleted. Passing more than one format flag errors: `error: choose one of --yaml, --md or --both`. Project names cannot contain `-->` (`error: project name cannot contain '-->'`).
 
 ### `add`
 
 ```text
 $ lida add "Third task" -p low -t a,b
 ✓ Added task #Xy7Q "Third task"
+$ lida add "Third task" -a "from review"
+✓ Added task #Xy7Q "Third task", with annotation
 $ lida add --task-id aaaa -c "A note"
 ✓ Added comment to task #aaaa
 ```
@@ -146,21 +156,37 @@ description prefixed with `(doing) `, `(blocked) `, or `(waiting) ` plus trailin
 `+tags`, and space-separated purposes (lead first) as separate columns and does not repeat tags after the description.
 `CLICOLOR_FORCE` on a pipe renders the coloured table at `COLUMNS` wide (default 80).
 
-### `done`, `start`, `status`
+### `done`, `start`, `stop`, `status`
 
 ```text
 $ lida done aaaa
 ✓ Task #aaaa marked as done
+$ lida done aaaa -a shipped
+✓ Task #aaaa marked as done, with annotation
 $ lida start aaaa
 ✓ Task #aaaa marked as in-progress
+$ lida stop aaaa
+✓ Task #aaaa marked as todo
 $ lida status aaaa --set blocked --reason Waiting
 ✓ Task #aaaa status set to Blocked
 ```
 
 Status values and aliases: `todo`; `in-progress`, `inprogress`, `progress`, `en-cours`, `encours` (and `_` forms such as `in_progress`); `done`, `completed`;
 `blocked`, `bloqued`. `--set blocked` stores `--reason` (or clears it when absent). Another status clears the reason
-only when `--reason` is passed; `done` and `start` never clear it. Error:
+only when `--reason` is passed; `done` and `start` never clear it. `stop` sets `todo` from any status; like `done` and
+`start`, it never clears the reason. Error:
 `invalid status 'nope'. Valid values: todo, in-progress, done, blocked`.
+
+### `-a`, `--annotate`
+
+`-a`, `--annotate "<text>"` on `add`, `done`, `start` and `stop` appends `{entry: <date>, description: <text>}` to the
+task's `annotations` list and writes it in the same save as the status change or the new task. `entry` is today's local
+date (`YYYY-MM-DD`, overridable with `LIDA_TODAY`); existing entries, their order and their unknown keys are left
+untouched, and the new one goes last. Markdown-only mode refuses `-a` before any write
+(`error: TODO.md cannot hold annotations (task #<id>): stay on yaml or both`); dual-write keeps the annotation in
+`TODO.yaml` and regenerates `TODO.md` without it. The success line gains `, with annotation`. Errors are checked in this
+order, and a refusal leaves every file byte-identical: `annotation must be a single line`, `--task-id` together with
+`-a` (`add` only), unknown task, Markdown-only, `annotations` present but not a list.
 
 ### `show`
 
@@ -253,11 +279,16 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching 
 ## Errors shared by all commands
 
 - `no TODO file found in directory` when neither `TODO.md` nor `TODO.yaml` exists.
+- `no such directory: <path>` when the `-f`/`LIDA_FILE` target does not exist.
+- `--file must be a directory, TODO.yaml or TODO.md: <path>` when the target exists but is another file name.
 - `duplicate task ID #<id> in <file>` when a file contains repeated task IDs.
 - `TODO.md line <line> is not something lida writes: <text>` when `TODO.md` contains unrecognised content.
 - `TODO.md cannot hold <what> (<target>): stay on yaml or both` when format conversion would lose fields.
 - `task #<id> not found` for an unknown ID.
 - `<field> must be a single line` when multi-line text is passed for a single-line field.
+- `--annotate cannot be used with --task-id` when `add` gets both.
+- `TODO.md cannot hold annotations (task #<id>): stay on yaml or both` when `-a` is used in Markdown-only mode.
+- `annotations of task #<id> is not a list` when a task's `annotations` is not a YAML sequence.
 
 ## Files
 

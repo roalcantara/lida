@@ -1,0 +1,25 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida status aaaa --set blocked --reason Waiting
+code: 0
+--- stdout
+✓ Task #aaaa status set to Blocked
+--- stderr
+
+$ lida stop aaaa
+code: 0
+--- stdout
+✓ Task #aaaa marked as todo
+--- stderr
+
+$ lida show aaaa
+code: 0
+--- stdout
+Task #aaaa: First task
+  Status: Todo
+  Priority: Medium
+  Tags: setup
+  Blocked reason: Waiting
+--- stderr

@@ -40,7 +40,9 @@ fn lida_with_env(dir: &Path, args: &[&str], envs: &[(&str, &str)]) -> Run {
     cmd.args(args)
         .current_dir(dir)
         .env_remove("NO_COLOR")
-        .env_remove("CLICOLOR_FORCE");
+        .env_remove("CLICOLOR_FORCE")
+        .env_remove("LIDA_FILE")
+        .env_remove("LIDA_TODAY");
     for (k, v) in envs {
         cmd.env(k, v);
     }
@@ -65,6 +67,18 @@ fn empty_dir() -> TempDir {
 fn fixture_dir() -> TempDir {
     let dir = empty_dir();
     fs::write(dir.path().join("TODO.md"), FIXTURE).expect("write fixture");
+    dir
+}
+
+/// One task in `TODO.yaml`, and nothing else so the store infers YAML-only. `extra` is inserted verbatim as task
+/// fields (indented two spaces), or `""` for none.
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn yaml_dir(extra: &str) -> TempDir {
+    let dir = empty_dir();
+    let content = format!(
+        "tasks:\n- id: aaaa\n  status: Todo\n  description: First task\n{extra}\nactors: []\ncomments: []\nproject: fixture\n"
+    );
+    fs::write(dir.path().join("TODO.yaml"), content).expect("write yaml fixture");
     dir
 }
 
@@ -243,6 +257,165 @@ fn status_changes() {
         "status_alias",
         &[&["status", "aaaa", "--set", "en-cours"], &["show", "aaaa"]],
     );
+    snap_fixture("stop", &[&["start", "aaaa"], &["stop", "aaaa"], &["list"]]);
+    snap_fixture(
+        "stop_keeps_reason",
+        &[
+            &["status", "aaaa", "--set", "blocked", "--reason", "Waiting"],
+            &["stop", "aaaa"],
+            &["show", "aaaa"],
+        ],
+    );
+    snap_fixture("stop_todo_is_noop_success", &[&["stop", "bbbb"]]);
+    snap_fixture("stop_unknown", &[&["stop", "zzzz"]]);
+}
+
+#[test]
+fn annotate() {
+    annotate_writes_and_keeps();
+    annotate_refusals();
+    annotate_dual_write();
+}
+
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn annotate_writes_and_keeps() {
+    let y = yaml_dir("");
+    insta::assert_snapshot!(
+        "annotate_yaml",
+        transcript_with_env(
+            y.path(),
+            &[
+                &["start", "aaaa", "-a", "picked up"],
+                &["stop", "aaaa", "-a", "paused"],
+                &["done", "aaaa", "-a", "shipped"],
+                &["done", "aaaa"],
+            ],
+            &[("LIDA_TODAY", "2026-11-28")]
+        )
+    );
+    let text = fs::read_to_string(y.path().join("TODO.yaml")).expect("read TODO.yaml");
+    let block = "  annotations:\n  - entry: 2026-11-28\n    description: picked up\n  - entry: 2026-11-28\n    description: paused\n  - entry: 2026-11-28\n    description: shipped\n";
+    assert_eq!(
+        text.matches(block).count(),
+        1,
+        "one verbatim annotations block:\n{text}"
+    );
+
+    let kept = yaml_dir("  annotations:\n  - entry: 2026-11-25\n    description: old\n    foo: bar");
+    let run = lida_with_env(
+        kept.path(),
+        &["done", "aaaa", "-a", "new"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 0, "{}", run.stderr);
+    let text = fs::read_to_string(kept.path().join("TODO.yaml")).expect("read TODO.yaml");
+    let expected = "  annotations:\n  - entry: 2026-11-25\n    description: old\n    foo: bar\n  - entry: 2026-11-28\n    description: new\n";
+    assert_eq!(
+        text.matches(expected).count(),
+        1,
+        "old entry kept, new one last:\n{text}"
+    );
+}
+
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn annotate_refusals() {
+    let non_list = yaml_dir("  annotations: nope");
+    let path = non_list.path().join("TODO.yaml");
+    let before = fs::read(&path).expect("read before");
+    let run = lida_with_env(
+        non_list.path(),
+        &["done", "aaaa", "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(run.stderr, "error: annotations of task #aaaa is not a list\n");
+    assert_eq!(
+        fs::read(&path).expect("read after"),
+        before,
+        "a refused run leaves the file byte-identical"
+    );
+
+    let markdown = fixture_dir();
+    let path = markdown.path().join("TODO.md");
+    let before = fs::read(&path).expect("read before");
+    let run = lida_with_env(
+        markdown.path(),
+        &["done", "aaaa", "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(
+        run.stderr,
+        "error: TODO.md cannot hold annotations (task #aaaa): stay on yaml or both\n"
+    );
+    assert_eq!(fs::read(&path).expect("read after"), before);
+    assert_eq!(
+        lida(markdown.path(), &["done", "aaaa"]).code,
+        0,
+        "done without -a still succeeds in Markdown-only mode"
+    );
+
+    let multiline = yaml_dir("");
+    let path = multiline.path().join("TODO.yaml");
+    let before = fs::read(&path).expect("read before");
+    let run = lida_with_env(
+        multiline.path(),
+        &["done", "aaaa", "-a", "a\nb"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(run.stderr, "error: annotation must be a single line\n");
+    assert_eq!(fs::read(&path).expect("read after"), before);
+
+    let unknown = fixture_dir();
+    let run = lida_with_env(
+        unknown.path(),
+        &["done", "zzzz", "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(run.stderr, "error: task #zzzz not found\n");
+
+    let comment = fixture_dir();
+    let path = comment.path().join("TODO.md");
+    let before = fs::read(&path).expect("read before");
+    let run = lida_with_env(
+        comment.path(),
+        &["add", "--task-id", "aaaa", "-c", "hi", "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(run.stderr, "error: --annotate cannot be used with --task-id\n");
+    assert_eq!(fs::read(&path).expect("read after"), before);
+}
+
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn annotate_dual_write() {
+    let b = empty_dir();
+    assert_eq!(lida(b.path(), &["init", "--both"]).code, 0);
+    let added = lida_with_env(
+        b.path(),
+        &["add", "First", "-a", "created"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(added.code, 0, "{}", added.stderr);
+    assert!(
+        added.stdout.starts_with("✓ Added task #") && added.stdout.ends_with("\"First\", with annotation\n"),
+        "{}",
+        added.stdout
+    );
+    let id: String = added.stdout["✓ Added task #".len()..].chars().take(4).collect();
+
+    let done = lida_with_env(
+        b.path(),
+        &["done", id.as_str(), "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(done.code, 0, "{}", done.stderr);
+    let text = fs::read_to_string(b.path().join("TODO.yaml")).expect("read TODO.yaml");
+    assert!(text.contains("description: created"), "{text}");
+    assert!(text.contains("description: x"), "{text}");
+    assert_eq!(lida(b.path(), &["list"]).code, 0);
 }
 
 #[test]
@@ -295,6 +468,59 @@ fn list_filter_in_progress() {
             &["list", "-s", "en-cours"],
         ],
     );
+}
+
+#[test]
+fn file_flag() {
+    let d = fixture_dir();
+    fs::create_dir(d.path().join("other")).expect("create other");
+    fs::write(
+        d.path().join("other/TODO.md"),
+        FIXTURE.replace("First task", "Other task"),
+    )
+    .expect("write other fixture");
+
+    insta::assert_snapshot!(
+        "file_flag",
+        transcript(
+            d.path(),
+            &[
+                &["-f", "other/TODO.md", "list"],
+                &["list", "-f", "other"],
+                &["--file", "other/TODO.md", "done", "aaaa"],
+                &["-f", "nope", "list"],
+            ]
+        )
+    );
+
+    let other = fs::read_to_string(d.path().join("other/TODO.md")).expect("read other");
+    assert!(
+        other.contains("- [x] aaaa"),
+        "-f run must mark other's task done: {other}"
+    );
+    let own = fs::read_to_string(d.path().join("TODO.md")).expect("read own");
+    assert!(
+        own.contains("- [ ] aaaa"),
+        "-f runs must not touch the current directory: {own}"
+    );
+
+    let env_run = lida_with_env(d.path(), &["list"], &[("LIDA_FILE", "other")]);
+    assert_eq!(env_run.code, 0, "{}", env_run.stderr);
+    assert!(env_run.stdout.contains("Other task"), "LIDA_FILE must be honoured");
+
+    let flag_wins = lida_with_env(d.path(), &["-f", ".", "list"], &[("LIDA_FILE", "other")]);
+    assert_eq!(flag_wins.code, 0, "{}", flag_wins.stderr);
+    assert!(flag_wins.stdout.contains("First task"));
+    assert!(!flag_wins.stdout.contains("Other task"), "-f must win over LIDA_FILE");
+
+    let e = empty_dir();
+    fs::create_dir(e.path().join("new")).expect("create new");
+    let init = lida(e.path(), &["-f", "new/TODO.yaml", "init"]);
+    assert_eq!(init.code, 0, "{}", init.stderr);
+    assert!(e.path().join("new/TODO.yaml").exists());
+    assert!(!e.path().join("TODO.yaml").exists());
+
+    assert_ne!(lida(e.path(), &["init", "-f"]).code, 0, "-f now wants a value");
 }
 
 #[test]
@@ -436,6 +662,59 @@ fn completion_offers_values() {
     for expected in ["+OVERDUE", "+TODAY", "+TOMORROW", "+WEEK"] {
         assert!(items.contains(&expected), "missing {expected} in {items:?}");
     }
+
+    completion_follows_the_file_target(dir.path());
+}
+
+/// Completion loads the store from the `-f` target, or from `LIDA_FILE`. Fish renders the description beside each
+/// value, which is what tells the two directories apart.
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn completion_follows_the_file_target(dir: &Path) {
+    fs::create_dir(dir.join("other")).expect("create other");
+    fs::write(dir.join("other/TODO.md"), FIXTURE.replace("First task", "Other task")).expect("write other fixture");
+
+    let run = lida(
+        dir,
+        &["__complete_word__", "--shell", "fish", "--line", "lida -f other done "],
+    );
+    assert_eq!(run.code, 0);
+    assert!(
+        run.stdout.contains("Other task"),
+        "-f target must feed completion: {}",
+        run.stdout
+    );
+
+    let run = lida_with_env(
+        dir,
+        &["__complete_word__", "--shell", "fish", "--line", "lida done "],
+        &[("LIDA_FILE", "other")],
+    );
+    assert_eq!(run.code, 0);
+    assert!(
+        run.stdout.contains("Other task"),
+        "LIDA_FILE must feed completion: {}",
+        run.stdout
+    );
+
+    let run = lida(
+        dir,
+        &["__complete_word__", "--shell", "fish", "--line", "lida -f nope done "],
+    );
+    assert_eq!(run.code, 0);
+    assert!(
+        !run.stdout.contains("aaaa") && !run.stdout.contains("Other task"),
+        "a missing -f target offers no task candidates: {:?}",
+        run.stdout
+    );
+}
+
+#[test]
+fn stale_lida_file_spares_completion_and_usage() {
+    let dir = empty_dir();
+    let stale = [("LIDA_FILE", "gone")];
+    assert_eq!(lida_with_env(dir.path(), &["usage"], &stale).code, 0);
+    assert_eq!(lida_with_env(dir.path(), &["completion", "zsh"], &stale).code, 0);
+    assert_eq!(lida_with_env(dir.path(), &["list"], &stale).code, 1);
 }
 
 #[test]

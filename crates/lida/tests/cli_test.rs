@@ -8,6 +8,8 @@ fn run_ok(dir: &Path, args: &[&str]) -> String {
     let output = Command::new(env!("CARGO_BIN_EXE_lida"))
         .args(args)
         .current_dir(dir)
+        .env_remove("LIDA_FILE")
+        .env_remove("LIDA_TODAY")
         .output()
         .expect("lida binary runs");
     assert!(

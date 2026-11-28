@@ -1,6 +1,7 @@
 //! One module per subcommand; this file dispatches to them and holds the parsing they share.
 
 mod add;
+mod annotation;
 mod cwi;
 mod delete;
 mod generate;
@@ -25,6 +26,7 @@ mod prelude {
 
 use crate::cli::{LidaCli, Subcommand};
 use crate::output::Output;
+use lida_core::date::Date;
 use lida_core::model::{Priority, Status};
 use lida_core::store::StorageFormat;
 use std::env;
@@ -38,7 +40,12 @@ pub type CmdResult = Result<(), Box<dyn std::error::Error>>;
 /// # Errors
 /// Returns the first error a command hits; nothing has been printed for it yet.
 pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult {
-    let cwd = env::current_dir()?;
+    // `completion` and `usage` read no TODO file, so a stale `LIDA_FILE` must not break them.
+    let cwd = if matches!(cli.command, Some(Subcommand::Completion(_) | Subcommand::Usage)) {
+        env::current_dir()?
+    } else {
+        crate::target::resolve(cli.file.as_deref(), &env::current_dir()?)?
+    };
     let out = &mut io.out;
 
     match cli.command.unwrap_or_else(default_command) {
@@ -64,7 +71,9 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
                 due: args.due,
                 position: args.position,
                 comment: args.comment,
+                annotate: args.annotate,
             },
+            today(),
             out,
         ),
         Subcommand::Update(args) => update::run(
@@ -90,10 +99,7 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
             out,
         ),
         Subcommand::Next(args) => {
-            let today = env::var("LIDA_TODAY")
-                .ok()
-                .and_then(|s| lida_core::date::parse_day(&s))
-                .unwrap_or_else(|| jiff::Zoned::now().date());
+            let today = today();
             let no_color = env::var("NO_COLOR").is_ok_and(|v| !v.is_empty());
             let force_colour = env::var("CLICOLOR_FORCE").is_ok_and(|v| !v.is_empty() && v != "0");
             let columns = env::var("COLUMNS").ok().and_then(|s| s.parse::<usize>().ok());
@@ -108,8 +114,9 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
             );
             next::run(&cwd, &args.words, args.long, mode, today, out)
         }
-        Subcommand::Done(args) => status::done(&cwd, &args.id, out),
-        Subcommand::Start(args) => status::start(&cwd, &args.id, out),
+        Subcommand::Done(args) => status::done(&cwd, &args.id, args.annotate.as_deref(), today(), out),
+        Subcommand::Start(args) => status::start(&cwd, &args.id, args.annotate.as_deref(), today(), out),
+        Subcommand::Stop(args) => status::stop(&cwd, &args.id, args.annotate.as_deref(), today(), out),
         Subcommand::Status(args) => status::set(&cwd, &args.id, &args.set, args.reason, out),
         Subcommand::Show(args) => show::run(&cwd, &args.id, args.json, out),
         Subcommand::Meta(args) => meta::run(&cwd, &args.id, &args.action, &args.key, args.value, out),
@@ -119,6 +126,14 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
         Subcommand::Completion(completion) => generate::completion(&completion, out, &mut io.err),
         Subcommand::Usage => generate::usage(out),
     }
+}
+
+/// Today's local date, overridable with `LIDA_TODAY` for tests and fixtures.
+fn today() -> Date {
+    env::var("LIDA_TODAY")
+        .ok()
+        .and_then(|s| lida_core::date::parse_day(&s))
+        .unwrap_or_else(|| jiff::Zoned::now().date())
 }
 
 /// Bare `lida` lists tasks.

@@ -1,9 +1,12 @@
 //! `lida add`: create a task, or attach a comment to one with `--task-id`.
 
+use super::annotation;
 use super::prelude::*;
 use super::{not_found, parse_priority_arg, parse_tags};
+use lida_core::date::Date;
 use lida_core::id::generate_id;
 use lida_core::model::{Comment, Task};
+use lida_core::store::StorageFormat;
 use std::collections::{BTreeMap, HashSet};
 
 /// `add`'s options; `description` is the positional text or, failing that, `--task`.
@@ -16,9 +19,16 @@ pub struct Args {
     pub due: Option<String>,
     pub position: Option<String>,
     pub comment: Option<String>,
+    pub annotate: Option<String>,
 }
 
-pub fn run(cwd: &Path, args: Args, out: &mut impl Write) -> CmdResult {
+pub fn run(cwd: &Path, args: Args, today: Date, out: &mut impl Write) -> CmdResult {
+    if let Some(ref text) = args.annotate {
+        single_line("annotation", text)?;
+    }
+    if args.task_id.is_some() && args.annotate.is_some() {
+        return Err("--annotate cannot be used with --task-id".into());
+    }
     if let Some(target_id) = args.task_id {
         let text = args
             .comment
@@ -42,6 +52,11 @@ pub fn run(cwd: &Path, args: Args, out: &mut impl Write) -> CmdResult {
     let existing_ids: HashSet<String> = store.doc().tasks.iter().map(|t| t.id.clone()).collect();
     let new_id = generate_id(&existing_ids);
 
+    // The refusal names the new ID, so it runs after generation and before any write.
+    if args.annotate.is_some() && store.format() == StorageFormat::MdOnly {
+        return Err(annotation::md_refusal(&new_id).into());
+    }
+
     let mut new_task = Task::new(&new_id, &desc);
     if let Some(p) = args.priority {
         new_task.priority = parse_priority_arg(&p)?;
@@ -54,10 +69,18 @@ pub fn run(cwd: &Path, args: Args, out: &mut impl Write) -> CmdResult {
     if let Some(c) = args.comment {
         new_task.comments.push(attach_comment(&mut store, &new_id, c));
     }
+    if let Some(ref text) = args.annotate {
+        annotation::append(&mut new_task, text, today)?;
+    }
 
     store.add_task(new_task);
     store.save()?;
-    writeln!(out, "{} Added task #{new_id} \"{desc}\"", "✓".bright_green())?;
+    let suffix = if args.annotate.is_some() {
+        ", with annotation"
+    } else {
+        ""
+    };
+    writeln!(out, "{} Added task #{new_id} \"{desc}\"{suffix}", "✓".bright_green())?;
     Ok(())
 }
 
