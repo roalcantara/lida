@@ -489,6 +489,50 @@ fn completion_offers_values() {
     for expected in ["+OVERDUE", "+TODAY", "+TOMORROW", "+WEEK"] {
         assert!(items.contains(&expected), "missing {expected} in {items:?}");
     }
+
+    completion_follows_the_file_target(dir.path());
+}
+
+/// Completion loads the store from the `-f` target, or from `LIDA_FILE`. Fish renders the description beside each
+/// value, which is what tells the two directories apart.
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn completion_follows_the_file_target(dir: &Path) {
+    fs::create_dir(dir.join("other")).expect("create other");
+    fs::write(dir.join("other/TODO.md"), FIXTURE.replace("First task", "Other task")).expect("write other fixture");
+
+    let run = lida(
+        dir,
+        &["__complete_word__", "--shell", "fish", "--line", "lida -f other done "],
+    );
+    assert_eq!(run.code, 0);
+    assert!(
+        run.stdout.contains("Other task"),
+        "-f target must feed completion: {}",
+        run.stdout
+    );
+
+    let run = lida_with_env(
+        dir,
+        &["__complete_word__", "--shell", "fish", "--line", "lida done "],
+        &[("LIDA_FILE", "other")],
+    );
+    assert_eq!(run.code, 0);
+    assert!(
+        run.stdout.contains("Other task"),
+        "LIDA_FILE must feed completion: {}",
+        run.stdout
+    );
+
+    let run = lida(
+        dir,
+        &["__complete_word__", "--shell", "fish", "--line", "lida -f nope done "],
+    );
+    assert_eq!(run.code, 0);
+    assert!(
+        !run.stdout.contains("aaaa") && !run.stdout.contains("Other task"),
+        "a missing -f target offers no task candidates: {:?}",
+        run.stdout
+    );
 }
 
 #[test]

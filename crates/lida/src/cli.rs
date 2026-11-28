@@ -20,13 +20,18 @@ pub struct LidaCli {
     pub command: Option<Subcommand>,
 }
 
-fn load_current_store() -> Option<lida_core::store::Store> {
+/// The store completion reads from: the `-f`/`--file` word, else `LIDA_FILE`, else the current directory.
+fn load_current_store(ctx: &CompleteCtx<'_>) -> Option<lida_core::store::Store> {
     let cwd = std::env::current_dir().ok()?;
-    lida_core::store::Store::load(&cwd).ok()
+    let file = crate::target::file_in_words(ctx.words)
+        .map(str::to_owned)
+        .or_else(|| std::env::var("LIDA_FILE").ok());
+    let dir = crate::target::resolve(file.as_deref(), &cwd).ok()?;
+    lida_core::store::Store::load(&dir).ok()
 }
 
-fn complete_task_id<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate<'static>> {
-    let Some(store) = load_current_store() else {
+fn complete_task_id<P>(_partial: &P, ctx: &CompleteCtx<'_>) -> Vec<Candidate<'static>> {
+    let Some(store) = load_current_store(ctx) else {
         return Vec::new();
     };
     store
@@ -37,8 +42,8 @@ fn complete_task_id<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate<'s
         .collect()
 }
 
-fn complete_tags<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate<'static>> {
-    let Some(store) = load_current_store() else {
+fn complete_tags<P>(_partial: &P, ctx: &CompleteCtx<'_>) -> Vec<Candidate<'static>> {
+    let Some(store) = load_current_store(ctx) else {
         return Vec::new();
     };
     let mut tags = std::collections::BTreeSet::new();
@@ -68,8 +73,8 @@ fn complete_cwi_format<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate
     ["yaml", "md", "both"].into_iter().map(Candidate::new).collect()
 }
 
-fn complete_next_word<P>(_partial: &P, _ctx: &CompleteCtx<'_>) -> Vec<Candidate<'static>> {
-    let Some(store) = load_current_store() else {
+fn complete_next_word<P>(_partial: &P, ctx: &CompleteCtx<'_>) -> Vec<Candidate<'static>> {
+    let Some(store) = load_current_store(ctx) else {
         return Vec::new();
     };
     let mut words = std::collections::BTreeSet::new();

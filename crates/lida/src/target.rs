@@ -46,9 +46,25 @@ pub fn resolve(file: Option<&str>, cwd: &Path) -> Result<PathBuf, String> {
     }
 }
 
+/// The `-f`/`--file` value in a completion line: the word after the last `-f` or `--file`, or after `--file=`.
+///
+/// `None` when the flag is absent, or is the last word (the value is still being typed).
+#[must_use]
+pub fn file_in_words(words: &[String]) -> Option<&str> {
+    let mut found = None;
+    for (index, word) in words.iter().enumerate() {
+        if word == "-f" || word == "--file" {
+            found = words.get(index + 1).map(String::as_str);
+        } else if let Some(value) = word.strip_prefix("--file=") {
+            found = Some(value);
+        }
+    }
+    found
+}
+
 #[cfg(test)]
 mod tests {
-    use super::resolve;
+    use super::{file_in_words, resolve};
     use std::fs;
 
     fn workspace() -> tempfile::TempDir {
@@ -92,6 +108,19 @@ mod tests {
                 d.path().join("notes.txt").display()
             ))
         );
+    }
+
+    #[test]
+    fn file_in_words_finds_the_last_flag() {
+        let words = |raw: &[&str]| raw.iter().map(|s| (*s).to_string()).collect::<Vec<_>>();
+        assert_eq!(file_in_words(&words(&["lida", "-f", "x", "done", ""])), Some("x"));
+        assert_eq!(file_in_words(&words(&["lida", "done", "--file=y", ""])), Some("y"));
+        assert_eq!(
+            file_in_words(&words(&["lida", "-f", "x", "--file", "z", ""])),
+            Some("z")
+        );
+        assert_eq!(file_in_words(&words(&["lida", "done", "-f"])), None);
+        assert_eq!(file_in_words(&words(&["lida", "done"])), None);
     }
 
     #[test]
