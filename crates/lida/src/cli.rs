@@ -248,6 +248,13 @@ pub struct StartArgs {
 }
 
 #[derive(Args, Debug)]
+pub struct StopArgs {
+    /// 4-character task ID
+    #[usage(complete = complete_task_id)]
+    pub id: String,
+}
+
+#[derive(Args, Debug)]
 pub struct StatusArgs {
     /// 4-character task ID
     #[usage(complete = complete_task_id)]
@@ -326,6 +333,9 @@ pub enum Subcommand {
 
     /// Mark a task as in-progress
     Start(StartArgs),
+
+    /// Mark a task as todo
+    Stop(StopArgs),
 
     /// Change a task's status
     Status(StatusArgs),

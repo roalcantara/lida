@@ -106,6 +106,11 @@ cmd start help="Mark a task as in-progress" {
     arg <ID> help="4-character task ID"
     complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
 }
+cmd stop help="Mark a task as todo" {
+    flag "-h --help" help="Print help" action=help builtin=#true
+    arg <ID> help="4-character task ID"
+    complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
+}
 cmd status help="Change a task's status" {
     flag --set help="Status value: todo, in-progress, done, blocked (or en-cours, bloqued)" required=#true {
         arg <SET>

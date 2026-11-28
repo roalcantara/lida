@@ -110,6 +110,7 @@ pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult
         }
         Subcommand::Done(args) => status::done(&cwd, &args.id, out),
         Subcommand::Start(args) => status::start(&cwd, &args.id, out),
+        Subcommand::Stop(args) => status::stop(&cwd, &args.id, out),
         Subcommand::Status(args) => status::set(&cwd, &args.id, &args.set, args.reason, out),
         Subcommand::Show(args) => show::run(&cwd, &args.id, args.json, out),
         Subcommand::Meta(args) => meta::run(&cwd, &args.id, &args.action, &args.key, args.value, out),

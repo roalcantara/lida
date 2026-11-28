@@ -154,20 +154,23 @@ description prefixed with `(doing) `, `(blocked) `, or `(waiting) ` plus trailin
 `+tags`, and space-separated purposes (lead first) as separate columns and does not repeat tags after the description.
 `CLICOLOR_FORCE` on a pipe renders the coloured table at `COLUMNS` wide (default 80).
 
-### `done`, `start`, `status`
+### `done`, `start`, `stop`, `status`
 
 ```text
 $ lida done aaaa
 ✓ Task #aaaa marked as done
 $ lida start aaaa
 ✓ Task #aaaa marked as in-progress
+$ lida stop aaaa
+✓ Task #aaaa marked as todo
 $ lida status aaaa --set blocked --reason Waiting
 ✓ Task #aaaa status set to Blocked
 ```
 
 Status values and aliases: `todo`; `in-progress`, `inprogress`, `progress`, `en-cours`, `encours` (and `_` forms such as `in_progress`); `done`, `completed`;
 `blocked`, `bloqued`. `--set blocked` stores `--reason` (or clears it when absent). Another status clears the reason
-only when `--reason` is passed; `done` and `start` never clear it. Error:
+only when `--reason` is passed; `done` and `start` never clear it. `stop` sets `todo` from any status; like `done` and
+`start`, it never clears the reason. Error:
 `invalid status 'nope'. Valid values: todo, in-progress, done, blocked`.
 
 ### `show`

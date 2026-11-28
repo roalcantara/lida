@@ -1,0 +1,9 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida stop bbbb
+code: 0
+--- stdout
+✓ Task #bbbb marked as todo
+--- stderr

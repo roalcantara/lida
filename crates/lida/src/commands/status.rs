@@ -1,4 +1,4 @@
-//! `lida done`, `lida start` and `lida status`: change a task's status.
+//! `lida done`, `lida start`, `lida stop` and `lida status`: change a task's status.
 
 use super::prelude::*;
 use super::{not_found, parse_status};
@@ -13,6 +13,12 @@ pub fn done(cwd: &Path, id: &str, out: &mut impl Write) -> CmdResult {
 pub fn start(cwd: &Path, id: &str, out: &mut impl Write) -> CmdResult {
     mark(cwd, id, Status::InProgress)?;
     writeln!(out, "{} Task #{} marked as in-progress", "✓".bright_green(), id.bold())?;
+    Ok(())
+}
+
+pub fn stop(cwd: &Path, id: &str, out: &mut impl Write) -> CmdResult {
+    mark(cwd, id, Status::Todo)?;
+    writeln!(out, "{} Task #{} marked as todo", "✓".bright_green(), id.bold())?;
     Ok(())
 }
 

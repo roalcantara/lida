@@ -1,0 +1,9 @@
+---
+source: crates/lida/tests/output_test.rs
+expression: "transcript(dir.path(), commands)"
+---
+$ lida stop zzzz
+code: 1
+--- stdout
+--- stderr
+error: task #zzzz not found

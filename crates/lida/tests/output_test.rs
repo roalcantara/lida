@@ -243,6 +243,17 @@ fn status_changes() {
         "status_alias",
         &[&["status", "aaaa", "--set", "en-cours"], &["show", "aaaa"]],
     );
+    snap_fixture("stop", &[&["start", "aaaa"], &["stop", "aaaa"], &["list"]]);
+    snap_fixture(
+        "stop_keeps_reason",
+        &[
+            &["status", "aaaa", "--set", "blocked", "--reason", "Waiting"],
+            &["stop", "aaaa"],
+            &["show", "aaaa"],
+        ],
+    );
+    snap_fixture("stop_todo_is_noop_success", &[&["stop", "bbbb"]]);
+    snap_fixture("stop_unknown", &[&["stop", "zzzz"]]);
 }
 
 #[test]
