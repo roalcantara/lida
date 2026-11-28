@@ -64,8 +64,8 @@ fn mark(cwd: &Path, id: &str, status: Status, annotate: Option<&str>, today: Dat
         single_line("annotation", text)?;
     }
     let mut store = Store::load(cwd)?;
-    if let Some(text) = annotate {
-        annotation::check(&store, id, text)?;
+    if annotate.is_some() {
+        annotation::check(&store, id)?;
     }
     let task = store.find_task_mut(id).ok_or_else(|| not_found(id))?;
     task.status = status;

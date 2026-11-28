@@ -8,8 +8,8 @@ use serde_yaml_ng::{Mapping, Value};
 
 /// Refuses an annotation the store cannot hold, in the global error order: not found, Markdown-only, not a list.
 ///
-/// `_text` mirrors [`append`]'s signature; only the note's shape is checked by the caller, before the store loads.
-pub(super) fn check(store: &Store, id: &str, _text: &str) -> Result<(), String> {
+/// The note's text is checked by the caller (`single_line`) before the store loads.
+pub(super) fn check(store: &Store, id: &str) -> Result<(), String> {
     let task = store
         .doc()
         .tasks
