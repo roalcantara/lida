@@ -15,6 +15,8 @@ Canonical terms used across code, tests, config, and docs.
 - **position**: Where the work lives in code: a path, `path:line`, or URL.
 - **meta**: Typed key-value pairs on a task (`lida meta`); a value is JSON when it parses, a string otherwise.
 - **comment**: A note with its own ID, attached to one task; deleting the task deletes its comments.
+- **annotation**: A dated note in a task's `annotations` list (`entry`, `description`), TaskWarrior's shape; appended
+  by `-a`/`--annotate`; YAML only.
 - **actor**: A person or agent with an ID and a pseudonym, listed under `# Actors`.
 - **project document**: Everything in one TODO file: project name, tasks, actors, comments.
 - **store**: Loads and saves the project document in the working directory.

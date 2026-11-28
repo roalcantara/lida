@@ -66,6 +66,8 @@ $ lida init --md --project demo
 ```text
 $ lida add "Third task" -p low -t a,b
 ✓ Added task #Xy7Q "Third task"
+$ lida add "Third task" -a "from review"
+✓ Added task #Xy7Q "Third task", with annotation
 $ lida add --task-id aaaa -c "A note"
 ✓ Added comment to task #aaaa
 ```
@@ -159,6 +161,8 @@ description prefixed with `(doing) `, `(blocked) `, or `(waiting) ` plus trailin
 ```text
 $ lida done aaaa
 ✓ Task #aaaa marked as done
+$ lida done aaaa -a shipped
+✓ Task #aaaa marked as done, with annotation
 $ lida start aaaa
 ✓ Task #aaaa marked as in-progress
 $ lida stop aaaa
@@ -172,6 +176,17 @@ Status values and aliases: `todo`; `in-progress`, `inprogress`, `progress`, `en-
 only when `--reason` is passed; `done` and `start` never clear it. `stop` sets `todo` from any status; like `done` and
 `start`, it never clears the reason. Error:
 `invalid status 'nope'. Valid values: todo, in-progress, done, blocked`.
+
+### `-a`, `--annotate`
+
+`-a`, `--annotate "<text>"` on `add`, `done`, `start` and `stop` appends `{entry: <date>, description: <text>}` to the
+task's `annotations` list and writes it in the same save as the status change or the new task. `entry` is today's local
+date (`YYYY-MM-DD`, overridable with `LIDA_TODAY`); existing entries, their order and their unknown keys are left
+untouched, and the new one goes last. Markdown-only mode refuses `-a` before any write
+(`error: TODO.md cannot hold annotations (task #<id>): stay on yaml or both`); dual-write keeps the annotation in
+`TODO.yaml` and regenerates `TODO.md` without it. The success line gains `, with annotation`. Errors are checked in this
+order, and a refusal leaves every file byte-identical: `annotation must be a single line`, `--task-id` together with
+`-a` (`add` only), unknown task, Markdown-only, `annotations` present but not a list.
 
 ### `show`
 
@@ -271,6 +286,9 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching 
 - `TODO.md cannot hold <what> (<target>): stay on yaml or both` when format conversion would lose fields.
 - `task #<id> not found` for an unknown ID.
 - `<field> must be a single line` when multi-line text is passed for a single-line field.
+- `--annotate cannot be used with --task-id` when `add` gets both.
+- `TODO.md cannot hold annotations (task #<id>): stay on yaml or both` when `-a` is used in Markdown-only mode.
+- `annotations of task #<id> is not a list` when a task's `annotations` is not a YAML sequence.
 
 ## Files
 

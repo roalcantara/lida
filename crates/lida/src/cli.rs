@@ -158,6 +158,10 @@ pub struct AddArgs {
     /// Initial comment to attach to the task
     #[usage(short = 'c', long)]
     pub comment: Option<String>,
+
+    /// Annotation to append to the task
+    #[usage(short = 'a', long)]
+    pub annotate: Option<String>,
 }
 
 #[derive(Args, Debug)]
@@ -238,6 +242,10 @@ pub struct DoneArgs {
     /// 4-character task ID
     #[usage(complete = complete_task_id)]
     pub id: String,
+
+    /// Annotation to append to the task
+    #[usage(short = 'a', long)]
+    pub annotate: Option<String>,
 }
 
 #[derive(Args, Debug)]
@@ -245,6 +253,10 @@ pub struct StartArgs {
     /// 4-character task ID
     #[usage(complete = complete_task_id)]
     pub id: String,
+
+    /// Annotation to append to the task
+    #[usage(short = 'a', long)]
+    pub annotate: Option<String>,
 }
 
 #[derive(Args, Debug)]
@@ -252,6 +264,10 @@ pub struct StopArgs {
     /// 4-character task ID
     #[usage(complete = complete_task_id)]
     pub id: String,
+
+    /// Annotation to append to the task
+    #[usage(short = 'a', long)]
+    pub annotate: Option<String>,
 }
 
 #[derive(Args, Debug)]

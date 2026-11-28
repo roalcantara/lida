@@ -39,6 +39,9 @@ cmd add help="Add a new task (optionally with initial comment)" {
     flag "-c --comment" help="Initial comment to attach to the task" {
         arg <COMMENT>
     }
+    flag "-a --annotate" help="Annotation to append to the task" {
+        arg <ANNOTATE>
+    }
     flag "-h --help" help="Print help" action=help builtin=#true
     arg "[DESCRIPTION]" help="Positional task description shorthand"
     complete priority run="lida __complete_word__ --candidates priority --line={{ words | shell_join | shell_quote }}"
@@ -97,16 +100,25 @@ cmd next help="List open tasks by urgency" {
     complete words run="lida __complete_word__ --candidates words --line={{ words | shell_join | shell_quote }}"
 }
 cmd done help="Mark a task as done" {
+    flag "-a --annotate" help="Annotation to append to the task" {
+        arg <ANNOTATE>
+    }
     flag "-h --help" help="Print help" action=help builtin=#true
     arg <ID> help="4-character task ID"
     complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
 }
 cmd start help="Mark a task as in-progress" {
+    flag "-a --annotate" help="Annotation to append to the task" {
+        arg <ANNOTATE>
+    }
     flag "-h --help" help="Print help" action=help builtin=#true
     arg <ID> help="4-character task ID"
     complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"
 }
 cmd stop help="Mark a task as todo" {
+    flag "-a --annotate" help="Annotation to append to the task" {
+        arg <ANNOTATE>
+    }
     flag "-h --help" help="Print help" action=help builtin=#true
     arg <ID> help="4-character task ID"
     complete id run="lida __complete_word__ --candidates id --line={{ words | shell_join | shell_quote }}"

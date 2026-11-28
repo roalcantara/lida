@@ -68,6 +68,18 @@ fn fixture_dir() -> TempDir {
     dir
 }
 
+/// One task in `TODO.yaml`, and nothing else so the store infers YAML-only. `extra` is inserted verbatim as task
+/// fields (indented two spaces), or `""` for none.
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn yaml_dir(extra: &str) -> TempDir {
+    let dir = empty_dir();
+    let content = format!(
+        "tasks:\n- id: aaaa\n  status: Todo\n  description: First task\n{extra}\nactors: []\ncomments: []\nproject: fixture\n"
+    );
+    fs::write(dir.path().join("TODO.yaml"), content).expect("write yaml fixture");
+    dir
+}
+
 /// Replaces the temp dir (both spellings macOS uses) and every newly generated task ID with stable placeholders.
 fn redact(text: &str, dir: &Path) -> String {
     let mut text = text.to_owned();
@@ -254,6 +266,154 @@ fn status_changes() {
     );
     snap_fixture("stop_todo_is_noop_success", &[&["stop", "bbbb"]]);
     snap_fixture("stop_unknown", &[&["stop", "zzzz"]]);
+}
+
+#[test]
+fn annotate() {
+    annotate_writes_and_keeps();
+    annotate_refusals();
+    annotate_dual_write();
+}
+
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn annotate_writes_and_keeps() {
+    let y = yaml_dir("");
+    insta::assert_snapshot!(
+        "annotate_yaml",
+        transcript_with_env(
+            y.path(),
+            &[
+                &["start", "aaaa", "-a", "picked up"],
+                &["stop", "aaaa", "-a", "paused"],
+                &["done", "aaaa", "-a", "shipped"],
+                &["done", "aaaa"],
+            ],
+            &[("LIDA_TODAY", "2026-11-28")]
+        )
+    );
+    let text = fs::read_to_string(y.path().join("TODO.yaml")).expect("read TODO.yaml");
+    let block = "  annotations:\n  - entry: 2026-11-28\n    description: picked up\n  - entry: 2026-11-28\n    description: paused\n  - entry: 2026-11-28\n    description: shipped\n";
+    assert_eq!(
+        text.matches(block).count(),
+        1,
+        "one verbatim annotations block:\n{text}"
+    );
+
+    let kept = yaml_dir("  annotations:\n  - entry: 2026-11-25\n    description: old\n    foo: bar");
+    let run = lida_with_env(
+        kept.path(),
+        &["done", "aaaa", "-a", "new"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 0, "{}", run.stderr);
+    let text = fs::read_to_string(kept.path().join("TODO.yaml")).expect("read TODO.yaml");
+    let expected = "  annotations:\n  - entry: 2026-11-25\n    description: old\n    foo: bar\n  - entry: 2026-11-28\n    description: new\n";
+    assert_eq!(
+        text.matches(expected).count(),
+        1,
+        "old entry kept, new one last:\n{text}"
+    );
+}
+
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn annotate_refusals() {
+    let non_list = yaml_dir("  annotations: nope");
+    let path = non_list.path().join("TODO.yaml");
+    let before = fs::read(&path).expect("read before");
+    let run = lida_with_env(
+        non_list.path(),
+        &["done", "aaaa", "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(run.stderr, "error: annotations of task #aaaa is not a list\n");
+    assert_eq!(
+        fs::read(&path).expect("read after"),
+        before,
+        "a refused run leaves the file byte-identical"
+    );
+
+    let markdown = fixture_dir();
+    let path = markdown.path().join("TODO.md");
+    let before = fs::read(&path).expect("read before");
+    let run = lida_with_env(
+        markdown.path(),
+        &["done", "aaaa", "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(
+        run.stderr,
+        "error: TODO.md cannot hold annotations (task #aaaa): stay on yaml or both\n"
+    );
+    assert_eq!(fs::read(&path).expect("read after"), before);
+    assert_eq!(
+        lida(markdown.path(), &["done", "aaaa"]).code,
+        0,
+        "done without -a still succeeds in Markdown-only mode"
+    );
+
+    let multiline = yaml_dir("");
+    let path = multiline.path().join("TODO.yaml");
+    let before = fs::read(&path).expect("read before");
+    let run = lida_with_env(
+        multiline.path(),
+        &["done", "aaaa", "-a", "a\nb"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(run.stderr, "error: annotation must be a single line\n");
+    assert_eq!(fs::read(&path).expect("read after"), before);
+
+    let unknown = fixture_dir();
+    let run = lida_with_env(
+        unknown.path(),
+        &["done", "zzzz", "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(run.stderr, "error: task #zzzz not found\n");
+
+    let comment = fixture_dir();
+    let path = comment.path().join("TODO.md");
+    let before = fs::read(&path).expect("read before");
+    let run = lida_with_env(
+        comment.path(),
+        &["add", "--task-id", "aaaa", "-c", "hi", "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(run.code, 1);
+    assert_eq!(run.stderr, "error: --annotate cannot be used with --task-id\n");
+    assert_eq!(fs::read(&path).expect("read after"), before);
+}
+
+#[expect(clippy::expect_used, reason = "test setup helper: a failed setup is a failed test")]
+fn annotate_dual_write() {
+    let b = empty_dir();
+    assert_eq!(lida(b.path(), &["init", "--both"]).code, 0);
+    let added = lida_with_env(
+        b.path(),
+        &["add", "First", "-a", "created"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(added.code, 0, "{}", added.stderr);
+    assert!(
+        added.stdout.starts_with("✓ Added task #") && added.stdout.ends_with("\"First\", with annotation\n"),
+        "{}",
+        added.stdout
+    );
+    let id: String = added.stdout["✓ Added task #".len()..].chars().take(4).collect();
+
+    let done = lida_with_env(
+        b.path(),
+        &["done", id.as_str(), "-a", "x"],
+        &[("LIDA_TODAY", "2026-11-28")],
+    );
+    assert_eq!(done.code, 0, "{}", done.stderr);
+    let text = fs::read_to_string(b.path().join("TODO.yaml")).expect("read TODO.yaml");
+    assert!(text.contains("description: created"), "{text}");
+    assert!(text.contains("description: x"), "{text}");
+    assert_eq!(lida(b.path(), &["list"]).code, 0);
 }
 
 #[test]
