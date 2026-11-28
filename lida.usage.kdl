@@ -1,6 +1,6 @@
 name lida
 bin lida
-version "0.3.0"
+version "0.4.0"
 about "Dual-format project task engine (YAML · MD)"
 flag "-f --file" help="TODO file or its directory (default: current directory)" global=#true env=LIDA_FILE {
     arg <FILE>

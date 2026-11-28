@@ -2,6 +2,24 @@
 
 Every release of lida, written by semantic-release from the commit messages (docs/adr/0001-releases.md).
 
+## [0.4.0](https://github.com/roalcantara/lida/compare/v0.3.0...v0.4.0) (2026-11-28)
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** init --force no longer has the -f short form; -f now selects the TODO file.
+
+### Features
+
+* **cli:** Add stop to send a task back to todo ([6248a3b](https://github.com/roalcantara/lida/commit/6248a3b530e0593a0b2e970d13a0197eeb2eb020))
+* **cli:** Annotate a task on add, start, stop and done ([96a282f](https://github.com/roalcantara/lida/commit/96a282ff85338217e471c913b5bb22d9d94b1d9a))
+* **cli:** Complete IDs and tags from the --file target ([9aff65b](https://github.com/roalcantara/lida/commit/9aff65bb4da3581b3e94e944ae5cc32a202b6ac9))
+* **cli:** Target another TODO file with -f/--file or LIDA_FILE ([6978517](https://github.com/roalcantara/lida/commit/69785172b61ec6c1c0101bb937ee9ba0989de938))
+
+### Bug Fixes
+
+* **cli:** Complete from an attached -f value ([60be51b](https://github.com/roalcantara/lida/commit/60be51b790401f42ecb529c702e3079db5013a0b))
+* **cli:** Spare completion and usage from a stale LIDA_FILE ([4287e6f](https://github.com/roalcantara/lida/commit/4287e6fc727a8de28c33ca2524330fe915b84870))
+
 ## [0.3.0](https://github.com/roalcantara/lida/compare/v0.2.0...v0.3.0) (2026-11-27)
 
 ### Features
