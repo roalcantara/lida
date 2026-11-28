@@ -40,7 +40,9 @@ fn lida_with_env(dir: &Path, args: &[&str], envs: &[(&str, &str)]) -> Run {
     cmd.args(args)
         .current_dir(dir)
         .env_remove("NO_COLOR")
-        .env_remove("CLICOLOR_FORCE");
+        .env_remove("CLICOLOR_FORCE")
+        .env_remove("LIDA_FILE")
+        .env_remove("LIDA_TODAY");
     for (k, v) in envs {
         cmd.env(k, v);
     }
@@ -704,6 +706,15 @@ fn completion_follows_the_file_target(dir: &Path) {
         "a missing -f target offers no task candidates: {:?}",
         run.stdout
     );
+}
+
+#[test]
+fn stale_lida_file_spares_completion_and_usage() {
+    let dir = empty_dir();
+    let stale = [("LIDA_FILE", "gone")];
+    assert_eq!(lida_with_env(dir.path(), &["usage"], &stale).code, 0);
+    assert_eq!(lida_with_env(dir.path(), &["completion", "zsh"], &stale).code, 0);
+    assert_eq!(lida_with_env(dir.path(), &["list"], &stale).code, 1);
 }
 
 #[test]

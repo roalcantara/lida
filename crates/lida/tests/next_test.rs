@@ -21,6 +21,7 @@ fn run_lida(dir: &Path, args: &[&str], envs: &[(&str, &str)]) -> Run {
         .args(args)
         .current_dir(dir)
         .env("LIDA_TODAY", TODAY)
+        .env_remove("LIDA_FILE")
         .env_remove("NO_COLOR")
         .env_remove("CLICOLOR_FORCE")
         .env_remove("COLUMNS")

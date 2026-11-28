@@ -40,7 +40,12 @@ pub type CmdResult = Result<(), Box<dyn std::error::Error>>;
 /// # Errors
 /// Returns the first error a command hits; nothing has been printed for it yet.
 pub fn run<O: Write, E: Write>(cli: LidaCli, io: &mut Output<O, E>) -> CmdResult {
-    let cwd = crate::target::resolve(cli.file.as_deref(), &env::current_dir()?)?;
+    // `completion` and `usage` read no TODO file, so a stale `LIDA_FILE` must not break them.
+    let cwd = if matches!(cli.command, Some(Subcommand::Completion(_) | Subcommand::Usage)) {
+        env::current_dir()?
+    } else {
+        crate::target::resolve(cli.file.as_deref(), &env::current_dir()?)?
+    };
     let out = &mut io.out;
 
     match cli.command.unwrap_or_else(default_command) {
