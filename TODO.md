@@ -117,6 +117,7 @@
 - [ ] 8NUT **-** Design the CLI evolution
   - **Priority**: medium
   - **Tags**: v0.2, design
+  - **Comments**: 1b4t
 
 - [ ] Q8Vq **-** Design the lida-core library API
   - **Priority**: medium
@@ -251,3 +252,4 @@
 
 # Comments
 
+- 1b4t **-** Seed from 2026-11-28 brainstorm (docs/superpowers/specs/2026-11-28-file-flag-and-annotate-design.md): schema from jobx TODO.yaml with TaskWarrior names (annotations entry/description, start, end, modified, entry vs created); in-progress vs active; status-change history; ID-first commands (lida <ID> annotate); freeze Markdown; one-off migration script, not a migrate command; not full TaskWarrior parity
