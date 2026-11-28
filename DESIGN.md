@@ -39,6 +39,14 @@ variables: `false` when `NO_COLOR` is set and non-empty; else `true` when `CLICO
 
 IDs in `add` messages, errors and `show`'s metadata lines are not bold.
 
+## Global options
+
+`-f, --file <path>`, or `LIDA_FILE` when the flag is absent, selects the TODO file every command works on. The flag
+wins over the variable. The target is a **directory**: lida behaves exactly as if run there, reading its
+`.lida/config` and honouring dual-write. A path to `TODO.yaml` or `TODO.md` resolves to its parent directory, whether
+or not the file exists; any other file name is an error. A relative path is resolved against the current directory,
+and `~` is left to the shell.
+
 ## Commands
 
 Examples run against two tasks, `aaaa` (medium, `setup`) and `bbbb` (high, `setup, docs`). Colour codes are left out.
@@ -50,8 +58,8 @@ $ lida init --md --project demo
 ✓ Initialized project tasks in /path/to/repo
 ```
 
-`--md` writes `TODO.md`, `--yaml` (the default) writes `TODO.yaml`, `--both` writes both. If either file exists:
-`error: TODO file already exists. Use --force to overwrite.` (exit 1). With `--force`, the file of the format no longer written is deleted. Passing more than one format flag errors: `error: choose one of --yaml, --md or --both`. Project names cannot contain `-->` (`error: project name cannot contain '-->'`).
+`--md` writes `TODO.md`, `--yaml` (the default) writes `TODO.yaml`, `--both` writes both. `init` writes into the `-f` target when given. If either file exists:
+`error: TODO file already exists. Use --force to overwrite.` (exit 1). `--force` has no short form; `-f` selects the target. With `--force`, the file of the format no longer written is deleted. Passing more than one format flag errors: `error: choose one of --yaml, --md or --both`. Project names cannot contain `-->` (`error: project name cannot contain '-->'`).
 
 ### `add`
 
@@ -253,6 +261,8 @@ Values `yaml`, `md`, `both`; printed as `YamlOnly`, `MdOnly`, `Both`. Switching 
 ## Errors shared by all commands
 
 - `no TODO file found in directory` when neither `TODO.md` nor `TODO.yaml` exists.
+- `no such directory: <path>` when the `-f`/`LIDA_FILE` target does not exist.
+- `--file must be a directory, TODO.yaml or TODO.md: <path>` when the target exists but is another file name.
 - `duplicate task ID #<id> in <file>` when a file contains repeated task IDs.
 - `TODO.md line <line> is not something lida writes: <text>` when `TODO.md` contains unrecognised content.
 - `TODO.md cannot hold <what> (<target>): stay on yaml or both` when format conversion would lose fields.

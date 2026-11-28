@@ -298,6 +298,59 @@ fn list_filter_in_progress() {
 }
 
 #[test]
+fn file_flag() {
+    let d = fixture_dir();
+    fs::create_dir(d.path().join("other")).expect("create other");
+    fs::write(
+        d.path().join("other/TODO.md"),
+        FIXTURE.replace("First task", "Other task"),
+    )
+    .expect("write other fixture");
+
+    insta::assert_snapshot!(
+        "file_flag",
+        transcript(
+            d.path(),
+            &[
+                &["-f", "other/TODO.md", "list"],
+                &["list", "-f", "other"],
+                &["--file", "other/TODO.md", "done", "aaaa"],
+                &["-f", "nope", "list"],
+            ]
+        )
+    );
+
+    let other = fs::read_to_string(d.path().join("other/TODO.md")).expect("read other");
+    assert!(
+        other.contains("- [x] aaaa"),
+        "-f run must mark other's task done: {other}"
+    );
+    let own = fs::read_to_string(d.path().join("TODO.md")).expect("read own");
+    assert!(
+        own.contains("- [ ] aaaa"),
+        "-f runs must not touch the current directory: {own}"
+    );
+
+    let env_run = lida_with_env(d.path(), &["list"], &[("LIDA_FILE", "other")]);
+    assert_eq!(env_run.code, 0, "{}", env_run.stderr);
+    assert!(env_run.stdout.contains("Other task"), "LIDA_FILE must be honoured");
+
+    let flag_wins = lida_with_env(d.path(), &["-f", ".", "list"], &[("LIDA_FILE", "other")]);
+    assert_eq!(flag_wins.code, 0, "{}", flag_wins.stderr);
+    assert!(flag_wins.stdout.contains("First task"));
+    assert!(!flag_wins.stdout.contains("Other task"), "-f must win over LIDA_FILE");
+
+    let e = empty_dir();
+    fs::create_dir(e.path().join("new")).expect("create new");
+    let init = lida(e.path(), &["-f", "new/TODO.yaml", "init"]);
+    assert_eq!(init.code, 0, "{}", init.stderr);
+    assert!(e.path().join("new/TODO.yaml").exists());
+    assert!(!e.path().join("TODO.yaml").exists());
+
+    assert_ne!(lida(e.path(), &["init", "-f"]).code, 0, "-f now wants a value");
+}
+
+#[test]
 fn strict_values() {
     snap_fixture(
         "strict_values",

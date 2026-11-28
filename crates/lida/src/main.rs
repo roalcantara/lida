@@ -5,6 +5,7 @@
 mod cli;
 mod commands;
 mod output;
+mod target;
 mod text;
 
 use cli::LidaCli;

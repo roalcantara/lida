@@ -2,6 +2,9 @@ name lida
 bin lida
 version "0.3.0"
 about "Dual-format project task engine (YAML · MD)"
+flag "-f --file" help="TODO file or its directory (default: current directory)" global=#true env=LIDA_FILE {
+    arg <FILE>
+}
 flag "-h --help" help="Print help" action=help builtin=#true
 flag "-V --version" help="Print version" action=version builtin=#true
 cmd init help="Initialize a new TODO file (TODO.yaml or TODO.md)" {
@@ -11,7 +14,7 @@ cmd init help="Initialize a new TODO file (TODO.yaml or TODO.md)" {
     flag --project help="Project name to embed in header" {
         arg <PROJECT>
     }
-    flag "-f --force" help="Overwrite existing TODO files"
+    flag --force help="Overwrite existing TODO files"
     flag "-h --help" help="Print help" action=help builtin=#true
 }
 cmd add help="Add a new task (optionally with initial comment)" {

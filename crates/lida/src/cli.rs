@@ -12,6 +12,10 @@ use usage_rs::{Args, Cli, Subcommands};
     completion
 )]
 pub struct LidaCli {
+    /// TODO file or its directory (default: current directory)
+    #[usage(short = 'f', long, global, env = "LIDA_FILE")]
+    pub file: Option<String>,
+
     #[usage(subcommand)]
     pub command: Option<Subcommand>,
 }
@@ -113,7 +117,7 @@ pub struct InitArgs {
     pub project: Option<String>,
 
     /// Overwrite existing TODO files
-    #[usage(short = 'f', long)]
+    #[usage(long)]
     pub force: bool,
 }
 
