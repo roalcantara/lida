@@ -46,7 +46,8 @@ pub fn resolve(file: Option<&str>, cwd: &Path) -> Result<PathBuf, String> {
     }
 }
 
-/// The `-f`/`--file` value in a completion line: the word after the last `-f` or `--file`, or after `--file=`.
+/// The `-f`/`--file` value in a completion line: the word after the last `-f` or `--file`, or attached (`--file=x`,
+/// `-fx`, `-f=x`).
 ///
 /// `None` when the flag is absent, or is the last word (the value is still being typed).
 #[must_use]
@@ -57,6 +58,9 @@ pub fn file_in_words(words: &[String]) -> Option<&str> {
             found = words.get(index + 1).map(String::as_str);
         } else if let Some(value) = word.strip_prefix("--file=") {
             found = Some(value);
+        } else if let Some(value) = word.strip_prefix("-f").filter(|v| !v.is_empty()) {
+            // Attached short form: `-fother` or `-f=other`.
+            found = Some(value.strip_prefix('=').unwrap_or(value));
         }
     }
     found
@@ -119,6 +123,8 @@ mod tests {
             file_in_words(&words(&["lida", "-f", "x", "--file", "z", ""])),
             Some("z")
         );
+        assert_eq!(file_in_words(&words(&["lida", "-fother", "done", ""])), Some("other"));
+        assert_eq!(file_in_words(&words(&["lida", "-f=other", "done", ""])), Some("other"));
         assert_eq!(file_in_words(&words(&["lida", "done", "-f"])), None);
         assert_eq!(file_in_words(&words(&["lida", "done"])), None);
     }
