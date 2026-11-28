@@ -61,7 +61,7 @@ file already has, which seeds the coming schema work (8NUT) without pre-empting 
 - Appends `{entry: <today, local, YYYY-MM-DD>, description: <text>}` to the task's `annotations` sequence in `extra`,
   creating it when absent. Existing entries are untouched; the new one goes last.
 - Status change and annotation are one save.
-- Markdown-only mode: refused before any write with `error: TODO.md cannot hold annotations (task <ID>): stay on yaml
+- Markdown-only mode: refused before any write with `error: TODO.md cannot hold annotations (task #<ID>): stay on yaml
   or both`. Without `-a`, every command behaves as today in every mode.
 - Output: the command's usual single line, with `, with annotation` appended, e.g.
   `✓ Task #GmuC marked as done, with annotation`.
